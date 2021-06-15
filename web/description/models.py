@@ -23,6 +23,13 @@ class Variable(models.Model):
         return True
 
 
+class SchedulingInterval(models.Model):
+    """Scheduling Interval. The value is interpreted in seconds.
+
+    """
+    interval = models.PositiveIntegerField(default=350)
+
+
 class CheckType(models.Model):
     name = CharField(default="", max_length=255, unique=True)
 
