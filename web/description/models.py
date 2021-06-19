@@ -6,6 +6,9 @@ class Variable(models.Model):
     name = CharField(unique=True, max_length=255)
     value = CharField(blank=True, null=True, default="", max_length=1024)
 
+    def __str__(self):
+        return self.name
+
     def validate(self, variable_name: str) -> bool:
         """Validates a given variable.
 
@@ -29,12 +32,29 @@ class SchedulingInterval(models.Model):
     """
     interval = models.PositiveIntegerField(default=350)
 
+    def __str__(self):
+        return str(self.interval)
+
 
 class CheckType(models.Model):
     name = CharField(default="", max_length=255, unique=True)
+
+    def __str__(self):
+        return self.name
 
 
 class Check(models.Model):
     name = CharField(default="", max_length=255, unique=True)
     cmd = CharField(default="", max_length=1024, blank=True, null=True)
     check_type = ForeignKey(CheckType, on_delete=models.DO_NOTHING, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Metric(models.Model):
+    name = CharField(default="", max_length=255, unique=True)
+    linked_check = ForeignKey(Check, on_delete=models.DO_NOTHING, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
