@@ -26,3 +26,18 @@ class Variable(admin.ModelAdmin):
 @admin.register(Metric)
 class MetricAdmin(admin.ModelAdmin):
     list_display = ("__str__",)
+
+
+@admin.register(Period)
+class PeriodAdmin(admin.ModelAdmin):
+    list_display = ("start_time", "stop_time")
+
+
+@admin.register(DayTimePeriod)
+class DayTimePeriodAdmin(admin.ModelAdmin):
+    list_display = ("__str__",)
+
+
+@admin.register(TimePeriod)
+class TimePeriodAdmin(admin.ModelAdmin):
+    list_display = ("__str__",)

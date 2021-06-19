@@ -40,6 +40,9 @@ class Day(models.Model):
     """Day of the weak. Quite simple."""
     name = CharField(default="", max_length=16, unique=True)
 
+    def __str__(self):
+        return self.name
+
 
 class Period(models.Model):
     """Specifc start and stop time.
@@ -49,17 +52,26 @@ class Period(models.Model):
     start_time = CharField(default="", max_length=4)
     stop_time = CharField(default="", max_length=4)
 
+    def __str__(self):
+        return f"{self.start_time}-{self.stop_time}"
+
 
 class DayTimePeriod(models.Model):
     """Time period(s) of a specific day"""
     day = ForeignKey(Day, on_delete=models.CASCADE)
     periods = ManyToManyField(Period)
 
+    def __str__(self):
+        return f"{self.day} - {' '.join(self.periods)}"
+
 
 class TimePeriod(models.Model):
     """The complete time period. Included values for all days"""
     name = CharField(default="", max_length=255, unique=True)
     time_periods = ManyToManyField(DayTimePeriod)
+
+    def __str__(self):
+        return self.name
 
 
 class CheckType(models.Model):
