@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import CharField, ForeignKey
+from django.db.models import CharField, ForeignKey, ManyToManyField
 
 
 class Variable(models.Model):
@@ -36,6 +36,32 @@ class SchedulingInterval(models.Model):
         return str(self.interval)
 
 
+class Day(models.Model):
+    """Day of the weak. Quite simple."""
+    name = CharField(default="", max_length=16, unique=True)
+
+
+class Period(models.Model):
+    """Specifc start and stop time.
+
+    Values can be from 0000 to 2400.
+    """
+    start_time = CharField(default="", max_length=4)
+    stop_time = CharField(default="", max_length=4)
+
+
+class DayTimePeriod(models.Model):
+    """Time period(s) of a specific day"""
+    day = ForeignKey(Day, on_delete=models.CASCADE)
+    periods = ManyToManyField(Period)
+
+
+class TimePeriod(models.Model):
+    """The complete time period. Included values for all days"""
+    name = CharField(default="", max_length=255, unique=True)
+    time_periods = ManyToManyField(DayTimePeriod)
+
+
 class CheckType(models.Model):
     name = CharField(default="", max_length=255, unique=True)
 
@@ -55,6 +81,9 @@ class Check(models.Model):
 class Metric(models.Model):
     name = CharField(default="", max_length=255, unique=True)
     linked_check = ForeignKey(Check, on_delete=models.DO_NOTHING, blank=True, null=True)
+    scheduling_interval = ForeignKey(SchedulingInterval, on_delete=models.DO_NOTHING, blank=True, null=True)
+    scheduling_period = ForeignKey(TimePeriod, on_delete=models.DO_NOTHING, blank=True, null=True, related_name="scheduling")
+    notification_period = ForeignKey(TimePeriod, on_delete=models.DO_NOTHING, blank=True, null=True, related_name="notification")
 
     def __str__(self):
         return self.name
