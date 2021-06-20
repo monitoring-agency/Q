@@ -68,7 +68,7 @@ class DayTimePeriod(models.Model):
     periods = ManyToManyField(Period)
 
     def __str__(self):
-        return f"{self.day} - {' '.join(self.periods)}"
+        return f"{self.day} - {' '.join([str(x) for x in self.periods.all()])}"
 
 
 class TimePeriod(models.Model):

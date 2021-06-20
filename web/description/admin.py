@@ -25,7 +25,7 @@ class Variable(admin.ModelAdmin):
 
 @admin.register(Metric)
 class MetricAdmin(admin.ModelAdmin):
-    list_display = ("__str__",)
+    list_display = ("linked_host", "__str__",)
 
 
 @admin.register(Period)
@@ -40,4 +40,9 @@ class DayTimePeriodAdmin(admin.ModelAdmin):
 
 @admin.register(TimePeriod)
 class TimePeriodAdmin(admin.ModelAdmin):
+    list_display = ("__str__",)
+
+
+@admin.register(Host)
+class HostAdmin(admin.ModelAdmin):
     list_display = ("__str__",)
