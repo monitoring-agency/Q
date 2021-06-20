@@ -1,3 +1,5 @@
+import re
+
 from django.db import models
 from django.db.models import CharField, ForeignKey, ManyToManyField
 
@@ -45,7 +47,7 @@ class Day(models.Model):
 
 
 class Period(models.Model):
-    """Specifc start and stop time.
+    """Specific start and stop time.
 
     Values can be from 0000 to 2400.
     """
@@ -54,6 +56,10 @@ class Period(models.Model):
 
     def __str__(self):
         return f"{self.start_time}-{self.stop_time}"
+
+    def validate(self, time):
+        pattern = re.compile(r"(([01][0-9]|2[0-3])[0-5][0-9]|2400)")
+        return pattern.match(time)
 
 
 class DayTimePeriod(models.Model):
@@ -90,12 +96,28 @@ class Check(models.Model):
         return self.name
 
 
-class Metric(models.Model):
+class Host(models.Model):
     name = CharField(default="", max_length=255, unique=True)
     linked_check = ForeignKey(Check, on_delete=models.DO_NOTHING, blank=True, null=True)
     scheduling_interval = ForeignKey(SchedulingInterval, on_delete=models.DO_NOTHING, blank=True, null=True)
-    scheduling_period = ForeignKey(TimePeriod, on_delete=models.DO_NOTHING, blank=True, null=True, related_name="scheduling")
-    notification_period = ForeignKey(TimePeriod, on_delete=models.DO_NOTHING, blank=True, null=True, related_name="notification")
+    scheduling_period = ForeignKey(TimePeriod, on_delete=models.DO_NOTHING, blank=True, null=True,
+                                   related_name="scheduling_h")
+    notification_period = ForeignKey(TimePeriod, on_delete=models.DO_NOTHING, blank=True, null=True,
+                                     related_name="notification_h")
+
+    def __str__(self):
+        return self.name
+
+
+class Metric(models.Model):
+    name = CharField(default="", max_length=255)
+    linked_check = ForeignKey(Check, on_delete=models.DO_NOTHING, blank=True, null=True)
+    linked_host = ForeignKey(Host, on_delete=models.CASCADE)
+    scheduling_interval = ForeignKey(SchedulingInterval, on_delete=models.DO_NOTHING, blank=True, null=True)
+    scheduling_period = ForeignKey(TimePeriod, on_delete=models.DO_NOTHING, blank=True, null=True,
+                                   related_name="scheduling")
+    notification_period = ForeignKey(TimePeriod, on_delete=models.DO_NOTHING, blank=True, null=True,
+                                     related_name="notification")
 
     def __str__(self):
         return self.name

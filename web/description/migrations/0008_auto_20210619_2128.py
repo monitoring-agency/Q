@@ -3,7 +3,7 @@
 from django.db import migrations, models
 import django.db.models.deletion
 
-from description.models import Day
+from description.models import Day, DayTimePeriod, Period, TimePeriod
 
 
 def create_days(*args):
@@ -20,6 +20,31 @@ def create_days(*args):
         d, created = Day.objects.get_or_create(name=day)
         if created:
             d.save()
+
+
+def create_default_time_periods(*args):
+    days = [x for x in Day.objects.all()]
+    period, created = Period.objects.get_or_create(start_time="0000", stop_time="2400")
+    dtps = []
+    if created:
+        period.save()
+    for day in days:
+        dtp = [x for x in DayTimePeriod.objects.filter(day=day)]
+        for item in dtp:
+            if period in item.periods and len(item.periods) == 1:
+                dtps.append(item)
+                break
+        else:
+            dtp = []
+        if len(dtp) == 0:
+            dtp = DayTimePeriod.objects.create(day=day)
+            dtp.periods.add(period)
+            dtp.save()
+            dtps.append(dtp)
+    time_period, created = TimePeriod.objects.get_or_create(name="24x7")
+    if created:
+        time_period.time_periods.add(*dtps)
+        time_period.save()
 
 
 class Migration(migrations.Migration):
@@ -81,5 +106,8 @@ class Migration(migrations.Migration):
         ),
         migrations.RunPython(
             create_days
+        ),
+        migrations.RunPython(
+            create_default_time_periods
         )
     ]
