@@ -100,10 +100,16 @@ class Host(models.Model):
     name = CharField(default="", max_length=255, unique=True)
     linked_check = ForeignKey(Check, on_delete=models.DO_NOTHING, blank=True, null=True)
     scheduling_interval = ForeignKey(SchedulingInterval, on_delete=models.DO_NOTHING, blank=True, null=True)
-    scheduling_period = ForeignKey(TimePeriod, on_delete=models.DO_NOTHING, blank=True, null=True,
-                                   related_name="scheduling_h")
-    notification_period = ForeignKey(TimePeriod, on_delete=models.DO_NOTHING, blank=True, null=True,
-                                     related_name="notification_h")
+    scheduling_period = ForeignKey(
+        TimePeriod, on_delete=models.DO_NOTHING,
+        blank=True, null=True,
+        related_name="scheduling_h"
+    )
+    notification_period = ForeignKey(
+        TimePeriod, on_delete=models.DO_NOTHING,
+        blank=True, null=True,
+        related_name="notification_h"
+    )
 
     def __str__(self):
         return self.name
@@ -114,10 +120,16 @@ class Metric(models.Model):
     linked_check = ForeignKey(Check, on_delete=models.DO_NOTHING, blank=True, null=True)
     linked_host = ForeignKey(Host, on_delete=models.CASCADE)
     scheduling_interval = ForeignKey(SchedulingInterval, on_delete=models.DO_NOTHING, blank=True, null=True)
-    scheduling_period = ForeignKey(TimePeriod, on_delete=models.DO_NOTHING, blank=True, null=True,
-                                   related_name="scheduling")
-    notification_period = ForeignKey(TimePeriod, on_delete=models.DO_NOTHING, blank=True, null=True,
-                                     related_name="notification")
+    scheduling_period = ForeignKey(
+        TimePeriod, on_delete=models.DO_NOTHING,
+        blank=True, null=True,
+        related_name="scheduling"
+    )
+    notification_period = ForeignKey(
+        TimePeriod, on_delete=models.DO_NOTHING,
+        blank=True, null=True,
+        related_name="notification"
+    )
 
     def __str__(self):
         return self.name
