@@ -31,8 +31,8 @@ threads = 1
 # [ LOGGING ]
 loglevel = "info"
 # "-" is stdout
-accesslog = "/var/log/q/q-api/gunicorn-access.log"
-errorlog = "/var/log/q/q-api/gunicorn-error.log"
+accesslog = "/var/log/q/q-api-gunicorn-access.log"
+errorlog = "/var/log/q/q-api-gunicorn-error.log"
 
 # [ DEPLOYMENT ]
 # X-Forwarded-For trusted sources, comma seperated
