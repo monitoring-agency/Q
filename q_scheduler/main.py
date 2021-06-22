@@ -2,7 +2,7 @@ import json
 import logging
 import os
 
-from scheduler.config import SchedulerConfig
+from q_scheduler.config import SchedulerConfig
 
 
 logger = logging.getLogger("scheduler")
