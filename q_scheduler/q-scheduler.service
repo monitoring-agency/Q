@@ -1,0 +1,20 @@
+[Unit]
+Description=Q Scheduler
+
+[Service]
+Type=notify
+# the specific user that our service will run as
+User=q-scheduler
+Group=q-scheduler
+# another option for an even more restricted service is
+# DynamicUser=yes
+# see http://0pointer.net/blog/dynamic-users-with-systemd.html
+WorkingDirectory=/var/lib/q-scheduler/
+ExecStart=/var/lib/q-scheduler/venv/bin/python3 /var/lib/q-scheduler/main.py
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=5
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
