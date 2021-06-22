@@ -9,7 +9,8 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
-
+import logging
+import time
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -53,7 +54,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'web.urls'
+ROOT_URLCONF = 'q_api.urls'
 
 TEMPLATES = [
     {
@@ -79,8 +80,8 @@ WSGI_APPLICATION = 'web.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'me_description',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': "/home/omikron/git/Q/web.sqlite3",
         'USER': 'me_db',
         'PASSWORD': 'change_me',
         'HOST': 'localhost',
@@ -132,4 +133,12 @@ STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-DESCRIPTION_DIRECTORY = "/etc/mon-engine/description/"
+DESCRIPTION_DIRECTORY = "/etc/q/"
+
+logging.basicConfig(
+    filename="/var/log/q/q-api/django.log",
+    format='%(asctime)s :: %(levelname)s: %(message)s',
+    datefmt='%d-%m-%Y %H:%M:%S',
+    level=logging.INFO
+)
+logging.Formatter.converter = time.gmtime
