@@ -12,8 +12,8 @@ Group=q-api
 # DynamicUser=yes
 # see http://0pointer.net/blog/dynamic-users-with-systemd.html
 RuntimeDirectory=gunicorn
-WorkingDirectory=/var/lib/q-api/q_api
-ExecStart=/var/lib/q-api/venv/bin/python3 -c /etc/q/q-api/gunicorn.conf.py q_api.wsgi
+WorkingDirectory=/var/lib/q-api/
+ExecStart=/var/lib/q-api/venv/bin/gunicorn -c /etc/q-api/gunicorn.conf.py q_api.wsgi
 ExecReload=/bin/kill -s HUP $MAINPID
 KillMode=mixed
 TimeoutStopSec=5
