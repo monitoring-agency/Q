@@ -1,31 +1,8 @@
-import re
-
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.models import ContentType
+from django.core.validators import RegexValidator
 from django.db import models
-from django.db.models import CharField, ForeignKey, ManyToManyField
-
-
-class Variable(models.Model):
-    name = CharField(unique=True, max_length=255)
-    value = CharField(blank=True, null=True, default="", max_length=1024)
-
-    def __str__(self):
-        return self.name
-
-    def validate(self, variable_name: str) -> bool:
-        """Validates a given variable.
-
-        To return True, the variable has to be a- and prefixed with '#' and is not allowed to have ' ' in it.
-
-        :param variable_name: Name of the variable
-        :type variable_name: str
-        :return: Returns True if a valid variable name is given
-        :rtype: bool
-        """
-        if not variable_name.startswith('#') or not variable_name.endswith('#'):
-            return False
-        if " " in variable_name:
-            return False
-        return True
+from django.db.models import CharField, ForeignKey, ManyToManyField, PositiveIntegerField, BooleanField
 
 
 class SchedulingInterval(models.Model):
@@ -51,15 +28,18 @@ class Period(models.Model):
 
     Values can be from 0000 to 2400.
     """
-    start_time = CharField(default="", max_length=4)
-    stop_time = CharField(default="", max_length=4)
+    start_time = CharField(default="", max_length=4, validators=[RegexValidator("(([01][0-9]|2[0-3])[0-5][0-9]|2400)")])
+    stop_time = CharField(default="", max_length=4, validators=[RegexValidator("(([01][0-9]|2[0-3])[0-5][0-9]|2400)")])
 
     def __str__(self):
         return f"{self.start_time}-{self.stop_time}"
 
-    def validate(self, time):
-        pattern = re.compile(r"(([01][0-9]|2[0-3])[0-5][0-9]|2400)")
-        return pattern.match(time)
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        if int(self.stop_time) <= int(self.start_time):
+            raise ValueError("Starttime has to be Stoptime")
+        super(Period, self).save(force_insert=force_insert, force_update=force_update, using=using,
+                                 update_fields=update_fields)
 
 
 class DayTimePeriod(models.Model):
@@ -98,7 +78,9 @@ class Check(models.Model):
 
 class Host(models.Model):
     name = CharField(default="", max_length=255, unique=True)
+    address = CharField(default="", max_length=255, blank=True, null=True)
     linked_check = ForeignKey(Check, on_delete=models.DO_NOTHING, blank=True, null=True)
+    disabled = BooleanField(default=False, blank=True, null=True)
     scheduling_interval = ForeignKey(SchedulingInterval, on_delete=models.DO_NOTHING, blank=True, null=True)
     scheduling_period = ForeignKey(
         TimePeriod, on_delete=models.DO_NOTHING,
@@ -110,6 +92,7 @@ class Host(models.Model):
         blank=True, null=True,
         related_name="notification_h"
     )
+    kvp = GenericRelation("GenericKVP")
 
     def __str__(self):
         return self.name
@@ -119,6 +102,7 @@ class Metric(models.Model):
     name = CharField(default="", max_length=255)
     linked_check = ForeignKey(Check, on_delete=models.DO_NOTHING, blank=True, null=True)
     linked_host = ForeignKey(Host, on_delete=models.CASCADE)
+    disabled = BooleanField(default=False, blank=True, null=True)
     scheduling_interval = ForeignKey(SchedulingInterval, on_delete=models.DO_NOTHING, blank=True, null=True)
     scheduling_period = ForeignKey(
         TimePeriod, on_delete=models.DO_NOTHING,
@@ -130,6 +114,25 @@ class Metric(models.Model):
         blank=True, null=True,
         related_name="notification"
     )
+    kvp = GenericRelation("GenericKVP")
 
     def __str__(self):
         return self.name
+
+
+class Label(models.Model):
+    label = CharField(default="", max_length=255, unique=True, blank=True)
+
+    def __str__(self):
+        return self.label
+
+
+class GenericKVP(models.Model):
+    key = ForeignKey(Label, on_delete=models.CASCADE, related_name="key")
+    value = ForeignKey(Label, on_delete=models.CASCADE, related_name="value")
+    referent = GenericForeignKey('content_type', 'object_id')
+    content_type = ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = PositiveIntegerField()
+
+    def __str__(self):
+        return f"{self.referent} - {self.key}: {self.value}"

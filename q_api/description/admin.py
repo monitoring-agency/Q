@@ -18,11 +18,6 @@ class CheckAdmin(admin.ModelAdmin):
     list_display = ("__str__", "name", "check_type")
 
 
-@admin.register(Variable)
-class Variable(admin.ModelAdmin):
-    list_display = ("__str__", "name", "value")
-
-
 @admin.register(Metric)
 class MetricAdmin(admin.ModelAdmin):
     list_display = ("linked_host", "__str__",)
