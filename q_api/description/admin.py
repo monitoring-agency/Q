@@ -41,3 +41,13 @@ class TimePeriodAdmin(admin.ModelAdmin):
 @admin.register(Host)
 class HostAdmin(admin.ModelAdmin):
     list_display = ("__str__",)
+
+
+@admin.register(MetricTemplate)
+class MetricTemplateAdmin(admin.ModelAdmin):
+    list_display = ("__str__",)
+
+
+@admin.register(HostTemplate)
+class HostTemplateAdmin(admin.ModelAdmin):
+    list_display = ("__str__",)

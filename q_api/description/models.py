@@ -76,11 +76,34 @@ class Check(models.Model):
         return self.name
 
 
+class HostTemplate(models.Model):
+    name = CharField(default="", max_length=255, unique=True)
+    address = CharField(default="", max_length=255, blank=True, null=True)
+    linked_check = ForeignKey(Check, on_delete=models.DO_NOTHING, blank=True, null=True)
+    host_templates = ManyToManyField("self", blank=True)
+    scheduling_interval = ForeignKey(SchedulingInterval, on_delete=models.DO_NOTHING, blank=True, null=True)
+    scheduling_period = ForeignKey(
+        TimePeriod, on_delete=models.DO_NOTHING,
+        blank=True, null=True,
+        related_name="scheduling_ht"
+    )
+    notification_period = ForeignKey(
+        TimePeriod, on_delete=models.DO_NOTHING,
+        blank=True, null=True,
+        related_name="notification_ht"
+    )
+    kvp = GenericRelation("GenericKVP")
+
+    def __str__(self):
+        return self.name
+
+
 class Host(models.Model):
     name = CharField(default="", max_length=255, unique=True)
     address = CharField(default="", max_length=255, blank=True, null=True)
     linked_check = ForeignKey(Check, on_delete=models.DO_NOTHING, blank=True, null=True)
     disabled = BooleanField(default=False, blank=True, null=True)
+    host_templates = ManyToManyField(HostTemplate, blank=True)
     scheduling_interval = ForeignKey(SchedulingInterval, on_delete=models.DO_NOTHING, blank=True, null=True)
     scheduling_period = ForeignKey(
         TimePeriod, on_delete=models.DO_NOTHING,
@@ -98,11 +121,34 @@ class Host(models.Model):
         return self.name
 
 
+class MetricTemplate(models.Model):
+    name = CharField(default="", max_length=255)
+    linked_check = ForeignKey(Check, on_delete=models.DO_NOTHING, blank=True, null=True)
+    linked_host = ForeignKey(Host, on_delete=models.CASCADE)
+    metric_template = ManyToManyField("self", blank=True)
+    scheduling_interval = ForeignKey(SchedulingInterval, on_delete=models.DO_NOTHING, blank=True, null=True)
+    scheduling_period = ForeignKey(
+        TimePeriod, on_delete=models.DO_NOTHING,
+        blank=True, null=True,
+        related_name="scheduling_mt"
+    )
+    notification_period = ForeignKey(
+        TimePeriod, on_delete=models.DO_NOTHING,
+        blank=True, null=True,
+        related_name="notification_mt"
+    )
+    kvp = GenericRelation("GenericKVP")
+
+    def __str__(self):
+        return self.name
+
+
 class Metric(models.Model):
     name = CharField(default="", max_length=255)
     linked_check = ForeignKey(Check, on_delete=models.DO_NOTHING, blank=True, null=True)
     linked_host = ForeignKey(Host, on_delete=models.CASCADE)
     disabled = BooleanField(default=False, blank=True, null=True)
+    metric_template = ManyToManyField(MetricTemplate, blank=True)
     scheduling_interval = ForeignKey(SchedulingInterval, on_delete=models.DO_NOTHING, blank=True, null=True)
     scheduling_period = ForeignKey(
         TimePeriod, on_delete=models.DO_NOTHING,
