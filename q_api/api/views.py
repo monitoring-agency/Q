@@ -1,17 +1,17 @@
 import base64
-from abc import ABC
 from datetime import datetime, timedelta
 import json
 
 import django.contrib.auth
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.utils.decorators import method_decorator
 from django.utils.timezone import make_aware
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
 from api.models import AccountModel, ACLModel
-from description.models import Check, CheckType
+from description.models import Check, CheckType, Host, Metric, TimePeriod, SchedulingInterval, GenericKVP, Label, Day, \
+    Period, DayTimePeriod
 
 
 @method_decorator(csrf_exempt, "dispatch")
@@ -37,6 +37,8 @@ class CheckMixinView(View):
         timestamp_now = make_aware(datetime.now()).timestamp()
 
         # Check Authorization Header
+        if "HTTP_AUTHENTICATION" not in request.META:
+            return {"success": False, "message": "No authentication header is given", "status": 401}
         auth = request.META["HTTP_AUTHENTICATION"]
         decoded = base64.urlsafe_b64decode(auth).decode("utf-8")
         username = decoded.split(":")[0]
@@ -50,7 +52,8 @@ class CheckMixinView(View):
             return {"success": False, "message": "Username is incorrect or token expired", "status": 401}
         for acc_token in account_tokens:
             if token == acc_token.token:
-                if not (acc_token.expire - timedelta(hours=2)).timestamp() < timestamp_now < acc_token.expire.timestamp():
+                if not (acc_token.expire - timedelta(
+                        hours=2)).timestamp() < timestamp_now < acc_token.expire.timestamp():
                     return {"success": False, "message": "Username is incorrect or token expired", "status": 401}
 
         # Check ACLs
@@ -84,25 +87,25 @@ class CheckMixinView(View):
         ret = self._check_auth(request, self.required_get)
         if not ret["success"]:
             return JsonResponse({"success": False, "message": ret["message"]}, status=ret["status"])
-        return self.cleaned_get(ret["data"], args, kwargs)
+        return self.cleaned_get(ret["data"], *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         ret = self._check_auth(request, self.required_post)
         if not ret["success"]:
             return JsonResponse({"success": False, "message": ret["message"]}, status=ret["status"])
-        return self.cleaned_post(ret["data"], args, kwargs)
+        return self.cleaned_post(ret["data"], *args, **kwargs)
 
     def put(self, request, *args, **kwargs):
         ret = self._check_auth(request, self.required_put)
         if not ret["success"]:
             return JsonResponse({"success": False, "message": ret["message"]}, status=ret["status"])
-        return self.cleaned_put(ret["data"], args, kwargs)
+        return self.cleaned_put(ret["data"], *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
         ret = self._check_auth(request, self.required_delete)
         if not ret["success"]:
             return JsonResponse({"success": False, "message": ret["message"]}, status=ret["status"])
-        return self.cleaned_delete(ret["data"], args, kwargs)
+        return self.cleaned_delete(ret["data"], *args, **kwargs)
 
     def cleaned_get(self, params, *args, **kwargs):
         return NotImplemented
@@ -114,6 +117,66 @@ class CheckMixinView(View):
         return NotImplemented
 
     def cleaned_delete(self, params, *args, **kwargs):
+        return NotImplemented
+
+
+class CheckOptionalMixinView(CheckMixinView):
+    def __init__(
+            self, api_class=None, **kwargs
+    ):
+        super(CheckOptionalMixinView, self).__init__(
+            **kwargs
+        )
+        self.api_class = api_class
+
+    def cleaned_get(self, params, *args, **kwargs):
+        if "sid" in kwargs:
+            if not isinstance(kwargs["sid"], int) and not isinstance(kwargs["sid"], str):
+                return JsonResponse({"success": False, "message": "ID has to be str or int"})
+            try:
+                item = self.api_class.objects.get(id=kwargs["sid"])
+                return JsonResponse({"success": True, "data": item.to_dict()})
+            except self.api_class.DoesNotExist:
+                return JsonResponse(
+                    {"success": False, "message": f"{self.api_class} with id {kwargs['sid']} does not exist"}
+                )
+        else:
+            if "filter" in params:
+                if isinstance(params["filter"], list):
+                    items = [x.to_dict() for x in self.api_class.objects.filter(id__in=params["filter"])]
+                else:
+                    items = self.api_class.objects.get(id=str(params["filter"])).to_dict()
+            else:
+                items = [x.to_dict() for x in self.api_class.objects.all()]
+        return JsonResponse({"success": True, "message": "Request was successful", "data": items})
+
+    def cleaned_post(self, params, *args, **kwargs):
+        if "sid" in kwargs:
+            return HttpResponse(status=405)
+        return self.save_post(params, *args, **kwargs)
+
+    def cleaned_put(self, params, *args, **kwargs):
+        if "sid" not in kwargs:
+            return HttpResponse(status=405)
+        return self.save_put(params, *args, **kwargs)
+
+    def cleaned_delete(self, params, *args, **kwargs):
+        if "sid" not in kwargs:
+            return HttpResponse(status=405)
+        try:
+            obj = self.api_class.objects.get(id=kwargs["sid"])
+        except self.api_class.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "message": f"{self.api_class} with id {kwargs['sid']} does not exist"},
+                status=404
+            )
+        obj.delete()
+        return JsonResponse({"success": True, "message": f"{self.api_class} was deleted"})
+
+    def save_post(self, params, *args, **kwargs):
+        return NotImplemented
+
+    def save_put(self, params, *args, **kwargs):
         return NotImplemented
 
 
@@ -163,45 +226,340 @@ class AuthenticateView(View):
         return JsonResponse({"success": True, "message": "Token was added successfully", "data": token})
 
 
-class ReloadConfigurationView(CheckMixinView):
-    def cleaned_post(self, *args, **kwargs):
-        return JsonResponse({"success": True, "message": "Request was successful"})
-
-
-class CheckView(CheckMixinView):
+class CheckView(CheckOptionalMixinView):
     def __init__(self, **kwargs):
         super().__init__(
+            api_class=Check,
             required_post=["name"],
-            required_put=[],
-            required_delete=[],
             **kwargs
         )
 
-    def cleaned_get(self, params, *args, **kwargs):
-        return JsonResponse({"success": True})
-
-    def cleaned_post(self, params, *args, **kwargs):
-        try:
-            if "check_type" in params:
-                ct = CheckType.objects.get(id=params["check_type"])
-        except CheckType.DoesNotExist:
-            return JsonResponse(
-                {"success": False, "message": f"CheckType with id {params['check_type']} was not found"},
-                status=400
-            )
+    def save_post(self, params, *args, **kwargs):
         check, created = Check.objects.get_or_create(name=params["name"])
-        if created:
-            if "cmd" in params:
-                check.cmd = params["cmd"]
-            if "check_type" in params:
-                check.check_type = ct
-            check.save()
-            return JsonResponse({"success": True, "message": "Object was created"}, status=201)
-        else:
+        if not created:
             return JsonResponse({"success": False, "message": "Check already exists with that name"}, status=409)
+        if "cmd" in params:
+            check.cmd = params["cmd"]
+        if "check_type" in params:
+            try:
+                ct = CheckType.objects.get(id=params["check_type"])
+                check.check_type = ct
+            except CheckType.DoesNotExist:
+                return JsonResponse(
+                    {"success": False, "message": f"CheckType with id {params['check_type']} was not found"},
+                    status=400
+                )
+        check.save()
+        return JsonResponse({"success": True, "message": "Object was created"}, status=201)
 
-    def cleaned_put(self, params, *args, **kwargs):
-        return JsonResponse({"success": True})
+    def save_put(self, params, *args, **kwargs):
+        try:
+            check = Check.objects.get(id=kwargs["sid"])
+        except Check.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "message": f"Check with id {kwargs['sid']} does not exist"}, status=404
+            )
+        if "name" in params:
+            check.name = params["name"]
+        if "check_type" in params:
+            try:
+                ct = CheckType.objects.get(name=params["check_type"])
+            except CheckType.DoesNotExist:
+                return JsonResponse(
+                    {"success": False, "message": f"CheckType {params['check_type']} does not exist"},
+                    status=409
+                )
+            check.check_type = ct
+        if "cmd" in params:
+            check.cmd = params["cmd"]
+        check.save()
+        return JsonResponse({"success": True, "message": "Changes were successful"})
 
-    def cleaned_delete(self, params, *args, **kwargs):
-        return JsonResponse({"success": True})
+
+class MetricView(CheckOptionalMixinView):
+    def __init__(self, **kwargs):
+        super(MetricView, self).__init__(
+            api_class=Metric,
+            required_post=["name", "linked_host"],
+            **kwargs
+        )
+
+    def save_post(self, params, *args, **kwargs):
+        # Required params
+        try:
+            linked_host = Host.objects.get(id=params["linked_host"])
+        except Host.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "message": f"Host with id {params['linked_host']} does not exist"},
+                status=404
+            )
+
+        # Create check
+        metric, created = Metric.objects.get_or_create(name=params["name"], linked_host=linked_host)
+        if not created:
+            return JsonResponse(
+                {"success": False, "message": "Metric with this name already exists", }
+            )
+
+        # Optional params
+        if "linked_check" in params:
+            try:
+                linked_check = Check.objects.get(id=params["linked_check"])
+                metric.linked_check = linked_check
+            except Check.DoesNotExist:
+                return JsonResponse(
+                    {"success": False, "message": f"Check with id {params['linked_check']} does not exist"},
+                    status=404
+                )
+        if "metric_templates" in params:
+            if isinstance(params["metric_templates"], list):
+                metric_templates = Metric.objects.filter(id__in=params["metric_templates"])
+                metric.metric_templates.add(metric_templates)
+            else:
+                metric_templates = [Metric.objects.get(id=params["metric_templates"])]
+                for x in metric_templates:
+                    metric.metric_templates.add(x)
+        if "scheduling_interval" in params:
+            try:
+                scheduling_interval = SchedulingInterval.objects.get(id=params["scheduling_interval"])
+                metric.scheduling_interval = scheduling_interval
+            except SchedulingInterval.DoesNotExist:
+                return JsonResponse(
+                    {"success": False,
+                     "message": f"SchedulingInterval with id {params['scheduling_interval']} does not exist"},
+                    status=404
+                )
+        if "scheduling_period" in params:
+            try:
+                scheduling_period = TimePeriod.objects.get(id=params["scheduling_period"])
+                metric.scheduling_period = scheduling_period
+            except TimePeriod.DoesNotExist:
+                return JsonResponse(
+                    {"success": False, "message": f"TimePeriod with id {params['scheduling_period']} does not exist"},
+                    status=404
+                )
+        if "disabled" in params:
+            disabled = params["disabled"]
+            metric.disabled = disabled
+        if "notification_period" in params:
+            try:
+                notification_period = TimePeriod.objects.get(id=params["notification_period"])
+                metric.notification_period = notification_period
+            except TimePeriod.DoesNotExist:
+                return JsonResponse(
+                    {"success": False, "message": f"TimePeriod with id {params['notification_period']} does not exist"},
+                    status=404
+                )
+        if "variables" in params:
+            label_mapping = {}
+            for x in list(params["variables"].keys()) + list(params["variables"].values()):
+                label, created = Label.objects.get_or_create(label=x)
+                if created:
+                    label.save()
+                    label_mapping[x] = label
+            for x in params["variables"].items():
+                variable = GenericKVP.objects.create(key=label_mapping[x[0]], value=label_mapping[x[1]])
+                variable.save()
+                metric.kvp.add(variable)
+
+        # Save and return
+        metric.save()
+        return JsonResponse({"success": True, "message": "Created metric successfully", "data": metric.id})
+
+    def save_put(self, params, *args, **kwargs):
+        try:
+            metric = Metric.objects.get(id=kwargs["sid"])
+        except Metric.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "message": f"Metric with id {kwargs['sid']} not exist"}
+            )
+        if "linked_host" in params:
+            try:
+                linked_host = Host.objects.get(params["linked_host"])
+                metric.linked_host = linked_host
+            except Host.DoesNotExist:
+                return JsonResponse(
+                    {"success": False, "message": f"Host with id {params['linked_host']} does not exist"},
+                    status=404
+                )
+        if "name" in params:
+            metric.name = params["name"]
+        if "linked_check" in params:
+            try:
+                linked_check = Check.objects.get(id=params["linked_check"])
+                metric.linked_check = linked_check
+            except Check.DoesNotExist:
+                return JsonResponse(
+                    {"success": False, "message": f"Check with id {params['linked_check']} does not exist"},
+                    status=404
+                )
+        if "metric_templates" in params:
+            if isinstance(params["metric_templates"], list):
+                metric_templates = Metric.objects.filter(id__in=params["metric_templates"])
+                metric.metric_templates.add(metric_templates)
+            else:
+                metric_templates = [Metric.objects.get(id=params["metric_templates"])]
+                for x in metric_templates:
+                    metric.metric_templates.add(x)
+        if "scheduling_interval" in params:
+            try:
+                scheduling_interval = SchedulingInterval.objects.get(id=params["scheduling_interval"])
+                metric.scheduling_interval = scheduling_interval
+            except SchedulingInterval.DoesNotExist:
+                return JsonResponse(
+                    {"success": False,
+                     "message": f"SchedulingInterval with id {params['scheduling_interval']} does not exist"},
+                    status=404
+                )
+        if "scheduling_period" in params:
+            try:
+                scheduling_period = TimePeriod.objects.get(id=params["scheduling_period"])
+                metric.scheduling_period = scheduling_period
+            except TimePeriod.DoesNotExist:
+                return JsonResponse(
+                    {"success": False,
+                     "message": f"TimePeriod with id {params['scheduling_period']} does not exist"},
+                    status=404
+                )
+        if "disabled" in params:
+            disabled = params["disabled"]
+            metric.disabled = disabled
+        if "notification_period" in params:
+            try:
+                notification_period = TimePeriod.objects.get(id=params["notification_period"])
+                metric.notification_period = notification_period
+            except TimePeriod.DoesNotExist:
+                return JsonResponse(
+                    {"success": False,
+                     "message": f"TimePeriod with id {params['notification_period']} does not exist"},
+                    status=404
+                )
+        if "variables" in params:
+            label_mapping = {}
+            for x in list(params["variables"].keys()) + list(params["variables"].values()):
+                label, created = Label.objects.get_or_create(label=x)
+                if created:
+                    label.save()
+                    label_mapping[x] = label
+            for x in params["variables"].items():
+                variable = GenericKVP.objects.create(key=label_mapping[x[0]], value=label_mapping[x[1]])
+                variable.save()
+                metric.kvp.clear()
+                metric.kvp.add(variable)
+
+
+class TimePeriodView(CheckOptionalMixinView):
+    def __init__(self):
+        super(TimePeriodView, self).__init__(
+            api_class=TimePeriod,
+            required_post=["name", "time_periods"]
+        )
+
+    def check_param_time_periods(self, time_periods):
+        if not isinstance(time_periods, dict):
+            return False
+        days = [x.name for x in Day.objects.all()]
+        for key in time_periods:
+            if key not in days:
+                return False
+        for day in days:
+            if day not in time_periods:
+                return False
+        for key in time_periods:
+            if not isinstance(time_periods[key], list):
+                return False
+            for item in time_periods[key]:
+                if not isinstance(item, dict):
+                    return False
+                if "start_time" not in item.keys() or "stop_time" not in item.keys():
+                    return False
+                if not isinstance(item["start_time"], str) \
+                        and not isinstance(item["start_time"], int):
+                    return False
+                if not isinstance(item["stop_time"], str) \
+                        and not isinstance(item["stop_time"], int):
+                    return False
+        return True
+
+    def get_day_time_periods(self, time_periods):
+        day_periods = [x for x in time_periods.items()]
+        day_time_periods = []
+        for day, periods in day_periods:
+            period_list = []
+            for period in periods:
+                p, created = Period.objects.get_or_create(
+                    start_time=period["start_time"], stop_time=period["stop_time"]
+                )
+                if created:
+                    try:
+                        p.save()
+                    except ValueError:
+                        return None
+                period_list.append(p)
+            day = Day.objects.get(name=day)
+            existing_dtp = DayTimePeriod.objects.filter(day=day)
+            if len(existing_dtp) > 0:
+                for existing in existing_dtp:
+                    flag = True
+                    for existing_period in existing.periods:
+                        if existing_period.id not in [x.id for x in period_list]:
+                            flag = False
+                    for p in period_list:
+                        if p.id not in [x.id for x in existing.periods]:
+                            flag = False
+                    if flag:
+                        day_time_periods.append(existing)
+                        break
+            else:
+                d = DayTimePeriod.objects.create(day=day)
+                [d.periods.add(x) for x in periods]
+                d.save()
+                day_time_periods.append(d)
+        return day_time_periods
+
+    def save_post(self, params, *args, **kwargs):
+        # Check advanced required_params
+        if not self.check_param_time_periods(params["time_periods"]):
+            return JsonResponse({"success": False, "message": "Parameter time_periods is not valid"}, status=400)
+
+        day_time_periods = self.get_day_time_periods(params["time_periods"])
+        if not day_time_periods:
+            return JsonResponse({"success": False, "message": "stop_time has to be after start_time"})
+
+        # Create TimePeriod
+        time_period, created = TimePeriod.objects.get_or_create(name=params["name"])
+        if not created:
+            return JsonResponse(
+                {"success": False, "message": "TimePeriod with this name already exists"},
+                status=408
+            )
+        [time_period.time_periods.add(x) for x in day_time_periods]
+        time_period.save()
+        return JsonResponse(
+            {"success": True, "message": "TimePeriod was successfully added", "data": time_period.id}
+        )
+
+    def save_put(self, params, *args, **kwargs):
+        try:
+            time_period = TimePeriod.objects.get(kwargs["sid"])
+        except TimePeriod.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "message": f"TimePeriod with id {kwargs['sid']} does not exist"},
+                status=404
+            )
+        if "name" in params:
+            time_period.name = params["name"]
+        if "time_periods" in params:
+            if not self.check_param_time_periods(params["time_periods"]):
+                return JsonResponse({"success": False, "message": "Parameter time_periods is not valid"}, status=400)
+            day_time_periods = self.get_day_time_periods(params["time_periods"])
+            if not day_time_periods:
+                return JsonResponse({"success": False, "message": "stop_time has to be after start_time"})
+            [time_period.time_periods.add(x) for x in day_time_periods]
+        time_period.save()
+        return JsonResponse({"success": True, "message": "Changes were successful"})
+
+
+class ReloadConfigurationView(CheckMixinView):
+    def cleaned_post(self, *args, **kwargs):
+        return JsonResponse({"success": True, "message": "Request was successful"})
