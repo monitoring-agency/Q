@@ -7,7 +7,7 @@ from django.db.models import CharField, ForeignKey, ManyToManyField, PositiveInt
 
 class GlobalVariable(models.Model):
     """Represents a global variable"""
-    kvp = GenericRelation("GenericKVP")
+    variables = GenericRelation("GenericKVP")
 
 
 class SchedulingInterval(models.Model):
@@ -135,7 +135,7 @@ class Contact(models.Model):
     mail = EmailField(default="", max_length=255, null=True, blank=True)
     linked_host_notifications = ManyToManyField(Check, blank=True, related_name="contact_host_check")
     linked_metric_notifications = ManyToManyField(Check, blank=True, related_name="contact_metric_check")
-    kvp = GenericRelation("GenericKVP")
+    variables = GenericRelation("GenericKVP")
 
     def __str__(self):
         return self.name
@@ -145,7 +145,7 @@ class Contact(models.Model):
             "id": self.id,
             "name": self.name,
             "mail": self.mail,
-            "variables": {y[0]: y[1] for y in (x for x in self.kvp.all())}
+            "variables": {y[0]: y[1] for y in (x for x in self.variables.all())}
         }
 
     def save(self, force_insert=False, force_update=False, using=None,
@@ -196,7 +196,7 @@ class HostTemplate(models.Model):
         blank=True, null=True,
         related_name="notification_ht"
     )
-    kvp = GenericRelation("GenericKVP")
+    variables = GenericRelation("GenericKVP")
 
     def __str__(self):
         return self.name
@@ -211,7 +211,7 @@ class HostTemplate(models.Model):
             "scheduling_interval": self.scheduling_interval_id,
             "scheduling_period": self.scheduling_period_id,
             "notification_period": self.notification_period_id,
-            "variables": {y[0]: y[1] for y in (x for x in self.kvp.all())}
+            "variables": {y[0]: y[1] for y in (x for x in self.variables.all())}
         }
 
     def save(self, force_insert=False, force_update=False, using=None,
@@ -240,7 +240,7 @@ class Host(models.Model):
         blank=True, null=True,
         related_name="notification_h"
     )
-    kvp = GenericRelation("GenericKVP")
+    variables = GenericRelation("GenericKVP")
 
     def __str__(self):
         return self.name
@@ -256,7 +256,7 @@ class Host(models.Model):
             "scheduling_interval": self.scheduling_interval_id,
             "scheduling_period": self.scheduling_period_id,
             "notification_period": self.notification_period_id,
-            "variables": {y[0]: y[1] for y in (x for x in self.kvp.all())}
+            "variables": {y[0]: y[1] for y in (x for x in self.variables.all())}
         }
 
     def save(self, force_insert=False, force_update=False, using=None,
@@ -284,7 +284,7 @@ class MetricTemplate(models.Model):
         blank=True, null=True,
         related_name="notification_mt"
     )
-    kvp = GenericRelation("GenericKVP")
+    variables = GenericRelation("GenericKVP")
 
     def __str__(self):
         return self.name
@@ -299,7 +299,7 @@ class MetricTemplate(models.Model):
             "scheduling_interval": self.scheduling_interval_id if self.scheduling_interval else "",
             "scheduling_period": self.scheduling_period_id if self.scheduling_period else "",
             "notification_period": self.notification_period_id if self.notification_period else "",
-            "variables": {y[0]: y[1] for y in (x.to_dict() for x in self.kvp.all())}
+            "variables": {y[0]: y[1] for y in (x.to_dict() for x in self.variables.all())}
         }
 
     def save(self, force_insert=False, force_update=False, using=None,
@@ -328,7 +328,7 @@ class Metric(models.Model):
         blank=True, null=True,
         related_name="notification"
     )
-    kvp = GenericRelation("GenericKVP")
+    variables = GenericRelation("GenericKVP")
 
     def __str__(self):
         return self.name
@@ -344,7 +344,7 @@ class Metric(models.Model):
             "scheduling_interval": self.scheduling_interval_id if self.scheduling_interval else "",
             "scheduling_period": self.scheduling_period_id if self.scheduling_period else "",
             "notification_period": self.notification_period_id if self.notification_period else "",
-            "variables": {y[0]: y[1] for y in (x.to_dict() for x in self.kvp.all())}
+            "variables": {y[0]: y[1] for y in (x.to_dict() for x in self.variables.all())}
         }
 
 
