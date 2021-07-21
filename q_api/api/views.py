@@ -567,7 +567,7 @@ class ContactView(CheckOptionalMixinView):
         for notification in ["linked_host_notifications", "linked_metric_notifications"]:
             if notification in params:
                 if overwrite:
-                    contact.__setattr__(notification, None)
+                    contact.__getattribute__(notification).clear()
                 if isinstance(params[notification], list):
                     for x in params[notification]:
                         try:
@@ -601,6 +601,8 @@ class ContactView(CheckOptionalMixinView):
         if "variables" in params:
             if not isinstance(params["variables"], dict):
                 return JsonResponse({"success": False, "message": f"Parameter variables has to be a dict"}, status=400)
+            if overwrite:
+                contact.variables.clear()
             for key, value in params["variables"].items():
                 key_label = Label.objects.get_or_create(label=key)
                 value_label = Label.objects.get_or_create(label=value)
