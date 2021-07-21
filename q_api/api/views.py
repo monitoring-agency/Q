@@ -350,7 +350,7 @@ class MetricView(CheckOptionalMixinView):
             else:
                 metric.notification_period = None
         if "variables" in params:
-            if not isinstance(params["variables"], dict) or not isinstance(params["variables"], str):
+            if not isinstance(params["variables"], dict) and not isinstance(params["variables"], str):
                 return JsonResponse({"success": False, "message": "Parameter variables has to be a dict"}, status=400)
             if params["variables"]:
                 if overwrite:
@@ -479,7 +479,7 @@ class MetricTemplateView(CheckOptionalMixinView):
             else:
                 metric_template.notification_period = None
         if "variables" in params:
-            if not isinstance(params["variables"], dict) or not isinstance(params["variables"], str):
+            if not isinstance(params["variables"], dict) and not isinstance(params["variables"], str):
                 return JsonResponse({"success": False, "message": "Parameter variables has to be a dict"}, status=400)
             if not params["variables"]:
                 metric_template.variables.clear()
@@ -614,7 +614,7 @@ class HostView(CheckOptionalMixinView):
         if "variables" in params:
             if overwrite:
                 host.variables.clear()
-            if not isinstance(params["variables"], dict) or not isinstance(params["variables"], str):
+            if not isinstance(params["variables"], dict) and not isinstance(params["variables"], str):
                 return JsonResponse({"success": False, "message": "Parameter variables has to be a dict"}, status=400)
             if params["variables"]:
                 for key, value in params["variables"].items():
@@ -744,7 +744,7 @@ class HostTemplateView(CheckOptionalMixinView):
         if "variables" in params:
             if overwrite:
                 host_template.variables.clear()
-            if not isinstance(params["variables"], dict) or not isinstance(params["variables"], str):
+            if not isinstance(params["variables"], dict) and not isinstance(params["variables"], str):
                 return JsonResponse({"success": False, "message": "Parameter variables has to be a dict"}, status=400)
             if params["variables"]:
                 for key, value in params["variables"].items():
@@ -999,7 +999,7 @@ class ContactView(CheckOptionalMixinView):
                 else:
                     contact.__setattr__(period, None)
         if "variables" in params:
-            if not isinstance(params["variables"], dict) or not isinstance(params["variables"], str):
+            if not isinstance(params["variables"], dict) and not isinstance(params["variables"], str):
                 return JsonResponse({"success": False, "message": f"Parameter variables has to be a dict"}, status=400)
             if params["variables"]:
                 if overwrite:
