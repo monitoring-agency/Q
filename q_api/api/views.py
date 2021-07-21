@@ -11,7 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from api.models import AccountModel, ACLModel
 from description.models import Check, CheckType, Host, Metric, TimePeriod, SchedulingInterval, GenericKVP, Label, Day, \
-    Period, DayTimePeriod, GlobalVariable
+    Period, DayTimePeriod, GlobalVariable, Contact
 
 
 @method_decorator(csrf_exempt, "dispatch")
@@ -601,6 +601,66 @@ class GlobalVariableView(CheckOptionalMixinView):
         return JsonResponse(
             {"success": True, "message": f"GlobalVariable with id {kwargs['sid']} was changed successful"}
         )
+
+
+class ContactView(CheckOptionalMixinView):
+    def __init__(self):
+        super(ContactView, self).__init__(
+            api_class=Contact,
+            required_post=["name"]
+        )
+
+    def save_post(self, params, *args, **kwargs):
+        contact, created = Contact.objects.get_or_create()
+        if not created:
+            return JsonResponse(
+                {"success": False, "message": f"Contact with name {params['name']} already exists"}, status=409
+            )
+        if "mail" in params:
+            contact.mail = params["mail"]
+
+        for notification in ["linked_host_notifications", "linked_metric_notifications"]:
+            if notification in params:
+                if isinstance(params[notification], list):
+                    for x in params[notification]:
+                        try:
+                            check = Check.objects.get(id=x)
+                            contact.__getattribute__(notification).add(check)
+                        except Check.DoesNotExist:
+                            return JsonResponse(
+                                {"success": False, "message": f"Check with id {x} does not exist"}, status=404
+                            )
+                else:
+                    try:
+                        check = Check.objects.get(id=notification)
+                        contact.__getattribute__(notification).add(check)
+                    except Check.DoesNotExist:
+                        return JsonResponse(
+                            {
+                                "success": False,
+                                "message": f"Check with id {params['linked_host_notifications']} does not exist"
+                            }, status=404
+                        )
+        for period in ["linked_host_notification_period", "linked_metric_notification_period"]:
+            if period in params:
+                try:
+                    tp = TimePeriod.objects.get(id=params[period])
+                    contact.__setattr__(period, tp)
+                except TimePeriod.DoesNotExist:
+                    return JsonResponse(
+                        {"success": False, "message": f"TimePeriod with id {params[period]} does not exist"},
+                        status=404
+                    )
+        if "variables" in params:
+            if not isinstance(params["variables"], dict):
+                return JsonResponse({"success": False, "message": f"Parameter variables has to be a dict"}, status=400)
+            for key, value in params["variables"].items():
+                key_label = Label.objects.get_or_create(label=key)
+                value_label = Label.objects.get_or_create(label=value)
+                kvp = GenericKVP.objects.create(key=key_label, value=value_label)
+                contact.variables.add(kvp)
+        contact.save()
+        return JsonResponse({"success": True, "message": "Contact was successfully created", "data": contact.id})
 
 
 class ReloadConfigurationView(CheckMixinView):

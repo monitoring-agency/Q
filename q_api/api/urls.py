@@ -16,6 +16,8 @@ urlpatterns = [
     path("timeperiod/<str:sid>", TimePeriodView.as_view()),
     path("globalvariable", GlobalVariableView.as_view()),
     path("globalvariable/<str:sid>", GlobalVariableView.as_view()),
+    path("contact", ContactView.as_view()),
+    path("contact/<str:sid>", ContactView.as_view()),
 
     # Routine API
     path("reloadDescription", ReloadConfigurationView.as_view()),

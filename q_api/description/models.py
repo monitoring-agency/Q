@@ -137,7 +137,15 @@ class Contact(models.Model):
     name = CharField(default="", max_length=255, unique=True)
     mail = EmailField(default="", max_length=255, null=True, blank=True)
     linked_host_notifications = ManyToManyField(Check, blank=True, related_name="contact_host_check")
+    linked_host_notification_period = ForeignKey(
+        TimePeriod, on_delete=models.DO_NOTHING,
+        blank=True, null=True,
+        related_name="contact_host_nt")
     linked_metric_notifications = ManyToManyField(Check, blank=True, related_name="contact_metric_check")
+    linked_metric_notification_period = ForeignKey(
+        TimePeriod, on_delete=models.DO_NOTHING,
+        blank=True, null=True,
+        related_name="contact_metric_nt")
     variables = GenericRelation("GenericKVP")
 
     def __str__(self):
@@ -148,6 +156,10 @@ class Contact(models.Model):
             "id": self.id,
             "name": self.name,
             "mail": self.mail,
+            "linked_host_notifications": self.linked_host_notifications,
+            "linked_host_notification_period": self.linked_host_notification_period_id,
+            "linked_metric_notifications": self.linked_metric_notifications,
+            "linked_metric_notification_period": self.linked_metric_notification_period_id,
             "variables": {y[0]: y[1] for y in (x for x in self.variables.all())}
         }
 
