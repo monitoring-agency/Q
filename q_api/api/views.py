@@ -284,24 +284,7 @@ class MetricView(CheckOptionalMixinView):
             **kwargs
         )
 
-    def save_post(self, params, *args, **kwargs):
-        # Required params
-        try:
-            linked_host = Host.objects.get(id=params["linked_host"])
-        except Host.DoesNotExist:
-            return JsonResponse(
-                {"success": False, "message": f"Host with id {params['linked_host']} does not exist"},
-                status=404
-            )
-
-        # Create check
-        metric, created = Metric.objects.get_or_create(name=params["name"], linked_host=linked_host)
-        if not created:
-            return JsonResponse(
-                {"success": False, "message": "Metric with this name already exists", }
-            )
-
-        # Optional params
+    def optional(self, metric, params, overwrite=False):
         if "linked_check" in params:
             try:
                 linked_check = Check.objects.get(id=params["linked_check"])
@@ -312,6 +295,8 @@ class MetricView(CheckOptionalMixinView):
                     status=404
                 )
         if "metric_templates" in params:
+            if overwrite:
+                metric.metric_templates.clear()
             if isinstance(params["metric_templates"], list):
                 metric_templates = Metric.objects.filter(id__in=params["metric_templates"])
                 metric.metric_templates.add(metric_templates)
@@ -351,16 +336,37 @@ class MetricView(CheckOptionalMixinView):
                     status=404
                 )
         if "variables" in params:
-            label_mapping = {}
-            for x in list(params["variables"].keys()) + list(params["variables"].values()):
-                label, created = Label.objects.get_or_create(label=x)
-                if created:
-                    label.save()
-                    label_mapping[x] = label
-            for x in params["variables"].items():
-                variable = GenericKVP.objects.create(key=label_mapping[x[0]], value=label_mapping[x[1]])
+            if not isinstance(params["variables"], dict):
+                return JsonResponse({"success": False, "message": "Parameter variables has to be a dict"}, status=400)
+            if overwrite:
+                metric.kvp.clear()
+            for key, value in params["variables"].items():
+                key_label, _ = Label.objects.get_or_create(label=key)
+                value_label, _ = Label.objects.get_or_create(label=value)
+                variable = GenericKVP.objects.create(key=key_label, value=value_label)
                 variable.save()
                 metric.kvp.add(variable)
+
+    def save_post(self, params, *args, **kwargs):
+        # Required params
+        try:
+            linked_host = Host.objects.get(id=params["linked_host"])
+        except Host.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "message": f"Host with id {params['linked_host']} does not exist"},
+                status=404
+            )
+
+        # Create check
+        if Metric.objects.filter(name=params["name"]).exists():
+            return JsonResponse(
+                {"success": False, "message": "Metric with this name already exists", }
+            )
+        metric = Metric.objects.get(name=params["name"], linked_host=linked_host)
+        # Optional params
+        ret = self.optional(metric, params)
+        if isinstance(ret, JsonResponse):
+            return ret
 
         # Save and return
         metric.save()
@@ -384,68 +390,13 @@ class MetricView(CheckOptionalMixinView):
                 )
         if "name" in params:
             metric.name = params["name"]
-        if "linked_check" in params:
-            try:
-                linked_check = Check.objects.get(id=params["linked_check"])
-                metric.linked_check = linked_check
-            except Check.DoesNotExist:
-                return JsonResponse(
-                    {"success": False, "message": f"Check with id {params['linked_check']} does not exist"},
-                    status=404
-                )
-        if "metric_templates" in params:
-            if isinstance(params["metric_templates"], list):
-                metric_templates = Metric.objects.filter(id__in=params["metric_templates"])
-                metric.metric_templates.add(metric_templates)
-            else:
-                metric_templates = [Metric.objects.get(id=params["metric_templates"])]
-                for x in metric_templates:
-                    metric.metric_templates.add(x)
-        if "scheduling_interval" in params:
-            try:
-                scheduling_interval = SchedulingInterval.objects.get(id=params["scheduling_interval"])
-                metric.scheduling_interval = scheduling_interval
-            except SchedulingInterval.DoesNotExist:
-                return JsonResponse(
-                    {"success": False,
-                     "message": f"SchedulingInterval with id {params['scheduling_interval']} does not exist"},
-                    status=404
-                )
-        if "scheduling_period" in params:
-            try:
-                scheduling_period = TimePeriod.objects.get(id=params["scheduling_period"])
-                metric.scheduling_period = scheduling_period
-            except TimePeriod.DoesNotExist:
-                return JsonResponse(
-                    {"success": False,
-                     "message": f"TimePeriod with id {params['scheduling_period']} does not exist"},
-                    status=404
-                )
-        if "disabled" in params:
-            disabled = params["disabled"]
-            metric.disabled = disabled
-        if "notification_period" in params:
-            try:
-                notification_period = TimePeriod.objects.get(id=params["notification_period"])
-                metric.notification_period = notification_period
-            except TimePeriod.DoesNotExist:
-                return JsonResponse(
-                    {"success": False,
-                     "message": f"TimePeriod with id {params['notification_period']} does not exist"},
-                    status=404
-                )
-        if "variables" in params:
-            label_mapping = {}
-            for x in list(params["variables"].keys()) + list(params["variables"].values()):
-                label, created = Label.objects.get_or_create(label=x)
-                if created:
-                    label.save()
-                    label_mapping[x] = label
-            for x in params["variables"].items():
-                variable = GenericKVP.objects.create(key=label_mapping[x[0]], value=label_mapping[x[1]])
-                variable.save()
-                metric.kvp.clear()
-                metric.kvp.add(variable)
+
+        ret = self.optional(metric, params, overwrite=True)
+        if isinstance(ret, JsonResponse):
+            return ret
+
+        metric.save()
+        return JsonResponse({"success": True, "message": "Changes were successful"})
 
 
 class TimePeriodView(CheckOptionalMixinView):
@@ -527,14 +478,13 @@ class TimePeriodView(CheckOptionalMixinView):
             return JsonResponse({"success": False, "message": "stop_time has to be after start_time"})
 
         # Create TimePeriod
-        time_period, created = TimePeriod.objects.get_or_create(name=params["name"])
-        if not created:
+        if TimePeriod.objects.filter(name=params["name"]).exists():
             return JsonResponse(
                 {"success": False, "message": "TimePeriod with this name already exists"},
                 status=409
             )
+        time_period = TimePeriod.objects.create(name=params["name"])
         [time_period.time_periods.add(x) for x in day_time_periods]
-        time_period.save()
         return JsonResponse(
             {"success": True, "message": "TimePeriod was successfully added", "data": time_period.id}
         )
