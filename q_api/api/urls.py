@@ -18,6 +18,8 @@ urlpatterns = [
     path("globalvariable/<str:sid>", GlobalVariableView.as_view()),
     path("contact", ContactView.as_view()),
     path("contact/<str:sid>", ContactView.as_view()),
+    path("contactgroup", ContactGroupView.as_view()),
+    path("contactgroup/<str:sid>", ContactGroupView.as_view()),
 
     # Routine API
     path("reloadDescription", ReloadConfigurationView.as_view()),

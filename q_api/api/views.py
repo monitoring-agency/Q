@@ -11,7 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from api.models import AccountModel, ACLModel
 from description.models import Check, CheckType, Host, Metric, TimePeriod, SchedulingInterval, GenericKVP, Label, Day, \
-    Period, DayTimePeriod, GlobalVariable, Contact
+    Period, DayTimePeriod, GlobalVariable, Contact, ContactGroup
 
 
 @method_decorator(csrf_exempt, "dispatch")
@@ -640,6 +640,70 @@ class ContactView(CheckOptionalMixinView):
             return ret
         contact.save()
         return JsonResponse({"success": True, "message": "Contact was changed successful"})
+
+
+class ContactGroupView(CheckOptionalMixinView):
+    def __init__(self):
+        super(ContactGroupView, self).__init__(
+            api_class=ContactGroup,
+            required_post=["name"]
+        )
+
+    def optional(self, contact_group, params, overwrite=False):
+        if "linked_contacts" in params:
+            if overwrite:
+                contact_group.linked_contacts.clear()
+            if isinstance(params["linked_contacts"], list):
+                for cid in params["linked_contacts"]:
+                    try:
+                        contact = Contact.objects.get(id=cid)
+                        contact_group.linked_contacts.add(contact)
+                    except Contact.DoesNotExist:
+                        return JsonResponse(
+                            {"success": False, "message": f"Contact with id {cid} does not exist"}, status=404
+                        )
+            else:
+                try:
+                    contact = Contact.objects.get(id=params["linked_contacts"])
+                    contact_group.linked_contacts.add(contact)
+                except Contact.DoesNotExist:
+                    return JsonResponse(
+                        {"success": False, "message": f"Contact with id {params['linked_contacts']} does not exist"},
+                        status=404
+                    )
+
+    def save_post(self, params, *args, **kwargs):
+        if ContactGroup.objects.filter(name=params["name"]).exists():
+            return JsonResponse(
+                {"success": False, "message": f"ContactGroup with name {params['name']} already exists"}, status=409
+            )
+        contact_group = ContactGroup.objects.create(name=params["name"])
+
+        ret = self.optional(contact_group, params)
+        if isinstance(ret, JsonResponse):
+            return ret
+
+        contact_group.save()
+        return JsonResponse(
+            {"success": True, "message": "ContactGroup was successfully created", "data": contact_group.id}
+        )
+
+    def save_put(self, params, *args, **kwargs):
+        try:
+            contact_group = ContactGroup.objects.get(id=kwargs["sid"])
+        except ContactGroup.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "message": f"ContactGroup with id {kwargs['sid']} does not exist"}, status=404
+            )
+        if "name" in params:
+            contact_group.name = params["name"]
+
+        ret = self.optional(contact_group, params, overwrite=True)
+        if isinstance(ret, JsonResponse):
+            return ret
+
+        contact_group.save()
+        return JsonResponse({"success": True, "message": "Changes were successful"})
 
 
 class ReloadConfigurationView(CheckMixinView):
