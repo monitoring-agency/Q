@@ -237,14 +237,17 @@ class CheckView(CheckOptionalMixinView):
 
     def optional(self, check, params):
         if "check_type" in params:
-            try:
-                ct = CheckType.objects.get(name=params["check_type"])
-            except CheckType.DoesNotExist:
-                return JsonResponse(
-                    {"success": False, "message": f"CheckType {params['check_type']} does not exist"},
-                    status=409
-                )
-            check.check_type = ct
+            if params["check_type"]:
+                try:
+                    ct = CheckType.objects.get(name=params["check_type"])
+                except CheckType.DoesNotExist:
+                    return JsonResponse(
+                        {"success": False, "message": f"CheckType {params['check_type']} does not exist"},
+                        status=409
+                    )
+                check.check_type = ct
+            else:
+                check.check_type = None
         if "cmd" in params:
             check.cmd = params["cmd"]
 
@@ -289,57 +292,75 @@ class MetricView(CheckOptionalMixinView):
 
     def optional(self, metric, params, overwrite=False):
         if "linked_check" in params:
-            try:
-                linked_check = Check.objects.get(id=params["linked_check"])
-                metric.linked_check = linked_check
-            except Check.DoesNotExist:
-                return JsonResponse(
-                    {"success": False, "message": f"Check with id {params['linked_check']} does not exist"},
-                    status=404
-                )
-        if "metric_templates" in params:
-            if overwrite:
-                metric.metric_templates.clear()
-            if isinstance(params["metric_templates"], list):
-                metric_templates = MetricTemplate.objects.filter(id__in=params["metric_templates"])
-                metric.metric_templates.add(metric_templates)
+            if params["linked_check"]:
+                try:
+                    linked_check = Check.objects.get(id=params["linked_check"])
+                    metric.linked_check = linked_check
+                except Check.DoesNotExist:
+                    return JsonResponse(
+                        {"success": False, "message": f"Check with id {params['linked_check']} does not exist"},
+                        status=404
+                    )
             else:
-                metric_templates = [MetricTemplate.objects.get(id=params["metric_templates"])]
-                for x in metric_templates:
-                    metric.metric_templates.add(x)
+                metric.linked_check = None
+        if "metric_templates" in params:
+            if params["metric_templates"]:
+                if overwrite:
+                    metric.metric_templates.clear()
+                if isinstance(params["metric_templates"], list):
+                    metric_templates = MetricTemplate.objects.filter(id__in=params["metric_templates"])
+                    metric.metric_templates.add(metric_templates)
+                else:
+                    metric_templates = [MetricTemplate.objects.get(id=params["metric_templates"])]
+                    for x in metric_templates:
+                        metric.metric_templates.add(x)
+            else:
+                metric.metric_templates.clear()
         if "scheduling_interval" in params:
-            scheduling_interval = SchedulingInterval.objects.get_or_create(interval=params["scheduling_interval"])
-            metric.scheduling_interval = scheduling_interval
+            if params["scheduling_interval"]:
+                scheduling_interval = SchedulingInterval.objects.get_or_create(interval=params["scheduling_interval"])
+                metric.scheduling_interval = scheduling_interval
+            else:
+                metric.scheduling_interval = None
         if "scheduling_period" in params:
-            try:
-                scheduling_period = TimePeriod.objects.get(id=params["scheduling_period"])
-                metric.scheduling_period = scheduling_period
-            except TimePeriod.DoesNotExist:
-                return JsonResponse(
-                    {"success": False, "message": f"TimePeriod with id {params['scheduling_period']} does not exist"},
-                    status=404
-                )
+            if params["scheduling_period"]:
+                try:
+                    scheduling_period = TimePeriod.objects.get(id=params["scheduling_period"])
+                    metric.scheduling_period = scheduling_period
+                except TimePeriod.DoesNotExist:
+                    return JsonResponse(
+                        {"success": False, "message": f"TimePeriod with id {params['scheduling_period']} does not exist"},
+                        status=404
+                    )
+            else:
+                metric.scheduling_period = None
         if "disabled" in params:
             disabled = params["disabled"]
             metric.disabled = disabled
         if "notification_period" in params:
-            try:
-                notification_period = TimePeriod.objects.get(id=params["notification_period"])
-                metric.notification_period = notification_period
-            except TimePeriod.DoesNotExist:
-                return JsonResponse(
-                    {"success": False, "message": f"TimePeriod with id {params['notification_period']} does not exist"},
-                    status=404
-                )
+            if params["notification_period"]:
+                try:
+                    notification_period = TimePeriod.objects.get(id=params["notification_period"])
+                    metric.notification_period = notification_period
+                except TimePeriod.DoesNotExist:
+                    return JsonResponse(
+                        {"success": False, "message": f"TimePeriod with id {params['notification_period']} does not exist"},
+                        status=404
+                    )
+            else:
+                metric.notification_period = None
         if "variables" in params:
-            if not isinstance(params["variables"], dict):
+            if not isinstance(params["variables"], dict) or not isinstance(params["variables"], str):
                 return JsonResponse({"success": False, "message": "Parameter variables has to be a dict"}, status=400)
-            if overwrite:
-                metric.variable.clear()
-            for key, value in params["variables"].items():
-                key_label, _ = Label.objects.get_or_create(label=key)
-                value_label, _ = Label.objects.get_or_create(label=value)
-                GenericKVP.objects.get_or_create(key=key_label, value=value_label, referent=metric)
+            if params["variables"]:
+                if overwrite:
+                    metric.variable.clear()
+                for key, value in params["variables"].items():
+                    key_label, _ = Label.objects.get_or_create(label=key)
+                    value_label, _ = Label.objects.get_or_create(label=value)
+                    GenericKVP.objects.get_or_create(key=key_label, value=value_label, referent=metric)
+            else:
+                metric.variables.clear()
 
     def save_post(self, params, *args, **kwargs):
         # Required params
@@ -403,54 +424,75 @@ class MetricTemplateView(CheckOptionalMixinView):
 
     def optional(self, metric_template, params, overwrite=False):
         if "linked_check" in params:
-            try:
-                linked_check = Check.objects.get(id=params["linked_check"])
-                metric_template.linked_check = linked_check
-            except Check.DoesNotExist:
-                return JsonResponse(
-                    {"success": False, "message": f"Check with id {params['linked_check']} does not exist"},
-                    status=404
-                )
+            if params["linked_check"]:
+                try:
+                    linked_check = Check.objects.get(id=params["linked_check"])
+                    metric_template.linked_check = linked_check
+                except Check.DoesNotExist:
+                    return JsonResponse(
+                        {"success": False, "message": f"Check with id {params['linked_check']} does not exist"},
+                        status=404
+                    )
+            else:
+                metric_template.linked_check = None
         if "metric_templates" in params:
             if overwrite:
                 metric_template.metric_templates.clear()
-            if isinstance(params["metric_templates"], list):
-                metric_templates = MetricTemplate.objects.filter(id__in=params["metric_templates"])
-                metric_template.metric_templates.add(metric_templates)
+            if params["metric_templates"]:
+                if isinstance(params["metric_templates"], list):
+                    metric_templates = MetricTemplate.objects.filter(id__in=params["metric_templates"])
+                    metric_template.metric_templates.add(metric_templates)
+                else:
+                    metric_templates = [MetricTemplate.objects.get(id=params["metric_templates"])]
+                    for x in metric_templates:
+                        metric_template.metric_templates.add(x)
             else:
-                metric_templates = [MetricTemplate.objects.get(id=params["metric_templates"])]
-                for x in metric_templates:
-                    metric_template.metric_templates.add(x)
+                metric_template.metric_templates.clear()
         if "scheduling_interval" in params:
-            scheduling_interval, _ = SchedulingInterval.objects.get_or_create(interval=params["scheduling_interval"])
-            metric_template.scheduling_interval = scheduling_interval
+            if params["scheduling_interval"]:
+                scheduling_interval, _ = SchedulingInterval.objects.get_or_create(interval=params["scheduling_interval"])
+                metric_template.scheduling_interval = scheduling_interval
+            else:
+                metric_template.scheduling_interval = None
         if "scheduling_period" in params:
-            try:
-                scheduling_period = TimePeriod.objects.get(id=params["scheduling_period"])
-                metric_template.scheduling_period = scheduling_period
-            except TimePeriod.DoesNotExist:
-                return JsonResponse(
-                    {"success": False, "message": f"TimePeriod with id {params['scheduling_period']} does not exist"},
-                    status=404
-                )
+            if params["scheduling_period"]:
+                try:
+                    scheduling_period = TimePeriod.objects.get(id=params["scheduling_period"])
+                    metric_template.scheduling_period = scheduling_period
+                except TimePeriod.DoesNotExist:
+                    return JsonResponse(
+                        {"success": False, "message": f"TimePeriod with id {params['scheduling_period']} does not exist"},
+                        status=404
+                    )
+            else:
+                metric_template.scheduling_period = None
         if "notification_period" in params:
-            try:
-                notification_period = TimePeriod.objects.get(id=params["notification_period"])
-                metric_template.notification_period = notification_period
-            except TimePeriod.DoesNotExist:
-                return JsonResponse(
-                    {"success": False, "message": f"TimePeriod with id {params['notification_period']} does not exist"},
-                    status=404
-                )
+            if params["notification_period"]:
+                try:
+                    notification_period = TimePeriod.objects.get(id=params["notification_period"])
+                    metric_template.notification_period = notification_period
+                except TimePeriod.DoesNotExist:
+                    return JsonResponse(
+                        {"success": False, "message": f"TimePeriod with id {params['notification_period']} does not exist"},
+                        status=404
+                    )
+            else:
+                metric_template.notification_period = None
         if "variables" in params:
-            if not isinstance(params["variables"], dict):
+            if not isinstance(params["variables"], dict) or not isinstance(params["variables"], str):
                 return JsonResponse({"success": False, "message": "Parameter variables has to be a dict"}, status=400)
-            if overwrite:
+            if not params["variables"]:
                 metric_template.variables.clear()
-            for key, value in params["variables"].items():
-                key_label, _ = Label.objects.get_or_create(label=key)
-                value_label, _ = Label.objects.get_or_create(label=value)
-                GenericKVP.objects.get_or_create(key=key_label, value=value_label, object_id=metric_template.id, content_type=ContentType.objects.get_for_model(MetricTemplate))
+            else:
+                if overwrite:
+                    metric_template.variables.clear()
+                for key, value in params["variables"].items():
+                    key_label, _ = Label.objects.get_or_create(label=key)
+                    value_label, _ = Label.objects.get_or_create(label=value)
+                    GenericKVP.objects.get_or_create(
+                        key=key_label, value=value_label, object_id=metric_template.id,
+                        content_type=ContentType.objects.get_for_model(MetricTemplate)
+                    )
 
     def save_post(self, params, *args, **kwargs):
         # Create check
@@ -501,68 +543,86 @@ class HostView(CheckOptionalMixinView):
         if "address" in params:
             host.address = params["address"]
         if "linked_check" in params:
-            try:
-                check = Check.objects.get(id=params["linked_check"])
-                host.linked_check = check
-            except Check.DoesNotExist:
-                return JsonResponse(
-                    {"success": False, "message": f"Check with id {params['linked_check']} does not exist"}, status=404
-                )
+            if params["linked_check"]:
+                try:
+                    check = Check.objects.get(id=params["linked_check"])
+                    host.linked_check = check
+                except Check.DoesNotExist:
+                    return JsonResponse(
+                        {"success": False, "message": f"Check with id {params['linked_check']} does not exist"}, status=404
+                    )
+            else:
+                host.linked_check = None
         if "disabled" in params:
             host.disabled = params["disabled"]
         if "host_templates" in params:
-            if overwrite:
-                host.host_templates.clear()
-            if isinstance(params["host_templates"], list):
-                for ht_id in params["host_templates"]:
+            if params["host_templates"]:
+                if overwrite:
+                    host.host_templates.clear()
+                if isinstance(params["host_templates"], list):
+                    for ht_id in params["host_templates"]:
+                        try:
+                            ht = HostTemplate.objects.get(id=ht_id)
+                            host.host_templates.add(ht)
+                        except HostTemplate.DoesNotExist:
+                            return JsonResponse(
+                                {"success": False, "message": f"HostTemplate with id {ht_id} does not exist"}, status=404
+                            )
+                else:
                     try:
-                        ht = HostTemplate.objects.get(id=ht_id)
+                        ht = HostTemplate.objects.get(id=params["host_templates"])
                         host.host_templates.add(ht)
                     except HostTemplate.DoesNotExist:
                         return JsonResponse(
-                            {"success": False, "message": f"HostTemplate with id {ht_id} does not exist"}, status=404
+                            {
+                                "success": False,
+                                "message": f"HostTemplate with id {params['host_templates']} does not exist"
+                            }, status=404
                         )
             else:
-                try:
-                    ht = HostTemplate.objects.get(id=params["host_templates"])
-                    host.host_templates.add(ht)
-                except HostTemplate.DoesNotExist:
-                    return JsonResponse(
-                        {
-                            "success": False,
-                            "message": f"HostTemplate with id {params['host_templates']} does not exist"
-                        }, status=404
-                    )
+                host.host_templates.clear()
         if "scheduling_interval" in params:
-            scheduling_interval = SchedulingInterval.objects.get_or_create(interval=params["scheduling_interval"])
-            host.scheduling_interval = scheduling_interval
+            if params["scheduling_interval"]:
+                scheduling_interval = SchedulingInterval.objects.get_or_create(interval=params["scheduling_interval"])
+                host.scheduling_interval = scheduling_interval
+            else:
+                host.scheduling_interval = None
         if "scheduling_period" in params:
-            try:
-                scheduling_period = TimePeriod.objects.get(id=params["scheduling_period"])
-                host.scheduling_period = scheduling_period
-            except TimePeriod.DoesNotExist:
-                return JsonResponse(
-                    {"success": False, "message": f"TimePeriod with id {params['scheduling_period']} does not exist"},
-                    status=404
-                )
+            if params["scheduling_period"]:
+                try:
+                    scheduling_period = TimePeriod.objects.get(id=params["scheduling_period"])
+                    host.scheduling_period = scheduling_period
+                except TimePeriod.DoesNotExist:
+                    return JsonResponse(
+                        {"success": False, "message": f"TimePeriod with id {params['scheduling_period']} does not exist"},
+                        status=404
+                    )
+            else:
+                host.scheduling_period = None
         if "notification_period" in params:
-            try:
-                notification_period = TimePeriod.objects.get(id=params["notification_period"])
-                host.notification_period = notification_period
-            except TimePeriod.DoesNotExist:
-                return JsonResponse(
-                    {"success": False, "message": f"TimePeriod with id {params['notification_period']} does not exist"},
-                    status=404
-                )
+            if params["notification_period"]:
+                try:
+                    notification_period = TimePeriod.objects.get(id=params["notification_period"])
+                    host.notification_period = notification_period
+                except TimePeriod.DoesNotExist:
+                    return JsonResponse(
+                        {"success": False, "message": f"TimePeriod with id {params['notification_period']} does not exist"},
+                        status=404
+                    )
+            else:
+                host.notification_period = None
         if "variables" in params:
             if overwrite:
                 host.variables.clear()
-            if not isinstance(params["variables"], dict):
+            if not isinstance(params["variables"], dict) or not isinstance(params["variables"], str):
                 return JsonResponse({"success": False, "message": "Parameter variables has to be a dict"}, status=400)
-            for key, value in params["variables"].items():
-                key_label, _ = Label.objects.get_or_create(label=key)
-                value_label, _ = Label.objects.get_or_create(label=value)
-                GenericKVP.objects.get_or_create(key=key_label, value=value_label, referent=host)
+            if params["variables"]:
+                for key, value in params["variables"].items():
+                    key_label, _ = Label.objects.get_or_create(label=key)
+                    value_label, _ = Label.objects.get_or_create(label=value)
+                    GenericKVP.objects.get_or_create(key=key_label, value=value_label, referent=host)
+            else:
+                host.variables.clear()
 
     def save_post(self, params, *args, **kwargs):
         if Host.objects.filter(name=params["name"]).exists():
@@ -615,66 +675,84 @@ class HostTemplateView(CheckOptionalMixinView):
         if "address" in params:
             host_template.address = params["address"]
         if "linked_check" in params:
-            try:
-                check = Check.objects.get(id=params["linked_check"])
-                host_template.linked_check = check
-            except Check.DoesNotExist:
-                return JsonResponse(
-                    {"success": False, "message": f"Check with id {params['linked_check']} does not exist"}, status=404
-                )
+            if params["linked_check"]:
+                try:
+                    check = Check.objects.get(id=params["linked_check"])
+                    host_template.linked_check = check
+                except Check.DoesNotExist:
+                    return JsonResponse(
+                        {"success": False, "message": f"Check with id {params['linked_check']} does not exist"}, status=404
+                    )
+            else:
+                host_template.linked_check = None
         if "host_templates" in params:
-            if overwrite:
-                host_template.host_templates.clear()
-            if isinstance(params["host_templates"], list):
-                for ht_id in params["host_templates"]:
+            if params["host_templates"]:
+                if overwrite:
+                    host_template.host_templates.clear()
+                if isinstance(params["host_templates"], list):
+                    for ht_id in params["host_templates"]:
+                        try:
+                            ht = HostTemplate.objects.get(id=ht_id)
+                            host_template.host_templates.add(ht)
+                        except HostTemplate.DoesNotExist:
+                            return JsonResponse(
+                                {"success": False, "message": f"HostTemplate with id {ht_id} does not exist"}, status=404
+                            )
+                else:
                     try:
-                        ht = HostTemplate.objects.get(id=ht_id)
+                        ht = HostTemplate.objects.get(id=params["host_templates"])
                         host_template.host_templates.add(ht)
                     except HostTemplate.DoesNotExist:
                         return JsonResponse(
-                            {"success": False, "message": f"HostTemplate with id {ht_id} does not exist"}, status=404
+                            {
+                                "success": False,
+                                "message": f"HostTemplate with id {params['host_templates']} does not exist"
+                            }, status=404
                         )
             else:
-                try:
-                    ht = HostTemplate.objects.get(id=params["host_templates"])
-                    host_template.host_templates.add(ht)
-                except HostTemplate.DoesNotExist:
-                    return JsonResponse(
-                        {
-                            "success": False,
-                            "message": f"HostTemplate with id {params['host_templates']} does not exist"
-                        }, status=404
-                    )
+                host_template.host_templates.clear()
         if "scheduling_interval" in params:
-            scheduling_interval = SchedulingInterval.objects.get_or_create(interval=params["scheduling_interval"])
-            host_template.scheduling_interval = scheduling_interval
+            if params["scheduling_interval"]:
+                scheduling_interval = SchedulingInterval.objects.get_or_create(interval=params["scheduling_interval"])
+                host_template.scheduling_interval = scheduling_interval
+            else:
+                host_template.scheduling_interval = None
         if "scheduling_period" in params:
-            try:
-                scheduling_period = TimePeriod.objects.get(id=params["scheduling_period"])
-                host_template.scheduling_period = scheduling_period
-            except TimePeriod.DoesNotExist:
-                return JsonResponse(
-                    {"success": False, "message": f"TimePeriod with id {params['scheduling_period']} does not exist"},
-                    status=404
-                )
+            if params["scheduling_period"]:
+                try:
+                    scheduling_period = TimePeriod.objects.get(id=params["scheduling_period"])
+                    host_template.scheduling_period = scheduling_period
+                except TimePeriod.DoesNotExist:
+                    return JsonResponse(
+                        {"success": False, "message": f"TimePeriod with id {params['scheduling_period']} does not exist"},
+                        status=404
+                    )
+            else:
+                host_template.scheduling_period = None
         if "notification_period" in params:
-            try:
-                notification_period = TimePeriod.objects.get(id=params["notification_period"])
-                host_template.notification_period = notification_period
-            except TimePeriod.DoesNotExist:
-                return JsonResponse(
-                    {"success": False, "message": f"TimePeriod with id {params['notification_period']} does not exist"},
-                    status=404
-                )
+            if params["notification_period"]:
+                try:
+                    notification_period = TimePeriod.objects.get(id=params["notification_period"])
+                    host_template.notification_period = notification_period
+                except TimePeriod.DoesNotExist:
+                    return JsonResponse(
+                        {"success": False, "message": f"TimePeriod with id {params['notification_period']} does not exist"},
+                        status=404
+                    )
+            else:
+                host_template.notification_period = None
         if "variables" in params:
             if overwrite:
                 host_template.variables.clear()
-            if not isinstance(params["variables"], dict):
+            if not isinstance(params["variables"], dict) or not isinstance(params["variables"], str):
                 return JsonResponse({"success": False, "message": "Parameter variables has to be a dict"}, status=400)
-            for key, value in params["variables"].items():
-                key_label, _ = Label.objects.get_or_create(label=key)
-                value_label, _ = Label.objects.get_or_create(label=value)
-                GenericKVP.objects.get_or_create(key=key_label, value=value_label, referent=host_template)
+            if params["variables"]:
+                for key, value in params["variables"].items():
+                    key_label, _ = Label.objects.get_or_create(label=key)
+                    value_label, _ = Label.objects.get_or_create(label=value)
+                    GenericKVP.objects.get_or_create(key=key_label, value=value_label, referent=host_template)
+            else:
+                host_template.variables.clear()
 
     def save_post(self, params, *args, **kwargs):
         if HostTemplate.objects.filter(name=params["name"]).exists():
@@ -882,47 +960,56 @@ class ContactView(CheckOptionalMixinView):
 
         for notification in ["linked_host_notifications", "linked_metric_notifications"]:
             if notification in params:
-                if overwrite:
-                    contact.__getattribute__(notification).clear()
-                if isinstance(params[notification], list):
-                    for x in params[notification]:
+                if params[notification]:
+                    if overwrite:
+                        contact.__getattribute__(notification).clear()
+                    if isinstance(params[notification], list):
+                        for x in params[notification]:
+                            try:
+                                check = Check.objects.get(id=x)
+                                contact.__getattribute__(notification).add(check)
+                            except Check.DoesNotExist:
+                                return JsonResponse(
+                                    {"success": False, "message": f"Check with id {x} does not exist"}, status=404
+                                )
+                    else:
                         try:
-                            check = Check.objects.get(id=x)
+                            check = Check.objects.get(id=notification)
                             contact.__getattribute__(notification).add(check)
                         except Check.DoesNotExist:
                             return JsonResponse(
-                                {"success": False, "message": f"Check with id {x} does not exist"}, status=404
+                                {
+                                    "success": False,
+                                    "message": f"Check with id {params['linked_host_notifications']} does not exist"
+                                }, status=404
                             )
                 else:
-                    try:
-                        check = Check.objects.get(id=notification)
-                        contact.__getattribute__(notification).add(check)
-                    except Check.DoesNotExist:
-                        return JsonResponse(
-                            {
-                                "success": False,
-                                "message": f"Check with id {params['linked_host_notifications']} does not exist"
-                            }, status=404
-                        )
+                    contact.__getattribute__(notification).clear()
         for period in ["linked_host_notification_period", "linked_metric_notification_period"]:
             if period in params:
-                try:
-                    tp = TimePeriod.objects.get(id=params[period])
-                    contact.__setattr__(period, tp)
-                except TimePeriod.DoesNotExist:
-                    return JsonResponse(
-                        {"success": False, "message": f"TimePeriod with id {params[period]} does not exist"},
-                        status=404
-                    )
+                if params[period]:
+                    try:
+                        tp = TimePeriod.objects.get(id=params[period])
+                        contact.__setattr__(period, tp)
+                    except TimePeriod.DoesNotExist:
+                        return JsonResponse(
+                            {"success": False, "message": f"TimePeriod with id {params[period]} does not exist"},
+                            status=404
+                        )
+                else:
+                    contact.__setattr__(period, None)
         if "variables" in params:
-            if not isinstance(params["variables"], dict):
+            if not isinstance(params["variables"], dict) or not isinstance(params["variables"], str):
                 return JsonResponse({"success": False, "message": f"Parameter variables has to be a dict"}, status=400)
-            if overwrite:
+            if params["variables"]:
+                if overwrite:
+                    contact.variables.clear()
+                for key, value in params["variables"].items():
+                    key_label = Label.objects.get_or_create(label=key)
+                    value_label = Label.objects.get_or_create(label=value)
+                    GenericKVP.objects.create(key=key_label, value=value_label, referent=contact)
+            else:
                 contact.variables.clear()
-            for key, value in params["variables"].items():
-                key_label = Label.objects.get_or_create(label=key)
-                value_label = Label.objects.get_or_create(label=value)
-                GenericKVP.objects.create(key=key_label, value=value_label, referent=contact)
 
     def save_post(self, params, *args, **kwargs):
         if Contact.objects.filter(name=params["name"]).exists():
@@ -967,26 +1054,29 @@ class ContactGroupView(CheckOptionalMixinView):
 
     def optional(self, contact_group, params, overwrite=False):
         if "linked_contacts" in params:
-            if overwrite:
-                contact_group.linked_contacts.clear()
-            if isinstance(params["linked_contacts"], list):
-                for cid in params["linked_contacts"]:
+            if params["linked_contacts"]:
+                if overwrite:
+                    contact_group.linked_contacts.clear()
+                if isinstance(params["linked_contacts"], list):
+                    for cid in params["linked_contacts"]:
+                        try:
+                            contact = Contact.objects.get(id=cid)
+                            contact_group.linked_contacts.add(contact)
+                        except Contact.DoesNotExist:
+                            return JsonResponse(
+                                {"success": False, "message": f"Contact with id {cid} does not exist"}, status=404
+                            )
+                else:
                     try:
-                        contact = Contact.objects.get(id=cid)
+                        contact = Contact.objects.get(id=params["linked_contacts"])
                         contact_group.linked_contacts.add(contact)
                     except Contact.DoesNotExist:
                         return JsonResponse(
-                            {"success": False, "message": f"Contact with id {cid} does not exist"}, status=404
+                            {"success": False, "message": f"Contact with id {params['linked_contacts']} does not exist"},
+                            status=404
                         )
             else:
-                try:
-                    contact = Contact.objects.get(id=params["linked_contacts"])
-                    contact_group.linked_contacts.add(contact)
-                except Contact.DoesNotExist:
-                    return JsonResponse(
-                        {"success": False, "message": f"Contact with id {params['linked_contacts']} does not exist"},
-                        status=404
-                    )
+                contact_group.linked_contacts.clear()
 
     def save_post(self, params, *args, **kwargs):
         if ContactGroup.objects.filter(name=params["name"]).exists():
