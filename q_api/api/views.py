@@ -460,7 +460,7 @@ class MetricTemplateView(CheckOptionalMixinView):
                 {"success": False, "message": "MetricTemplate with this name already exists"},
                 status=409
             )
-        metric_template = MetricTemplate.objects.get(name=params["name"])
+        metric_template = MetricTemplate.objects.create(name=params["name"])
         # Optional params
         ret = self.optional(metric_template, params)
         if isinstance(ret, JsonResponse):
