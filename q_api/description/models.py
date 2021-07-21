@@ -157,11 +157,11 @@ class Contact(models.Model):
         return {
             "id": self.id,
             "name": self.name,
-            "mail": self.mail,
-            "linked_host_notifications": self.linked_host_notifications,
-            "linked_host_notification_period": self.linked_host_notification_period_id,
-            "linked_metric_notifications": self.linked_metric_notifications,
-            "linked_metric_notification_period": self.linked_metric_notification_period_id,
+            "mail": self.mail if self.mail else "",
+            "linked_host_notifications": self.linked_host_notifications if self.linked_metric_notifications else "",
+            "linked_host_notification_period": self.linked_host_notification_period_id if self.linked_host_notification_period else "",
+            "linked_metric_notifications": self.linked_metric_notifications if self.linked_metric_notifications else "",
+            "linked_metric_notification_period": self.linked_metric_notification_period_id if self.linked_metric_notification_period else "",
             "variables": dict(ChainMap(*[x.to_dict() for x in self.variables.all()][::-1]))
         }
 
@@ -222,12 +222,12 @@ class HostTemplate(models.Model):
         return {
             "id": self.id,
             "name": self.name,
-            "address": self.address,
-            "linked_check": self.linked_check_id,
+            "address": self.address if self.address else "",
+            "linked_check": self.linked_check_id if self.linked_check else "",
             "host_templates": [x.id for x in self.host_templates.all()],
-            "scheduling_interval": self.scheduling_interval_id,
-            "scheduling_period": self.scheduling_period_id,
-            "notification_period": self.notification_period_id,
+            "scheduling_interval": self.scheduling_interval.interval if self.scheduling_interval else "",
+            "scheduling_period": self.scheduling_period_id if self.scheduling_period else "",
+            "notification_period": self.notification_period_id if self.notification_period else "",
             "variables": dict(ChainMap(*[x.to_dict() for x in self.variables.all()][::-1]))
         }
 
@@ -266,13 +266,13 @@ class Host(models.Model):
         return {
             "id": self.id,
             "name": self.name,
-            "address": self.address,
-            "linked_check": self.linked_check_id,
+            "address": self.address if self.address else "",
+            "linked_check": self.linked_check_id if self.linked_check else "",
             "disabled": self.disabled,
             "host_templates": [x.id for x in self.host_templates.all()],
-            "scheduling_interval": self.scheduling_interval_id,
-            "scheduling_period": self.scheduling_period_id,
-            "notification_period": self.notification_period_id,
+            "scheduling_interval": self.scheduling_interval.interval if self.scheduling_period else "",
+            "scheduling_period": self.scheduling_period_id if self.scheduling_period else "",
+            "notification_period": self.notification_period_id if self.notification_period else 2,
             "variables": dict(ChainMap(*[x.to_dict() for x in self.variables.all()][::-1]))
         }
 
@@ -311,7 +311,7 @@ class MetricTemplate(models.Model):
             "name": self.name,
             "linked_check": self.linked_check_id if self.linked_check else "",
             "metric_templates": [x.id for x in self.metric_templates.all()],
-            "scheduling_interval": self.scheduling_interval_id if self.scheduling_interval else "",
+            "scheduling_interval": self.scheduling_interval.interval if self.scheduling_interval else "",
             "scheduling_period": self.scheduling_period_id if self.scheduling_period else "",
             "notification_period": self.notification_period_id if self.notification_period else "",
             "variables": dict(ChainMap(*[x.to_dict() for x in self.variables.all()][::-1]))
@@ -356,7 +356,7 @@ class Metric(models.Model):
             "linked_host": self.linked_host_id if self.linked_host else "",
             "disabled": self.disabled,
             "metric_templates": [x.id for x in self.metric_templates.all()],
-            "scheduling_interval": self.scheduling_interval_id if self.scheduling_interval else "",
+            "scheduling_interval": self.scheduling_interval.interval if self.scheduling_interval else "",
             "scheduling_period": self.scheduling_period_id if self.scheduling_period else "",
             "notification_period": self.notification_period_id if self.notification_period else "",
             "variables": dict(ChainMap(*[x.to_dict() for x in self.variables.all()][::-1]))
