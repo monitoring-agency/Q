@@ -610,17 +610,13 @@ class ContactView(CheckOptionalMixinView):
             required_post=["name"]
         )
 
-    def save_post(self, params, *args, **kwargs):
-        contact, created = Contact.objects.get_or_create()
-        if not created:
-            return JsonResponse(
-                {"success": False, "message": f"Contact with name {params['name']} already exists"}, status=409
-            )
+    def optional(self, contact, params, overwrite=False):
         if "mail" in params:
             contact.mail = params["mail"]
 
         for notification in ["linked_host_notifications", "linked_metric_notifications"]:
             if notification in params:
+                contact.__setattr__(notification, None)
                 if isinstance(params[notification], list):
                     for x in params[notification]:
                         try:
@@ -659,8 +655,38 @@ class ContactView(CheckOptionalMixinView):
                 value_label = Label.objects.get_or_create(label=value)
                 kvp = GenericKVP.objects.create(key=key_label, value=value_label)
                 contact.variables.add(kvp)
+
+    def save_post(self, params, *args, **kwargs):
+        if Contact.objects.filter(name=params["name"]).exists():
+            return JsonResponse(
+                {"success": False, "message": f"Contact with name {params['name']} already exists"}, status=409
+            )
+        contact = Contact.objects.create(name=params["name"])
+        ret = self.optional(contact, params)
+        if isinstance(ret, JsonResponse):
+            return ret
         contact.save()
         return JsonResponse({"success": True, "message": "Contact was successfully created", "data": contact.id})
+
+    def save_put(self, params, *args, **kwargs):
+        try:
+            contact = Contact.objects.get(id=kwargs["sid"])
+        except Contact.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "message": f"Contact with id {kwargs['sid']} does not exist"}, status=404
+            )
+        if "name" in params:
+            if Contact.objects.filter(name=params["name"]).exists():
+                return JsonResponse(
+                    {"success": False, "message": "Contact with the name of the parameter name already exists"},
+                    status=409
+                )
+            contact.name = params["name"]
+        ret = self.optional(contact, params, overwrite=True)
+        if isinstance(ret, JsonResponse):
+            return ret
+        contact.save()
+        return JsonResponse({"success": True, "message": "Contact was changed successful"})
 
 
 class ReloadConfigurationView(CheckMixinView):
