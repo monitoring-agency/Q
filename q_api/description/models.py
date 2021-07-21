@@ -386,4 +386,4 @@ class GenericKVP(models.Model):
         return f"{self.referent} - {self.key}: {self.value}"
 
     def to_dict(self):
-        return {self.key: self.value}
+        return {self.key.label: self.value.label}
