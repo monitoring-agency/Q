@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import json
 
 import django.contrib.auth
+from django.contrib.contenttypes.models import ContentType
 from django.http import JsonResponse, HttpResponse
 from django.utils.decorators import method_decorator
 from django.utils.timezone import make_aware
@@ -254,6 +255,7 @@ class CheckView(CheckOptionalMixinView):
 
         ret = self.optional(check, params)
         if isinstance(ret, JsonResponse):
+            check.delete()
             return ret
 
         check.save()
@@ -333,13 +335,11 @@ class MetricView(CheckOptionalMixinView):
             if not isinstance(params["variables"], dict):
                 return JsonResponse({"success": False, "message": "Parameter variables has to be a dict"}, status=400)
             if overwrite:
-                metric.kvp.clear()
+                metric.variable.clear()
             for key, value in params["variables"].items():
                 key_label, _ = Label.objects.get_or_create(label=key)
                 value_label, _ = Label.objects.get_or_create(label=value)
-                variable = GenericKVP.objects.create(key=key_label, value=value_label)
-                variable.save()
-                metric.kvp.add(variable)
+                GenericKVP.objects.get_or_create(key=key_label, value=value_label, referent=metric)
 
     def save_post(self, params, *args, **kwargs):
         # Required params
@@ -360,6 +360,7 @@ class MetricView(CheckOptionalMixinView):
         # Optional params
         ret = self.optional(metric, params)
         if isinstance(ret, JsonResponse):
+            metric.delete()
             return ret
 
         # Save and return
@@ -421,7 +422,7 @@ class MetricTemplateView(CheckOptionalMixinView):
                 for x in metric_templates:
                     metric_template.metric_templates.add(x)
         if "scheduling_interval" in params:
-            scheduling_interval = SchedulingInterval.objects.get_or_create(interval=params["scheduling_interval"])
+            scheduling_interval, _ = SchedulingInterval.objects.get_or_create(interval=params["scheduling_interval"])
             metric_template.scheduling_interval = scheduling_interval
         if "scheduling_period" in params:
             try:
@@ -445,13 +446,11 @@ class MetricTemplateView(CheckOptionalMixinView):
             if not isinstance(params["variables"], dict):
                 return JsonResponse({"success": False, "message": "Parameter variables has to be a dict"}, status=400)
             if overwrite:
-                metric_template.kvp.clear()
+                metric_template.variables.clear()
             for key, value in params["variables"].items():
                 key_label, _ = Label.objects.get_or_create(label=key)
                 value_label, _ = Label.objects.get_or_create(label=value)
-                variable = GenericKVP.objects.create(key=key_label, value=value_label)
-                variable.save()
-                metric_template.kvp.add(variable)
+                GenericKVP.objects.get_or_create(key=key_label, value=value_label, object_id=metric_template.id, content_type=ContentType.objects.get_for_model(MetricTemplate))
 
     def save_post(self, params, *args, **kwargs):
         # Create check
@@ -464,6 +463,7 @@ class MetricTemplateView(CheckOptionalMixinView):
         # Optional params
         ret = self.optional(metric_template, params)
         if isinstance(ret, JsonResponse):
+            metric_template.delete()
             return ret
 
         # Save and return
@@ -562,8 +562,7 @@ class HostView(CheckOptionalMixinView):
             for key, value in params["variables"].items():
                 key_label, _ = Label.objects.get_or_create(label=key)
                 value_label, _ = Label.objects.get_or_create(label=value)
-                kvp = GenericKVP.objects.get_or_create(key=key_label, value=value_label)
-                host.variables.add(kvp)
+                GenericKVP.objects.get_or_create(key=key_label, value=value_label, referent=host)
 
     def save_post(self, params, *args, **kwargs):
         if Host.objects.filter(name=params["name"]).exists():
@@ -574,6 +573,7 @@ class HostView(CheckOptionalMixinView):
 
         ret = self.optional(host, params)
         if isinstance(ret, JsonResponse):
+            host.delete()
             return ret
 
         host.save()
@@ -674,8 +674,7 @@ class HostTemplateView(CheckOptionalMixinView):
             for key, value in params["variables"].items():
                 key_label, _ = Label.objects.get_or_create(label=key)
                 value_label, _ = Label.objects.get_or_create(label=value)
-                kvp = GenericKVP.objects.get_or_create(key=key_label, value=value_label)
-                host_template.variables.add(kvp)
+                GenericKVP.objects.get_or_create(key=key_label, value=value_label, referent=host_template)
 
     def save_post(self, params, *args, **kwargs):
         if HostTemplate.objects.filter(name=params["name"]).exists():
@@ -686,6 +685,7 @@ class HostTemplateView(CheckOptionalMixinView):
 
         ret = self.optional(host_template, params)
         if isinstance(ret, JsonResponse):
+            host_template.delete()
             return ret
 
         host_template.save()
@@ -801,6 +801,7 @@ class TimePeriodView(CheckOptionalMixinView):
             )
         time_period = TimePeriod.objects.create(name=params["name"])
         [time_period.time_periods.add(x) for x in day_time_periods]
+        time_period.save()
         return JsonResponse(
             {"success": True, "message": "TimePeriod was successfully added", "data": time_period.id}
         )
@@ -839,11 +840,10 @@ class GlobalVariableView(CheckOptionalMixinView):
                 {"success": False, "message": f"GlobalVariable with key {params['key']} already exists"},
                 status=409
             )
+        variable = GlobalVariable.objects.create()
         key_label, _ = Label.objects.get_or_create(label=params["key"])
         value_label, _ = Label.objects.get_or_create(label=params["value"])
-        kvp, _ = GenericKVP.objects.get_or_create(key=key_label, value=value_label)
-        variable = GlobalVariable.objects.create(variable=kvp)
-        variable.save()
+        GenericKVP.objects.get_or_create(key=key_label, value=value_label, referent=variable)
         return JsonResponse(
             {"success": True, "message": f"GlobalVariable was created successfully", "data": variable.id}
         )
@@ -922,8 +922,7 @@ class ContactView(CheckOptionalMixinView):
             for key, value in params["variables"].items():
                 key_label = Label.objects.get_or_create(label=key)
                 value_label = Label.objects.get_or_create(label=value)
-                kvp = GenericKVP.objects.create(key=key_label, value=value_label)
-                contact.variables.add(kvp)
+                GenericKVP.objects.create(key=key_label, value=value_label, referent=contact)
 
     def save_post(self, params, *args, **kwargs):
         if Contact.objects.filter(name=params["name"]).exists():
@@ -933,6 +932,7 @@ class ContactView(CheckOptionalMixinView):
         contact = Contact.objects.create(name=params["name"])
         ret = self.optional(contact, params)
         if isinstance(ret, JsonResponse):
+            contact.delete()
             return ret
         contact.save()
         return JsonResponse({"success": True, "message": "Contact was successfully created", "data": contact.id})
@@ -997,6 +997,7 @@ class ContactGroupView(CheckOptionalMixinView):
 
         ret = self.optional(contact_group, params)
         if isinstance(ret, JsonResponse):
+            contact_group.delete()
             return ret
 
         contact_group.save()
