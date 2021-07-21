@@ -16,6 +16,8 @@ urlpatterns = [
     path("metrictemplate/<str:sid>", MetricTemplateView.as_view()),
     path("host", HostView.as_view()),
     path("host/<str:sid>", HostView.as_view()),
+    path("hosttemplate", HostTemplateView.as_view()),
+    path("hosttemplate/<str:sid>", HostTemplateView.as_view()),
     path("timeperiod", TimePeriodView.as_view()),
     path("timeperiod/<str:sid>", TimePeriodView.as_view()),
     path("globalvariable", GlobalVariableView.as_view()),

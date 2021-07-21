@@ -604,6 +604,118 @@ class HostView(CheckOptionalMixinView):
         return JsonResponse({"success": True, "message": "Changes were successful"})
 
 
+class HostTemplateView(CheckOptionalMixinView):
+    def __init__(self):
+        super(HostTemplateView, self).__init__(
+            api_class=HostTemplate,
+            required_post=["name"]
+        )
+
+    def optional(self, host_template, params, overwrite=False):
+        if "address" in params:
+            host_template.address = params["address"]
+        if "linked_check" in params:
+            try:
+                check = Check.objects.get(id=params["linked_check"])
+                host_template.linked_check = check
+            except Check.DoesNotExist:
+                return JsonResponse(
+                    {"success": False, "message": f"Check with id {params['linked_check']} does not exist"}, status=404
+                )
+        if "host_templates" in params:
+            if overwrite:
+                host_template.host_templates.clear()
+            if isinstance(params["host_templates"], list):
+                for ht_id in params["host_templates"]:
+                    try:
+                        ht = HostTemplate.objects.get(id=ht_id)
+                        host_template.host_templates.add(ht)
+                    except HostTemplate.DoesNotExist:
+                        return JsonResponse(
+                            {"success": False, "message": f"HostTemplate with id {ht_id} does not exist"}, status=404
+                        )
+            else:
+                try:
+                    ht = HostTemplate.objects.get(id=params["host_templates"])
+                    host_template.host_templates.add(ht)
+                except HostTemplate.DoesNotExist:
+                    return JsonResponse(
+                        {
+                            "success": False,
+                            "message": f"HostTemplate with id {params['host_templates']} does not exist"
+                        }, status=404
+                    )
+        if "scheduling_interval" in params:
+            scheduling_interval = SchedulingInterval.objects.get_or_create(interval=params["scheduling_interval"])
+            host_template.scheduling_interval = scheduling_interval
+        if "scheduling_period" in params:
+            try:
+                scheduling_period = TimePeriod.objects.get(id=params["scheduling_period"])
+                host_template.scheduling_period = scheduling_period
+            except TimePeriod.DoesNotExist:
+                return JsonResponse(
+                    {"success": False, "message": f"TimePeriod with id {params['scheduling_period']} does not exist"},
+                    status=404
+                )
+        if "notification_period" in params:
+            try:
+                notification_period = TimePeriod.objects.get(id=params["notification_period"])
+                host_template.notification_period = notification_period
+            except TimePeriod.DoesNotExist:
+                return JsonResponse(
+                    {"success": False, "message": f"TimePeriod with id {params['notification_period']} does not exist"},
+                    status=404
+                )
+        if "variables" in params:
+            if overwrite:
+                host_template.variables.clear()
+            if not isinstance(params["variables"], dict):
+                return JsonResponse({"success": False, "message": "Parameter variables has to be a dict"}, status=400)
+            for key, value in params["variables"].items():
+                key_label, _ = Label.objects.get_or_create(label=key)
+                value_label, _ = Label.objects.get_or_create(label=value)
+                kvp = GenericKVP.objects.get_or_create(key=key_label, value=value_label)
+                host_template.variables.add(kvp)
+
+    def save_post(self, params, *args, **kwargs):
+        if HostTemplate.objects.filter(name=params["name"]).exists():
+            return JsonResponse(
+                {"success": False, "message": f"HostTemplate with name {params['name']} already exists"}, status=409
+            )
+        host_template = HostTemplate.objects.create(name=params["name"])
+
+        ret = self.optional(host_template, params)
+        if isinstance(ret, JsonResponse):
+            return ret
+
+        host_template.save()
+        JsonResponse(
+            {"success": True, "message": "HostTemplate was created successful", "data": host_template.id}
+        )
+
+    def save_put(self, params, *args, **kwargs):
+        try:
+            host_template = HostTemplate.objects.get(id=kwargs["sid"])
+        except HostTemplate.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "message": f"HostTemplate with id {kwargs['sid']} does not exist"}, status=404
+            )
+
+        if "name" in params:
+            if HostTemplate.objects.filter(name=params["name"]).exists():
+                return JsonResponse(
+                    {"success": False, "message": f"HostTemplate with name {params['name']} already exists"}, status=409
+                )
+            host_template.name = params["name"]
+
+        ret = self.optional(host_template, params, overwrite=True)
+        if isinstance(ret, JsonResponse):
+            return ret
+
+        host_template.save()
+        return JsonResponse({"success": True, "message": "Changes were successful"})
+
+
 class TimePeriodView(CheckOptionalMixinView):
     def __init__(self):
         super(TimePeriodView, self).__init__(
