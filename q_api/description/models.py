@@ -1,3 +1,5 @@
+from collections import ChainMap
+
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator
@@ -160,7 +162,7 @@ class Contact(models.Model):
             "linked_host_notification_period": self.linked_host_notification_period_id,
             "linked_metric_notifications": self.linked_metric_notifications,
             "linked_metric_notification_period": self.linked_metric_notification_period_id,
-            "variables": {y[0]: y[1] for y in (x for x in self.variables.all())}
+            "variables": dict(ChainMap(*[x.to_dict() for x in self.variables.all()][::-1]))
         }
 
     def save(self, force_insert=False, force_update=False, using=None,
@@ -226,7 +228,7 @@ class HostTemplate(models.Model):
             "scheduling_interval": self.scheduling_interval_id,
             "scheduling_period": self.scheduling_period_id,
             "notification_period": self.notification_period_id,
-            "variables": {y[0]: y[1] for y in (x for x in self.variables.all())}
+            "variables": dict(ChainMap(*[x.to_dict() for x in self.variables.all()][::-1]))
         }
 
     def save(self, force_insert=False, force_update=False, using=None,
@@ -271,7 +273,7 @@ class Host(models.Model):
             "scheduling_interval": self.scheduling_interval_id,
             "scheduling_period": self.scheduling_period_id,
             "notification_period": self.notification_period_id,
-            "variables": {y[0]: y[1] for y in (x for x in self.variables.all())}
+            "variables": dict(ChainMap(*[x.to_dict() for x in self.variables.all()][::-1]))
         }
 
     def save(self, force_insert=False, force_update=False, using=None,
@@ -314,7 +316,7 @@ class MetricTemplate(models.Model):
             "scheduling_interval": self.scheduling_interval_id if self.scheduling_interval else "",
             "scheduling_period": self.scheduling_period_id if self.scheduling_period else "",
             "notification_period": self.notification_period_id if self.notification_period else "",
-            "variables": {y[0]: y[1] for y in (x.to_dict() for x in self.variables.all())}
+            "variables": dict(ChainMap(*[x.to_dict() for x in self.variables.all()][::-1]))
         }
 
     def save(self, force_insert=False, force_update=False, using=None,
@@ -359,7 +361,7 @@ class Metric(models.Model):
             "scheduling_interval": self.scheduling_interval_id if self.scheduling_interval else "",
             "scheduling_period": self.scheduling_period_id if self.scheduling_period else "",
             "notification_period": self.notification_period_id if self.notification_period else "",
-            "variables": {y[0]: y[1] for y in (x.to_dict() for x in self.variables.all())}
+            "variables": dict(ChainMap(*[x.to_dict() for x in self.variables.all()][::-1]))
         }
 
 
@@ -371,6 +373,11 @@ class Label(models.Model):
 
 
 class GenericKVP(models.Model):
+    """This class represents variables.
+
+    To access, use .key and .value
+
+    """
     key = ForeignKey(Label, on_delete=models.CASCADE, related_name="key")
     value = ForeignKey(Label, on_delete=models.CASCADE, related_name="value")
     referent = GenericForeignKey('content_type', 'object_id')
@@ -381,4 +388,4 @@ class GenericKVP(models.Model):
         return f"{self.referent} - {self.key}: {self.value}"
 
     def to_dict(self):
-        return self.key, self.value
+        return {self.key: self.value}
