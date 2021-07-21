@@ -288,7 +288,6 @@ class MetricTemplate(models.Model):
     """This class represents a template for a metric"""
     name = CharField(default="", max_length=255, unique=True)
     linked_check = ForeignKey(Check, on_delete=models.DO_NOTHING, blank=True, null=True)
-    linked_host = ForeignKey(Host, on_delete=models.CASCADE)
     metric_templates = ManyToManyField("self", blank=True)
     scheduling_interval = ForeignKey(SchedulingInterval, on_delete=models.DO_NOTHING, blank=True, null=True)
     scheduling_period = ForeignKey(
@@ -311,7 +310,6 @@ class MetricTemplate(models.Model):
             "id": self.id,
             "name": self.name,
             "linked_check": self.linked_check_id if self.linked_check else "",
-            "linked_host": self.linked_host_id if self.linked_host else "",
             "metric_templates": [x.id for x in self.metric_templates.all()],
             "scheduling_interval": self.scheduling_interval_id if self.scheduling_interval else "",
             "scheduling_period": self.scheduling_period_id if self.scheduling_period else "",

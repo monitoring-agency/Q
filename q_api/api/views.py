@@ -11,7 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from api.models import AccountModel, ACLModel
 from description.models import Check, CheckType, Host, Metric, TimePeriod, SchedulingInterval, GenericKVP, Label, Day, \
-    Period, DayTimePeriod, GlobalVariable, Contact, ContactGroup
+    Period, DayTimePeriod, GlobalVariable, Contact, ContactGroup, MetricTemplate
 
 
 @method_decorator(csrf_exempt, "dispatch")
@@ -299,10 +299,10 @@ class MetricView(CheckOptionalMixinView):
             if overwrite:
                 metric.metric_templates.clear()
             if isinstance(params["metric_templates"], list):
-                metric_templates = Metric.objects.filter(id__in=params["metric_templates"])
+                metric_templates = MetricTemplate.objects.filter(id__in=params["metric_templates"])
                 metric.metric_templates.add(metric_templates)
             else:
-                metric_templates = [Metric.objects.get(id=params["metric_templates"])]
+                metric_templates = [MetricTemplate.objects.get(id=params["metric_templates"])]
                 for x in metric_templates:
                     metric.metric_templates.add(x)
         if "scheduling_interval" in params:
@@ -361,7 +361,7 @@ class MetricView(CheckOptionalMixinView):
         # Create check
         if Metric.objects.filter(name=params["name"]).exists():
             return JsonResponse(
-                {"success": False, "message": "Metric with this name already exists", }
+                {"success": False, "message": "Metric with this name already exists"}, status=409
             )
         metric = Metric.objects.get(name=params["name"], linked_host=linked_host)
         # Optional params
@@ -397,6 +397,110 @@ class MetricView(CheckOptionalMixinView):
             return ret
 
         metric.save()
+        return JsonResponse({"success": True, "message": "Changes were successful"})
+
+
+class MetricTemplateView(CheckOptionalMixinView):
+    def __init__(self):
+        super(MetricTemplateView, self).__init__(
+            api_class=MetricTemplate,
+            required_post=["name"],
+        )
+
+    def optional(self, metric_template, params, overwrite=False):
+        if "linked_check" in params:
+            try:
+                linked_check = Check.objects.get(id=params["linked_check"])
+                metric_template.linked_check = linked_check
+            except Check.DoesNotExist:
+                return JsonResponse(
+                    {"success": False, "message": f"Check with id {params['linked_check']} does not exist"},
+                    status=404
+                )
+        if "metric_templates" in params:
+            if overwrite:
+                metric_template.metric_templates.clear()
+            if isinstance(params["metric_templates"], list):
+                metric_templates = MetricTemplate.objects.filter(id__in=params["metric_templates"])
+                metric_template.metric_templates.add(metric_templates)
+            else:
+                metric_templates = [MetricTemplate.objects.get(id=params["metric_templates"])]
+                for x in metric_templates:
+                    metric_template.metric_templates.add(x)
+        if "scheduling_interval" in params:
+            try:
+                scheduling_interval = SchedulingInterval.objects.get(id=params["scheduling_interval"])
+                metric_template.scheduling_interval = scheduling_interval
+            except SchedulingInterval.DoesNotExist:
+                return JsonResponse(
+                    {"success": False,
+                     "message": f"SchedulingInterval with id {params['scheduling_interval']} does not exist"},
+                    status=404
+                )
+        if "scheduling_period" in params:
+            try:
+                scheduling_period = TimePeriod.objects.get(id=params["scheduling_period"])
+                metric_template.scheduling_period = scheduling_period
+            except TimePeriod.DoesNotExist:
+                return JsonResponse(
+                    {"success": False, "message": f"TimePeriod with id {params['scheduling_period']} does not exist"},
+                    status=404
+                )
+        if "notification_period" in params:
+            try:
+                notification_period = TimePeriod.objects.get(id=params["notification_period"])
+                metric_template.notification_period = notification_period
+            except TimePeriod.DoesNotExist:
+                return JsonResponse(
+                    {"success": False, "message": f"TimePeriod with id {params['notification_period']} does not exist"},
+                    status=404
+                )
+        if "variables" in params:
+            if not isinstance(params["variables"], dict):
+                return JsonResponse({"success": False, "message": "Parameter variables has to be a dict"}, status=400)
+            if overwrite:
+                metric_template.kvp.clear()
+            for key, value in params["variables"].items():
+                key_label, _ = Label.objects.get_or_create(label=key)
+                value_label, _ = Label.objects.get_or_create(label=value)
+                variable = GenericKVP.objects.create(key=key_label, value=value_label)
+                variable.save()
+                metric_template.kvp.add(variable)
+
+    def save_post(self, params, *args, **kwargs):
+        # Create check
+        if MetricTemplate.objects.filter(name=params["name"]).exists():
+            return JsonResponse(
+                {"success": False, "message": "MetricTemplate with this name already exists"},
+                status=409
+            )
+        metric_template = MetricTemplate.objects.get(name=params["name"])
+        # Optional params
+        ret = self.optional(metric_template, params)
+        if isinstance(ret, JsonResponse):
+            return ret
+
+        # Save and return
+        metric_template.save()
+        return JsonResponse(
+            {"success": True, "message": "Created MetricTemplate successfully", "data": metric_template.id}
+        )
+
+    def save_put(self, params, *args, **kwargs):
+        try:
+            metric_template = MetricTemplate.objects.get(id=kwargs["sid"])
+        except MetricTemplate.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "message": f"MetricTemplate with id {kwargs['sid']} not exist"}
+            )
+        if "name" in params:
+            metric_template.name = params["name"]
+
+        ret = self.optional(metric_template, params, overwrite=True)
+        if isinstance(ret, JsonResponse):
+            return ret
+
+        metric_template.save()
         return JsonResponse({"success": True, "message": "Changes were successful"})
 
 
