@@ -14,6 +14,8 @@ urlpatterns = [
     path("metric/<str:sid>", MetricView.as_view()),
     path("timeperiod", TimePeriodView.as_view()),
     path("timeperiod/<str:sid>", TimePeriodView.as_view()),
+    path("globalvariable", GlobalVariableView.as_view()),
+    path("globalvariable/<str:sid>", GlobalVariableView.as_view()),
 
     # Routine API
     path("reloadDescription", ReloadConfigurationView.as_view()),

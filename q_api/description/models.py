@@ -7,7 +7,10 @@ from django.db.models import CharField, ForeignKey, ManyToManyField, PositiveInt
 
 class GlobalVariable(models.Model):
     """Represents a global variable"""
-    variables = GenericRelation("GenericKVP")
+    variable = GenericRelation("GenericKVP")
+
+    def to_dict(self):
+        return self.variable.to_dict() + {"id": self.id}
 
 
 class SchedulingInterval(models.Model):

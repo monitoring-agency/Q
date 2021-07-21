@@ -11,7 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from api.models import AccountModel, ACLModel
 from description.models import Check, CheckType, Host, Metric, TimePeriod, SchedulingInterval, GenericKVP, Label, Day, \
-    Period, DayTimePeriod
+    Period, DayTimePeriod, GlobalVariable
 
 
 @method_decorator(csrf_exempt, "dispatch")
@@ -531,7 +531,7 @@ class TimePeriodView(CheckOptionalMixinView):
         if not created:
             return JsonResponse(
                 {"success": False, "message": "TimePeriod with this name already exists"},
-                status=408
+                status=409
             )
         [time_period.time_periods.add(x) for x in day_time_periods]
         time_period.save()
@@ -558,6 +558,49 @@ class TimePeriodView(CheckOptionalMixinView):
             [time_period.time_periods.add(x) for x in day_time_periods]
         time_period.save()
         return JsonResponse({"success": True, "message": "Changes were successful"})
+
+
+class GlobalVariableView(CheckOptionalMixinView):
+    def __init__(self):
+        super(GlobalVariableView, self).__init__(
+            api_class=GlobalVariable,
+            required_post=["key", "value"]
+        )
+
+    def save_post(self, params, *args, **kwargs):
+        if GlobalVariable.objects.filter(variable__key__label=params["key"]).exists():
+            return JsonResponse(
+                {"success": False, "message": f"GlobalVariable with key {params['key']} already exists"},
+                status=409
+            )
+        key_label, _ = Label.objects.get_or_create(label=params["key"])
+        value_label, _ = Label.objects.get_or_create(label=params["value"])
+        kvp, _ = GenericKVP.objects.get_or_create(key=key_label, value=value_label)
+        variable = GlobalVariable.objects.create(variable=kvp)
+        variable.save()
+        return JsonResponse(
+            {"success": True, "message": f"GlobalVariable was created successfully", "data": variable.id}
+        )
+
+    def save_put(self, params, *args, **kwargs):
+        try:
+            variable = GlobalVariable.objects.get(id=kwargs['sid'])
+        except GlobalVariable.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "message": f"GlobalVariable with id {kwargs['sid']} does not exist"},
+                status=404
+            )
+        if "key" in params:
+            if not GlobalVariable.objects.filter(variable__key__label=params["key"]).exists():
+                key_label, _ = Label.objects.get_or_create(label=params["key"])
+                variable.variable.key = key_label
+        if "value" in params:
+            value_label, _ = Label.objects.get_or_create(label=params["value"])
+            variable.variable.value = value_label
+        variable.save()
+        return JsonResponse(
+            {"success": True, "message": f"GlobalVariable with id {kwargs['sid']} was changed successful"}
+        )
 
 
 class ReloadConfigurationView(CheckMixinView):
