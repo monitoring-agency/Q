@@ -234,21 +234,28 @@ class CheckView(CheckOptionalMixinView):
             **kwargs
         )
 
+    def optional(self, check, params):
+        if "check_type" in params:
+            try:
+                ct = CheckType.objects.get(name=params["check_type"])
+            except CheckType.DoesNotExist:
+                return JsonResponse(
+                    {"success": False, "message": f"CheckType {params['check_type']} does not exist"},
+                    status=409
+                )
+            check.check_type = ct
+        if "cmd" in params:
+            check.cmd = params["cmd"]
+
     def save_post(self, params, *args, **kwargs):
         check, created = Check.objects.get_or_create(name=params["name"])
         if not created:
             return JsonResponse({"success": False, "message": "Check already exists with that name"}, status=409)
-        if "cmd" in params:
-            check.cmd = params["cmd"]
-        if "check_type" in params:
-            try:
-                ct = CheckType.objects.get(id=params["check_type"])
-                check.check_type = ct
-            except CheckType.DoesNotExist:
-                return JsonResponse(
-                    {"success": False, "message": f"CheckType with id {params['check_type']} was not found"},
-                    status=400
-                )
+
+        ret = self.optional(check, params)
+        if isinstance(ret, JsonResponse):
+            return ret
+
         check.save()
         return JsonResponse({"success": True, "message": "Object was created"}, status=201)
 
@@ -261,17 +268,11 @@ class CheckView(CheckOptionalMixinView):
             )
         if "name" in params:
             check.name = params["name"]
-        if "check_type" in params:
-            try:
-                ct = CheckType.objects.get(name=params["check_type"])
-            except CheckType.DoesNotExist:
-                return JsonResponse(
-                    {"success": False, "message": f"CheckType {params['check_type']} does not exist"},
-                    status=409
-                )
-            check.check_type = ct
-        if "cmd" in params:
-            check.cmd = params["cmd"]
+
+        ret = self.optional(check, params)
+        if isinstance(ret, JsonResponse):
+            return ret
+
         check.save()
         return JsonResponse({"success": True, "message": "Changes were successful"})
 
@@ -472,7 +473,6 @@ class TimePeriodView(CheckOptionalMixinView):
         # Check advanced required_params
         if not self.check_param_time_periods(params["time_periods"]):
             return JsonResponse({"success": False, "message": "Parameter time_periods is not valid"}, status=400)
-
         day_time_periods = self.get_day_time_periods(params["time_periods"])
         if not day_time_periods:
             return JsonResponse({"success": False, "message": "stop_time has to be after start_time"})
