@@ -616,7 +616,8 @@ class ContactView(CheckOptionalMixinView):
 
         for notification in ["linked_host_notifications", "linked_metric_notifications"]:
             if notification in params:
-                contact.__setattr__(notification, None)
+                if overwrite:
+                    contact.__setattr__(notification, None)
                 if isinstance(params[notification], list):
                     for x in params[notification]:
                         try:
