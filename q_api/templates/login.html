@@ -1,6 +1,19 @@
 {% extends "base.html" %}
 {% block body %}
-    <div>
+{% load static %}
 
+<div class="flexRow">
+    <div class="flexColumn">
+        <img src="{% static 'img/q_login.png' %}" alt="login_background" id="qLogin" draggable="false">
+        <form method="POST" class="loginContent">
+            {% csrf_token %}
+            <h1>Login</h1>
+            <label for="id_username">Username</label>
+            <input id="id_username" name="username">
+            <label for="id_password">Password</label>
+            <input id="id_password" type="password" name="password">
+            <button>Submit</button>
+        </form>
     </div>
+</div>
 {% endblock %}

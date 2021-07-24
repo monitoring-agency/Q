@@ -1,0 +1,89 @@
+:root {
+    --background-old: #0c0d15;
+    --background: #0c0d15;
+    --tile-outer: #030f2f;
+    --tile-inner: #001a5a;
+    --color: #0023e2ff;
+    --bright: #abf8ff;
+    --bright-50: #90BBBF;
+}
+
+body {
+    margin: 0;
+    background-color: var(--background);
+    color: var(--bright);
+	font-family: Arial,Helvetica Neue,Helvetica,sans-serif;
+}
+
+.flexRow {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+}
+
+.flexColumn {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.loginContent {
+    font-size: larger;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    justify-content: center;
+    align-items: center;
+}
+
+.loginContent input {
+    padding: 0.25em 0.5em 0.25em 0.5em;
+    background-color: var(--background);
+    border: 2px solid var(--color);
+    border-radius: 5px;
+    margin-bottom: 1em;
+    color: inherit;
+    text-align: center;
+    transition: border linear 200ms;
+}
+
+.loginContent input:hover {
+    border: 2px solid var(--bright);
+}
+
+.loginContent button {
+    background-color: var(--background);
+    color: white;
+    padding: 0.25em 6em 0.25em 6em;
+    border-radius: 5px;
+    margin-top: 0.5em;
+    border: 2px solid var(--color);
+    cursor: pointer;
+    transition: background-color 300ms;
+}
+
+.loginContent button:hover {
+    background-color: var(--color);
+}
+
+#qLogin {
+    position: absolute;
+    top: 0;
+    width: 90vh;
+    z-index: -1;
+}
+
+.preloader {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--background);
+}
+
+#stop-scrolling {
+    height: 100% !important;
+    overflow: hidden !important;
+}

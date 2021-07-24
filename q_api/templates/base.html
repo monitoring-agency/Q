@@ -1,10 +1,22 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Q</title>
+    <link type="text/css" rel="stylesheet" href="{% static 'css/q_api.css' %}">
+    <link type="text/css" rel="stylesheet" href="{% static 'css/q_api_loading.css' %}">
+    <link rel="shortcut icon" type="image/png" href="{% static 'img/q.png' %}"/>
+
+    <script src="{% static 'js/q_api_general.js' %}"></script>
 </head>
-<body>
+<body id="stop-scrolling">
+
+{% include 'loading_animation.html' %}
+{% block loading %}
+{% endblock %}
+
 {% block body %}
 {% endblock %}
 </body>
