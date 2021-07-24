@@ -8,53 +8,6 @@ import django.db.models.deletion
 # Move them and any dependencies into this file, then update the
 # RunPython operations to refer to the local versions:
 # api.migrations.0004_auto_20210630_1427_squashed_0005_aclgroupmodel_name
-from api.models import ACLModel, ACLGroupModel
-
-
-def append_acl(acl_list, endpoint):
-    acl_list.append(":".join(["API", "GET", endpoint]))
-    acl_list.append(":".join(["API", "POST", endpoint]))
-    acl_list.append(":".join(["API", "PUT", endpoint + "/<int>"]))
-    acl_list.append(":".join(["API", "DELETE", endpoint + "/<int>"]))
-
-
-def create_acl_defaults(*args):
-    endpoints = [
-        "/api/v1/host",
-        "/api/v1/host/<int>/metric",
-        "/api/v1/metric",
-        "/api/v1/check",
-        "/api/v1/aclGroup",
-    ]
-    # Put endpoints in here that don't implement complete REST API
-    acl_list = [
-        "API:POST:/api/v1/authenticate",
-    ]
-    for x in endpoints:
-        append_acl(acl_list, x)
-
-    for x in acl_list:
-        o, created = ACLModel.objects.get_or_create(name=x, allow=True)
-        if created:
-            o.save()
-        o, created = ACLModel.objects.get_or_create(name=x, allow=False)
-        if created:
-            o.save()
-
-    # Generate allow_all and deny_all ACLGroups
-    allow, created = ACLGroupModel.objects.get_or_create(name="allow_all")
-    if created:
-        for x in acl_list:
-            acl = ACLModel.objects.get(name=x, allow=True)
-            allow.linked_acls.add(acl)
-        allow.save()
-
-    deny, created = ACLGroupModel.objects.get_or_create(name="deny_all")
-    if created:
-        for x in acl_list:
-            acl = ACLModel.objects.get(name=x, allow=False)
-            deny.linked_acls.add(acl)
-        deny.save()
 
 
 class Migration(migrations.Migration):
@@ -94,8 +47,5 @@ class Migration(migrations.Migration):
             model_name='aclgroupmodel',
             name='name',
             field=models.CharField(default='', max_length=255, unique=True),
-        ),
-        migrations.RunPython(
-            code=create_acl_defaults,
         ),
     ]
