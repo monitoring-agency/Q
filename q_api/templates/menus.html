@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load static %}
+{% block body %}
+<div class="sidebar" id="sidebar">
+    <a draggable="false" class="sidebarLogo" href="/"><img draggable="false" alt="logo" src="{% static 'img/q_little.png' %}"></a>
+    <div id="sidebarToggle" class="sidebarDiv">
+        <img src="{% static 'img/chevrons-left.svg' %}" alt="Hide/Show sidebar">
+    </div>
+    <a class="sidebarRow" href="/">
+        <img src="{% static 'img/activity.svg' %}" alt="activity">
+        <p>Activity</p>
+    </a>
+    <a class="sidebarRow" href="/description">
+        <img src="{% static 'img/sliders.svg' %}" alt="description">
+        <p>Description</p>
+    </a>
+    <a class="sidebarRow" href="/settings">
+        <img src="{% static 'img/settings.svg' %}" alt="settings">
+        <p>Settings</p>
+    </a>
+</div>
+<div class="topbar" id="topbar">
+    <div></div>
+    <div class="topbarRight">
+        <a href="/logout">
+            <img src="{% static 'img/logout.svg' %}" alt="Logout">
+        </a>
+    </div>
+</div>
+
+<div class="content" id="content">
+    {% block content %}
+    {% endblock %}
+</div>
+{% endblock %}
