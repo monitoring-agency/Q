@@ -3,7 +3,7 @@ from django.shortcuts import render
 
 
 class Login(LoginView):
-    template_name = "login.html"
+    template_name = "auth/login.html"
     success_url = "/"
 
 
