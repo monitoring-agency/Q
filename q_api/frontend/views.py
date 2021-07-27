@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.shortcuts import render
 
@@ -7,6 +8,6 @@ class Login(LoginView):
     success_url = "/"
 
 
-class Logout(LogoutView):
+class Logout(LoginRequiredMixin, LogoutView):
     template_name = ""
 
