@@ -9,7 +9,7 @@
     <link type="text/css" rel="stylesheet" href="{% static 'css/q_api_loading.css' %}">
     <link rel="shortcut icon" href="{% static 'img/favicon.ico' %}"/>
 
-    <script src="{% static 'js/q_api_general.js' %}"></script>
+    <script src="{% static 'js/q_api_preload.js' %}"></script>
 </head>
 <body id="stop-scrolling">
 
@@ -19,4 +19,5 @@
 
 {% block body %}
 {% endblock %}
+    <script src="{% static 'js/q_api_general.js' %}"></script>
 </body>
