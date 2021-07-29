@@ -8,7 +8,7 @@ BASE Declaration
     --level-2: #1e1e1e;
     --level-3: #222222;
     --level-4: #242424;
-    --levle-5: #272727;
+    --level-5: #272727;
     --level-6: #2c2c2c;
     --level-7: #2e2e2e;
     --level-8: #333333;
@@ -169,6 +169,7 @@ Menu Declaration
     display: block;
     position: fixed;
     width: 20em;
+    overflow: hidden;
     height: 100%;
     color: var(--text);
     text-align: center;
@@ -181,16 +182,55 @@ Menu Declaration
     margin-bottom: 0.25em;
 }
 
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
 .sidebar.close {
     width: 5em;
 }
 
-.sidebar.close .sidebarRow p{
+.sidebar.close li.sidebarRow > p,
+.sidebar.close ul:not([class^="sidebarNested"]) > li > a.sidebarRow > p {
     display: none;
 }
 
+.sidebar.close .sidebarNav {
+    width: 5em;
+}
+
+.sidebar.close .sidebarNav {
+    overflow: visible;
+}
+
+.sidebar.close .sidebarRow > .sidebarNested{
+    left: -10em;
+    top: auto;
+    display: none;
+}
+
+.sidebar.close .sidebarRow:hover > .sidebarNested {
+    display: flex;
+    transform: translateX(100%);
+    height: max-content;
+}
+
+.sidebarLogo {
+    position: relative;
+    z-index: 2;
+    display: block;
+    width: 100%;
+    padding: 0.5em 0;
+    background-color: var(--level-2);
+}
+
 .sidebarLogo img {
-    margin: 0.5em auto;
+    background-color: var(--level-2);
+    position: relative;
+    z-index: 2;
+    margin: 0 auto;
     display: block;
     height: 3.5em;
 }
@@ -200,6 +240,22 @@ Menu Declaration
     height: 1px;
     margin-top: 0.5em;
     margin-bottom: 0.5em;
+    position: relative;
+    z-index: 2;
+}
+
+.sidebarSeparator {
+    background-color: var(--level-0);
+    height: 1px;
+    position: relative;
+    z-index: 2;
+}
+
+.sidebarNav {
+    position: fixed;
+    height: 100%;
+    overflow: hidden;
+    width: 20em;
 }
 
 .sidebarRow {
@@ -208,12 +264,17 @@ Menu Declaration
     align-items: center;
     padding-top: 1em;
     padding-bottom: 1em;
+    padding-left: 1.5em;
     text-decoration: none;
     transition: background-color ease-in-out 250ms;
 }
 
 .sidebarRow:hover {
     background-color: var(--level-4);
+}
+
+.sidebarNested .sidebarRow:hover {
+    background-color: var(--level-5);
 }
 
 .sidebarRow p {
@@ -224,19 +285,36 @@ Menu Declaration
     transition: color ease-in-out 250ms;
 }
 
-.sidebarRow:hover p {
-    color: var(--text);
-}
-
 .sidebarRow img {
-    margin-left: 2em;
     height: 2em;
     filter: invert(55%) sepia(0%) saturate(31%) hue-rotate(206deg) brightness(111%) contrast(89%);
     transition: filter linear 250ms;
 }
 
-.sidebarRow:hover img {
+.sidebarRow:hover > img {
     filter: invert();
+}
+
+.sidebarRow:hover > p {
+    color: var(--text);
+}
+
+.sidebarNested {
+    background-color: var(--level-4);
+    position: absolute;
+    top: 0;
+    left: 5em;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    z-index: 1;
+    width: 15em;
+    transform: translateX(100%);
+    transition: all linear 100ms;
+}
+
+.sidebarRow:hover > .sidebarNested {
+    transform: translateX(0);
 }
 
 .sidebarDiv {
@@ -246,6 +324,9 @@ Menu Declaration
     cursor: pointer;
     padding-top: 0.25em;
     padding-bottom: 0.25em;
+    position: relative;
+    z-index: 2;
+    background-color: var(--level-2);
     transition: background-color ease-in-out 250ms;
 }
 

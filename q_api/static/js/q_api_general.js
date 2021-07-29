@@ -2,7 +2,6 @@ const sidebar = document.getElementById("sidebar");
 const topbar = document.getElementById("topbar");
 const content = document.getElementById("content");
 const toggle = document.getElementById("sidebarToggle");
-const sidebarItems = document.querySelector(".sidebarRow");
 document.getElementById("sidebarToggle").addEventListener("click", function() {
     if (sidebar.classList.contains("close")) {
         sidebar.classList.remove("close");

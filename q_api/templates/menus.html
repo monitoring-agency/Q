@@ -3,21 +3,51 @@
 {% block body %}
 <div class="sidebar" id="sidebar">
     <a draggable="false" class="sidebarLogo" href="/"><img draggable="false" alt="logo" src="{% static 'img/q_little.png' %}"></a>
+    <div class="sidebarSeparator"></div>
     <div id="sidebarToggle" class="sidebarDiv">
         <img src="{% static 'img/chevrons-left.svg' %}" alt="Hide/Show sidebar">
     </div>
-    <a class="sidebarRow" href="/">
-        <img src="{% static 'img/activity.svg' %}" alt="activity">
-        <p>Activity</p>
-    </a>
-    <a class="sidebarRow" href="/description">
-        <img src="{% static 'img/sliders.svg' %}" alt="description">
-        <p>Description</p>
-    </a>
-    <a class="sidebarRow" href="/settings">
-        <img src="{% static 'img/settings.svg' %}" alt="settings">
-        <p>Settings</p>
-    </a>
+    <div class="sidebarSeparator"></div>
+    <nav class="sidebarNav">
+        <ul>
+            <li class="sidebarRow">
+                <img src="{% static 'img/activity.svg' %}" alt="activity">
+                <p>Activity</p>
+                <ul class="sidebarNested">
+                    <li>
+                        <a class="sidebarRow nested" href="/">
+                            <img src="{% static 'img/activity.svg' %}" alt="dashboard">
+                            <p>Dashboard</p>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a class="sidebarRow" href="/description">
+                    <img src="{% static 'img/sliders.svg' %}" alt="description">
+                    <p>Description</p>
+                </a>
+            </li>
+            <li class="sidebarRow">
+                <img src="{% static 'img/settings.svg' %}" alt="settings">
+                <p>Settings</p>
+                <ul class="sidebarNested">
+                    <li>
+                        <a class="sidebarRow" href="/settings/general">
+                            <img src="{% static 'img/settings.svg' %}" alt="General Settings">
+                            <p>General Settings</p>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="sidebarRow" href="/settings/account">
+                            <img src="{% static 'img/user.svg' %}" alt="Account Settings">
+                            <p>Account Settings</p>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
 </div>
 <div class="topbar" id="topbar">
     <div></div>
