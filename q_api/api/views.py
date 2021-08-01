@@ -240,13 +240,7 @@ class CheckView(CheckOptionalMixinView):
             check.comment = params["comment"]
         if "check_type" in params:
             if params["check_type"]:
-                try:
-                    ct = CheckType.objects.get(name=params["check_type"])
-                except CheckType.DoesNotExist:
-                    return JsonResponse(
-                        {"success": False, "message": f"CheckType {params['check_type']} does not exist"},
-                        status=409
-                    )
+                ct, _ = CheckType.objects.get_or_create(name=params["check_type"])
                 check.check_type = ct
             else:
                 check.check_type = None
@@ -258,10 +252,7 @@ class CheckView(CheckOptionalMixinView):
         if not created:
             return JsonResponse({"success": False, "message": "Check already exists with that name"}, status=409)
 
-        ret = self.optional(check, params)
-        if isinstance(ret, JsonResponse):
-            check.delete()
-            return ret
+        self.optional(check, params)
 
         check.save()
         return JsonResponse({"success": True, "message": "Object was created"}, status=201)
@@ -276,10 +267,7 @@ class CheckView(CheckOptionalMixinView):
         if "name" in params:
             check.name = params["name"]
 
-        ret = self.optional(check, params)
-        if isinstance(ret, JsonResponse):
-            return ret
-
+        self.optional(check, params)
         check.save()
         return JsonResponse({"success": True, "message": "Changes were successful"})
 
