@@ -2,8 +2,8 @@
 {% block body %}
 {% load static %}
 
-<div class="flexRow">
-    <div class="flexColumn">
+<div class="flexRow centered">
+    <div class="flexColumn centered">
         <img src="{% static 'img/q_login.png' %}" alt="login_background" id="qLogin" draggable="false">
         <form method="POST" class="loginContent">
             {% csrf_token %}
