@@ -10,9 +10,19 @@ from django.db.models import CharField, ForeignKey, ManyToManyField, PositiveInt
 class GlobalVariable(models.Model):
     """Represents a global variable"""
     variable = GenericRelation("GenericKVP")
+    comment = CharField(default="", max_length=1024, null=True, blank=True)
 
     def to_dict(self):
-        return self.variable.to_dict() + {"id": self.id}
+        kvp = {
+            "id": self.id,
+            "comment": self.comment if self.comment else ""
+        }
+        for x, y in self.variable.first().to_dict().items():
+            kvp.update({
+                "key": x,
+                "value": y
+            })
+        return kvp
 
 
 class SchedulingInterval(models.Model):
@@ -70,6 +80,7 @@ class TimePeriod(models.Model):
     """The complete time period. Included values for all days"""
     name = CharField(default="", max_length=255, unique=True)
     time_periods = ManyToManyField(DayTimePeriod)
+    comment = CharField(default="", max_length=1024, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -78,6 +89,7 @@ class TimePeriod(models.Model):
         return {
             "id": self.id,
             "name": self.name,
+            "comment": self.comment if self.comment else "",
             "time_periods": {
                 x.day.name: [
                     {"start_time": y.start_time, "stop_time": y.stop_time}
@@ -112,6 +124,7 @@ class Check(models.Model):
     name = CharField(default="", max_length=255, unique=True)
     cmd = CharField(default="", max_length=1024, blank=True, null=True)
     check_type = ForeignKey(CheckType, on_delete=models.DO_NOTHING, blank=True, null=True)
+    comment = CharField(default="", max_length=1024, blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -121,6 +134,7 @@ class Check(models.Model):
             "id": self.id,
             "name": self.name,
             "cmd": self.name if self.name else "",
+            "comment": self.comment if self.comment else "",
             "check_type": self.check_type.name if self.check_type else ""
         }
 
@@ -148,6 +162,7 @@ class Contact(models.Model):
         TimePeriod, on_delete=models.DO_NOTHING,
         blank=True, null=True,
         related_name="contact_metric_nt")
+    comment = CharField(default="", max_length=1024, blank=True, null=True)
     variables = GenericRelation("GenericKVP")
 
     def __str__(self):
@@ -162,6 +177,7 @@ class Contact(models.Model):
             "linked_host_notification_period": self.linked_host_notification_period_id if self.linked_host_notification_period else "",
             "linked_metric_notifications": self.linked_metric_notifications if self.linked_metric_notifications else "",
             "linked_metric_notification_period": self.linked_metric_notification_period_id if self.linked_metric_notification_period else "",
+            "comment": self.comment if self.comment else "",
             "variables": dict(ChainMap(*[x.to_dict() for x in self.variables.all()][::-1]))
         }
 
@@ -176,6 +192,7 @@ class Contact(models.Model):
 class ContactGroup(models.Model):
     """This class represents a group of contacts. Only used for grouping"""
     name = CharField(default="", max_length=255, unique=True)
+    comment = CharField(default="", max_length=1024, blank=True, null=True)
     linked_contacts = ManyToManyField(Contact, blank=True)
 
     def __str__(self):
@@ -185,6 +202,7 @@ class ContactGroup(models.Model):
         return {
             "id": self.id,
             "name": self.name,
+            "comment": self.comment if self.comment else "",
             "linked_contacts": [x.id for x in self.linked_contacts.all()]
         }
 
@@ -213,6 +231,7 @@ class HostTemplate(models.Model):
         blank=True, null=True,
         related_name="notification_ht"
     )
+    comment = CharField(default="", max_length=1024, blank=True, null=True)
     variables = GenericRelation("GenericKVP")
 
     def __str__(self):
@@ -228,6 +247,7 @@ class HostTemplate(models.Model):
             "scheduling_interval": self.scheduling_interval.interval if self.scheduling_interval else "",
             "scheduling_period": self.scheduling_period_id if self.scheduling_period else "",
             "notification_period": self.notification_period_id if self.notification_period else "",
+            "comment": self.comment if self.comment else "",
             "variables": dict(ChainMap(*[x.to_dict() for x in self.variables.all()][::-1]))
         }
 
@@ -257,6 +277,7 @@ class Host(models.Model):
         blank=True, null=True,
         related_name="notification_h"
     )
+    comment = CharField(default="", max_length=1024, blank=True, null=True)
     variables = GenericRelation("GenericKVP")
 
     def __str__(self):
@@ -273,6 +294,7 @@ class Host(models.Model):
             "scheduling_interval": self.scheduling_interval.interval if self.scheduling_period else "",
             "scheduling_period": self.scheduling_period_id if self.scheduling_period else "",
             "notification_period": self.notification_period_id if self.notification_period else 2,
+            "comment": self.comment if self.comment else "",
             "variables": dict(ChainMap(*[x.to_dict() for x in self.variables.all()][::-1]))
         }
 
@@ -300,6 +322,7 @@ class MetricTemplate(models.Model):
         blank=True, null=True,
         related_name="notification_mt"
     )
+    comment = CharField(default="", max_length=1024, blank=True, null=True)
     variables = GenericRelation("GenericKVP")
 
     def __str__(self):
@@ -314,6 +337,7 @@ class MetricTemplate(models.Model):
             "scheduling_interval": self.scheduling_interval.interval if self.scheduling_interval else "",
             "scheduling_period": self.scheduling_period_id if self.scheduling_period else "",
             "notification_period": self.notification_period_id if self.notification_period else "",
+            "comment": self.comment if self.comment else "",
             "variables": dict(ChainMap(*[x.to_dict() for x in self.variables.all()][::-1]))
         }
 
@@ -343,6 +367,7 @@ class Metric(models.Model):
         blank=True, null=True,
         related_name="notification"
     )
+    comment = CharField(default="", max_length=1024, blank=True, null=True)
     variables = GenericRelation("GenericKVP")
 
     def __str__(self):
@@ -359,6 +384,7 @@ class Metric(models.Model):
             "scheduling_interval": self.scheduling_interval.interval if self.scheduling_interval else "",
             "scheduling_period": self.scheduling_period_id if self.scheduling_period else "",
             "notification_period": self.notification_period_id if self.notification_period else "",
+            "comment": self.comment if self.comment else "",
             "variables": dict(ChainMap(*[x.to_dict() for x in self.variables.all()][::-1]))
         }
 
