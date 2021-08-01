@@ -51,3 +51,8 @@ class MetricTemplateAdmin(admin.ModelAdmin):
 @admin.register(HostTemplate)
 class HostTemplateAdmin(admin.ModelAdmin):
     list_display = ("__str__",)
+
+
+@admin.register(GlobalVariable)
+class GlobalVariableAdmin(admin.ModelAdmin):
+    list_display = ("__str__",)
