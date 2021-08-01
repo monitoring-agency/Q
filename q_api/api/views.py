@@ -236,6 +236,8 @@ class CheckView(CheckOptionalMixinView):
         )
 
     def optional(self, check, params):
+        if "comment" in params:
+            check.comment = params["comment"]
         if "check_type" in params:
             if params["check_type"]:
                 try:
@@ -291,6 +293,8 @@ class MetricView(CheckOptionalMixinView):
         )
 
     def optional(self, metric, params, overwrite=False):
+        if "comment" in params:
+            metric.comment = params["comment"]
         if "linked_check" in params:
             if params["linked_check"]:
                 try:
@@ -358,7 +362,10 @@ class MetricView(CheckOptionalMixinView):
                 for key, value in params["variables"].items():
                     key_label, _ = Label.objects.get_or_create(label=key)
                     value_label, _ = Label.objects.get_or_create(label=value)
-                    GenericKVP.objects.get_or_create(key=key_label, value=value_label, referent=metric)
+                    GenericKVP.objects.get_or_create(
+                        key=key_label, value=value_label, object_id=metric.id,
+                        content_type=ContentType.objects.get_for_model(Metric)
+                    )
             else:
                 metric.variables.clear()
 
@@ -423,6 +430,8 @@ class MetricTemplateView(CheckOptionalMixinView):
         )
 
     def optional(self, metric_template, params, overwrite=False):
+        if "comment" in params:
+            metric_template.comment = params["comment"]
         if "linked_check" in params:
             if params["linked_check"]:
                 try:
@@ -540,6 +549,8 @@ class HostView(CheckOptionalMixinView):
         )
 
     def optional(self, host, params, overwrite=False):
+        if "comment" in params:
+            host.comment = params["comment"]
         if "address" in params:
             host.address = params["address"]
         if "linked_check" in params:
@@ -620,7 +631,10 @@ class HostView(CheckOptionalMixinView):
                 for key, value in params["variables"].items():
                     key_label, _ = Label.objects.get_or_create(label=key)
                     value_label, _ = Label.objects.get_or_create(label=value)
-                    GenericKVP.objects.get_or_create(key=key_label, value=value_label, referent=host)
+                    GenericKVP.objects.get_or_create(
+                        key=key_label, value=value_label, object_id=host.id,
+                        content_type=ContentType.objects.get_for_model(Host)
+                    )
             else:
                 host.variables.clear()
 
@@ -672,6 +686,8 @@ class HostTemplateView(CheckOptionalMixinView):
         )
 
     def optional(self, host_template, params, overwrite=False):
+        if "comment" in params:
+            host_template.comment = params["comment"]
         if "address" in params:
             host_template.address = params["address"]
         if "linked_check" in params:
@@ -750,7 +766,10 @@ class HostTemplateView(CheckOptionalMixinView):
                 for key, value in params["variables"].items():
                     key_label, _ = Label.objects.get_or_create(label=key)
                     value_label, _ = Label.objects.get_or_create(label=value)
-                    GenericKVP.objects.get_or_create(key=key_label, value=value_label, referent=host_template)
+                    GenericKVP.objects.get_or_create(
+                        key=key_label, value=value_label, object_id=host_template.id,
+                        content_type=ContentType.objects.get_for_model(HostTemplate)
+                    )
             else:
                 host_template.variables.clear()
 
@@ -879,6 +898,8 @@ class TimePeriodView(CheckOptionalMixinView):
             )
         time_period = TimePeriod.objects.create(name=params["name"])
         [time_period.time_periods.add(x) for x in day_time_periods]
+        if "comment" in params:
+            time_period.comment = params["comment"]
         time_period.save()
         return JsonResponse(
             {"success": True, "message": "TimePeriod was successfully added", "data": time_period.id}
@@ -901,6 +922,8 @@ class TimePeriodView(CheckOptionalMixinView):
             if not day_time_periods:
                 return JsonResponse({"success": False, "message": "stop_time has to be after start_time"})
             [time_period.time_periods.add(x) for x in day_time_periods]
+        if "comment" in params:
+            time_period.comment = params["comment"]
         time_period.save()
         return JsonResponse({"success": True, "message": "Changes were successful"})
 
@@ -912,6 +935,10 @@ class GlobalVariableView(CheckOptionalMixinView):
             required_post=["key", "value"]
         )
 
+    def optional(self, params, variable):
+        if "comment" in params:
+            variable.comment = params["comment"]
+
     def save_post(self, params, *args, **kwargs):
         if GlobalVariable.objects.filter(variable__key__label=params["key"]).exists():
             return JsonResponse(
@@ -921,7 +948,12 @@ class GlobalVariableView(CheckOptionalMixinView):
         variable = GlobalVariable.objects.create()
         key_label, _ = Label.objects.get_or_create(label=params["key"])
         value_label, _ = Label.objects.get_or_create(label=params["value"])
-        GenericKVP.objects.get_or_create(key=key_label, value=value_label, referent=variable)
+        kvp, _ = GenericKVP.objects.get_or_create(
+            key=key_label, value=value_label, object_id=variable.id,
+            content_type=ContentType.objects.get_for_model(GlobalVariable)
+        )
+        self.optional(params, variable)
+        variable.save()
         return JsonResponse(
             {"success": True, "message": f"GlobalVariable was created successfully", "data": variable.id}
         )
@@ -934,13 +966,22 @@ class GlobalVariableView(CheckOptionalMixinView):
                 {"success": False, "message": f"GlobalVariable with id {kwargs['sid']} does not exist"},
                 status=404
             )
+        kvp = variable.variable.first()
         if "key" in params:
-            if not GlobalVariable.objects.filter(variable__key__label=params["key"]).exists():
+            if not GlobalVariable.objects.filter(variable__key__label=params["key"]).exists() \
+                    or params["key"] == variable.variable.first().key.label:
                 key_label, _ = Label.objects.get_or_create(label=params["key"])
-                variable.variable.key = key_label
+                kvp.key = key_label
+            else:
+                return JsonResponse(
+                    {"success": False, "message": f"GlobalVariable with name {params['key']} already exists"},
+                    status=409
+                )
         if "value" in params:
             value_label, _ = Label.objects.get_or_create(label=params["value"])
-            variable.variable.value = value_label
+            kvp.value = value_label
+        self.optional(params, variable)
+        kvp.save()
         variable.save()
         return JsonResponse(
             {"success": True, "message": f"GlobalVariable with id {kwargs['sid']} was changed successful"}
@@ -955,6 +996,8 @@ class ContactView(CheckOptionalMixinView):
         )
 
     def optional(self, contact, params, overwrite=False):
+        if "comment" in params:
+            contact.comment = params["comment"]
         if "mail" in params:
             contact.mail = params["mail"]
 
@@ -1007,7 +1050,10 @@ class ContactView(CheckOptionalMixinView):
                 for key, value in params["variables"].items():
                     key_label = Label.objects.get_or_create(label=key)
                     value_label = Label.objects.get_or_create(label=value)
-                    GenericKVP.objects.create(key=key_label, value=value_label, referent=contact)
+                    GenericKVP.objects.get_or_create(
+                        key=key_label, value=value_label, object_id=contact.id,
+                        content_type=ContentType.objects.get_for_model(Contact)
+                    )
             else:
                 contact.variables.clear()
 
@@ -1077,6 +1123,8 @@ class ContactGroupView(CheckOptionalMixinView):
                         )
             else:
                 contact_group.linked_contacts.clear()
+        if "comment" in params:
+            contact_group.comment = params["comment"]
 
     def save_post(self, params, *args, **kwargs):
         if ContactGroup.objects.filter(name=params["name"]).exists():
