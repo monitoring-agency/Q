@@ -2,10 +2,10 @@
 {% block content %}
 
 <div class="declarationContent flexColumn centered">
-    <form method="POST" {% if global_variable %}action="/declaration/globalvariable/update/{{ global_variable.id }}" {% else %}action="/declaration/globalvariable/create" {% endif %}>
+    <form method="POST" {% if existing %}action="/declaration/globalvariable/update/{{ existing.id }}" {% else %}action="/declaration/globalvariable/create" {% endif %}>
         <div class="declarationBox">
             {% csrf_token %}
-            <h3>{% if global_variable %}Update existing {% else %}Create new {% endif %}Global Variable</h3>
+            <h3>{% if existing %}Update existing {% else %}Create new {% endif %}Global Variable</h3>
         {% if error %}
             <p class="error centered">{{ error }}</p>
         {% endif %}
@@ -16,7 +16,7 @@
                         <label for="name">Name</label>
                     </td>
                     <td>
-                        <input name="key" id="name" required {% if global_variable %}value="{{ global_variable.key }}" {% endif %}>
+                        <input name="key" id="name" required {% if existing %}value="{{ existing.key }}" {% endif %}>
                     </td>
                 </tr>
                 <tr>
@@ -24,7 +24,7 @@
                         <label for="value">Value</label>
                     </td>
                     <td>
-                        <input name="value" id="value" required {% if global_variable %}value="{{ global_variable.value }}" {% endif %}>
+                        <input name="value" id="value" required {% if existing %}value="{{ existing.value }}" {% endif %}>
                     </td>
                 </tr>
                 <tr>
@@ -32,7 +32,7 @@
                         <label for="comment">Comment</label>
                     </td>
                     <td>
-                        <textarea name="comment" id="comment" maxlength="1024">{% if global_variable %}{{ global_variable.comment }}{% endif %}</textarea>
+                        <textarea name="comment" id="comment" maxlength="1024">{% if existing %}{{ existing.comment }}{% endif %}</textarea>
                     </td>
                 </tr>
             </table>

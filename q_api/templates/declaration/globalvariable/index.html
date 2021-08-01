@@ -8,7 +8,7 @@
         </div>
     </div>
     <div class="declarationList">
-    {% if global_variables|length == 0 %}
+    {% if entries|length == 0 %}
         There is no Variable.
     {% else %}
         <table>
@@ -20,7 +20,7 @@
                 <th>Comment</th>
                 <th>Delete</th>
             </tr>
-        {% for item in global_variables %}
+        {% for item in entries %}
             <tr class="clickable" onclick="window.location = '/declaration/globalvariable/update/{{ item.id }}';">
                 <td class="smallCell"><label><input type="checkbox"></label></td>
                 <td class="smallCell" id="id-{{ item.id }}">{{ item.id }}</td>

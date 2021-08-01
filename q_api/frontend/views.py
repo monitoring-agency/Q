@@ -26,63 +26,57 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         return render(request, self.template_name)
 
 
-class DeclarationGlobalVariableView(LoginRequiredMixin, TemplateView):
-    template_name = "declaration/global_variable/index.html"
+#
+# Templates for model specific classes which can call the API for creation, updating and deletion
+#
+class DeclarationTemplateIndex(LoginRequiredMixin, TemplateView):
 
-    def get(self, request, *args, **kwargs):
-        global_variables = [x.to_dict() for x in GlobalVariable.objects.all()]
-        return render(request, self.template_name, {"global_variables": global_variables})
+    def get(self, request, model_class=None, *args, **kwargs):
+        template_name = f"declaration/{model_class.__name__.lower()}/index.html"
+        entries = [x.to_dict() for x in model_class.objects.all()]
+        return render(request, template_name, {"entries": entries})
 
 
-class DeclarationGlobalVariableCreateView(LoginRequiredMixin, TemplateView):
-    template_name = "declaration/global_variable/create_or_update.html"
+class DeclarationTemplateDelete(LoginRequiredMixin, View):
+    def post(self, request, sid="", model_class=None, *args, **kwargs):
+        try:
+            entry = model_class.objects.get(id=sid)
+        except model_class.DoesNotExist:
+            return redirect(f"/declaration/{model_class.__name__.lower()}/")
+        entry.delete()
+        return redirect(f"/declaration/{model_class.__name__.lower()}/")
 
-    def get(self, request, *args, **kwargs):
-        global_variable_names = [x.variable.name for x in GlobalVariable.objects.all()]
-        return render(request, self.template_name, {"global_variable_names": global_variable_names})
 
-    def post(self, request, *args, **kwargs):
-        ret = api.views.GlobalVariableView().save_post(params=request.POST)
-        if ret.status_code != 200:
-            global_variable_names = [x.variable.name for x in GlobalVariable.objects.all()]
+class DeclarationTemplateCreate(LoginRequiredMixin, TemplateView):
+    def get(self, request, model_class=None, *args, **kwargs):
+        template_name = f"declaration/{model_class.__name__.lower()}/create_or_update.html"
+        return render(request, template_name)
+
+    def post(self, request, api_class=None, model_class=None, *args, **kwargs):
+        template_name = f"declaration/{model_class.__name__.lower()}/create_or_update.html"
+        ret = api_class().save_post(params=request.POST)
+        if ret.status_code != 200 and ret.status_code != 201:
             return render(
-                request, self.template_name,
-                {"global_variable_names": global_variable_names, "error": json.loads(ret.content)["message"]}
+                request, template_name, {"error": json.loads(ret.content)["message"]}
             )
-        return redirect("/declaration/globalvariable/")
+        return redirect(f"/declaration/{model_class.__name__.lower()}/")
 
 
-class DeclarationGlobalVariableUpdateView(LoginRequiredMixin, TemplateView):
-    template_name = "declaration/global_variable/create_or_update.html"
-
-    def get(self, request, sid="", *args, **kwargs):
+class DeclarationTemplateUpdate(LoginRequiredMixin, TemplateView):
+    def get(self, request, sid="", model_class=None, *args, **kwargs):
+        template_name = f"declaration/{model_class.__name__.lower()}/create_or_update.html"
         try:
-            existing = GlobalVariable.objects.get(id=sid).to_dict()
-        except GlobalVariable.DoesNotExist:
-            return render(request, "lib/error.html", {"error_header": "Variable is not existing"})
-        return render(request, self.template_name, {"global_variable": existing})
+            existing = model_class.objects.get(id=sid).to_dict()
+        except model_class.DoesNotExist:
+            return render(
+                request, "lib/error.html",
+                {"error_header": f"{model_class.__name__} is not existing"}
+            )
+        return render(request, template_name, {"existing": existing})
 
-    def post(self, request, sid="", *args, **kwargs):
-        try:
-            ret = api.views.GlobalVariableView().save_put(params=request.POST, sid=sid)
-            if ret.status_code != 200:
-                global_variable_names = [x.variable.name for x in GlobalVariable.objects.all()]
-                return render(
-                    request, self.template_name,
-                    {"global_variable_names": global_variable_names, "error": json.loads(ret.content)["message"]}
-                )
-        except GlobalVariable.DoesNotExist:
-            return render(request, "lib/error.html", {"error_header": "Variable is not existing"})
-        return redirect("/declaration/globalvariable/")
-
-
-class DeclarationGlobalVariableDeleteView(LoginRequiredMixin, View):
-
-    def post(self, request, sid="", *args, **kwargs):
-        try:
-            global_variable = GlobalVariable.objects.get(id=sid)
-        except GlobalVariable.DoesNotExist:
-            return redirect("/declaration/globalvariable/")
-        global_variable.delete()
-        return redirect("/declaration/globalvariable/")
-
+    def post(self, request, sid="", api_class=None, model_class=None, *args, **kwargs):
+        template_name = f"declaration/{model_class.__name__.lower()}/create_or_update.html"
+        ret = api_class().save_put(params=request.POST, sid=sid)
+        if ret.status_code != 200:
+            return render(request, template_name, {"error": json.loads(ret.content)["message"]})
+        return redirect(f"/declaration/{model_class.__name__.lower()}/")

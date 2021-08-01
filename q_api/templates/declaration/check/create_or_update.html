@@ -1,0 +1,51 @@
+{% extends "menus.html" %}
+{% block content %}
+
+<div class="declarationContent flexColumn centered">
+    <form method="POST" {% if existing %}action="/declaration/check/update/{{ existing.id }}" {% else %}action="/declaration/check/create" {% endif %}>
+        <div class="declarationBox">
+            {% csrf_token %}
+            <h3>{% if existing %}Update existing {% else %}Create new {% endif %}Check</h3>
+        {% if error %}
+            <p class="error centered">{{ error }}</p>
+        {% endif %}
+            <table>
+                <tr>
+                    <td>
+                        <label for="name">Name</label>
+                    </td>
+                    <td>
+                        <input name="name" id="name" required {% if existing %}value="{{ existing.name }}" {% endif %}>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="check_type">Check Type</label>
+                    </td>
+                    <td>
+                        <input name="check_type" id="check_type" {% if existing %}value="{{ existing.check_type }}" {% endif %}>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="cmd">Command line</label>
+                    </td>
+                    <td>
+                        <textarea name="cmd" id="cmd">{% if existing %}{{ existing.cmd }}{% endif %}</textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="comment">Comment</label>
+                    </td>
+                    <td>
+                        <textarea name="comment" id="comment" maxlength="1024">{% if existing %}{{ existing.comment }}{% endif %}</textarea>
+                    </td>
+                </tr>
+            </table>
+            <button>Submit</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

@@ -45,6 +45,7 @@ body {
 
 .content {
     margin-left: 20em;
+    min-width: fit-content;
     transition: margin-left ease-in-out 250ms;
 }
 
@@ -433,25 +434,23 @@ Declaration Declaration
 
 .declarationList table tr td {
     text-align: center;
-    padding-top: 0.5em;
-    padding-bottom: 0.5em;
+    padding: 0.25em 1em 0.25em 1em;
 }
 
 .declarationList table tr th {
-    padding-top: 0.5em;
-    padding-bottom: 0.5em;
+    padding: 0.5em 1em 0.25em 1em;
 }
 
 .smallCell {
-    width: 6em;
+    width: 4em;
 }
 
 .normalCell {
-    width: 12em;
+    width: 10em;
 }
 
 .largeCell {
-    width: 16em;
+    width: 20em;
 }
 
 .declarationList table tr:nth-child(1) {
