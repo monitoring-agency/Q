@@ -133,7 +133,7 @@ class Check(models.Model):
         return {
             "id": self.id,
             "name": self.name,
-            "cmd": self.name if self.name else "",
+            "cmd": self.cmd if self.cmd else "",
             "comment": self.comment if self.comment else "",
             "check_type": self.check_type.name if self.check_type else ""
         }
