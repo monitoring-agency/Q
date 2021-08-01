@@ -5,7 +5,7 @@
     <form method="POST" {% if global_variable %}action="/declaration/globalvariable/update/{{ global_variable.id }}" {% else %}action="/declaration/globalvariable/create" {% endif %}>
         <div class="declarationBox">
             {% csrf_token %}
-            <h3>Create new Global Variable</h3>
+            <h3>{% if global_variable %}Update existing {% else %}Create new {% endif %}Global Variable</h3>
         {% if error %}
             <p class="error centered">{{ error }}</p>
         {% endif %}
