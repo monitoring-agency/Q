@@ -14,10 +14,11 @@ BASE Declaration
     --level-8: #333333;
     --prim: #fb5d08;
     --prim-light: #ffab8a;
-    --background-light: #252526;
     --text: #dedede;
     --text-medium: #999999;
     --text-disabled: #616161;
+    --error: #ff2200;
+
 }
 
 body {
@@ -30,12 +31,14 @@ body {
 .flexRow {
     display: flex;
     width: 100%;
-    justify-content: center;
 }
 
 .flexColumn {
     display: flex;
     flex-direction: column;
+}
+
+*.centered {
     justify-content: center;
     align-items: center;
 }
@@ -48,6 +51,30 @@ body {
 .content.close {
     margin-left: 5em;
 }
+
+
+button,
+.buttonLink {
+    color: black;
+    text-decoration: none;
+    padding: 0.25em 1em 0.25em 1em;
+    background-color: var(--prim);
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color ease-in-out 250ms;
+}
+
+button:hover,
+.buttonLink:hover {
+    background-color: var(--prim-light);
+}
+
+.error {
+    color: var(--error);
+}
+
+::-moz-focus-inner {border:0;}
 
 /*
 Login Declaration
@@ -236,7 +263,7 @@ Menu Declaration
 }
 
 .sidebarSpacer {
-    background-color: var(--level-0);
+    background-color: var(--level-1);
     height: 1px;
     margin-top: 0.5em;
     margin-bottom: 0.5em;
@@ -245,7 +272,7 @@ Menu Declaration
 }
 
 .sidebarSeparator {
-    background-color: var(--level-0);
+    background-color: var(--level-1);
     height: 1px;
     position: relative;
     z-index: 2;
@@ -262,8 +289,8 @@ Menu Declaration
     display: flex;
     justify-content: start;
     align-items: center;
-    padding-top: 1em;
-    padding-bottom: 1em;
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
     padding-left: 1.5em;
     text-decoration: none;
     transition: background-color ease-in-out 250ms;
@@ -310,7 +337,7 @@ Menu Declaration
     z-index: 1;
     width: 15em;
     transform: translateX(100%);
-    transition: all linear 100ms;
+    transition: all linear 200ms;
 }
 
 .sidebarRow:hover > .sidebarNested {
@@ -375,4 +402,142 @@ Dashboard Declaration
     width: max-content;
     padding: 1em;
     margin: 1em;
+}
+
+/*
+Declaration Declaration
+ */
+
+.declarationContent {
+    margin: 1em;
+}
+
+.declarationHeader {
+    display: flex;
+    flex-direction: column;
+    padding: 1em;
+    background-color: var(--level-2);
+}
+
+.declarationList {
+    display: flex;
+    margin-top: 1em;
+    padding: 1em;
+    background-color: var(--level-2);
+}
+
+.declarationList table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.declarationList table tr td {
+    text-align: center;
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+}
+
+.declarationList table tr th {
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+}
+
+.smallCell {
+    width: 6em;
+}
+
+.normalCell {
+    width: 12em;
+}
+
+.largeCell {
+    width: 16em;
+}
+
+.declarationList table tr:nth-child(1) {
+    background-color: var(--level-4);
+}
+
+.declarationList table tr:nth-child(odd):not(:nth-child(1)) {
+    transition: background-color ease-in-out 250ms;
+    background-color: var(--level-3);
+}
+
+.declarationList table tr:nth-child(even) {
+    transition: background-color ease-in-out 250ms;
+    background-color: var(--level-2);
+}
+
+.declarationBox {
+    display: flex;
+    flex-direction: column;
+    width: max-content;
+    padding: 2em;
+    margin-top: 1em;
+    background-color: var(--level-2);
+}
+
+.declarationBox h3 {
+    color: var(--text);
+    margin: 0 0 0.25em 0;
+}
+
+.declarationBox p {
+    display: flex;
+    margin: 0.5em 0 0.5em 0;
+}
+
+.declarationBox td {
+    padding-right: 1em;
+}
+
+.declarationBox input {
+    border: 1px solid var(--level-4);
+    border-radius: 3px;
+    margin: 0.5em 0 0.5em 0;
+    padding: 0.25em 0.5em 0.25em 0.5em;
+    color: var(--text);
+    background-color: var(--level-1);
+    transition: background-color ease-in-out 250ms, border ease-in-out 250ms;
+}
+
+.declarationBox textarea {
+    border: 1px solid var(--level-4);
+    border-radius: 3px;
+    padding: 1em 1em 1em 1em;
+    margin: 0.5em 0 0.5em 0;
+    font-size: medium;
+    width: 25em;
+    height: 10em;
+    color: var(--text);
+    background-color: var(--level-1);
+    transition: background-color ease-in-out 250ms, border ease-in-out 250ms;
+}
+
+.declarationBox button {
+    margin: 0.5em 0 0.5em 0;
+}
+
+.declarationBox input:hover,
+.declarationBox input:focus,
+.declarationBox textarea:hover,
+.declarationBox textarea:focus {
+    outline: 0;
+    border: 1px solid var(--prim);
+    background-color: var(--level-0);
+}
+
+.colorless {
+    background-color: inherit;
+    filter: invert(58%) sepia(0%) saturate(3103%) hue-rotate(343deg) brightness(105%) contrast(85%);
+}
+
+.colorless:hover {
+    background-color: inherit;
+    filter: invert();
+}
+
+.clickable:hover {
+    cursor: pointer;
+    background-color: var(--level-5) !important;
 }

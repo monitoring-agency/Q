@@ -15,18 +15,72 @@
                 <p>Activity</p>
                 <ul class="sidebarNested">
                     <li>
-                        <a class="sidebarRow nested" href="/">
+                        <a class="sidebarRow" href="/">
                             <img src="{% static 'img/activity.svg' %}" alt="dashboard">
                             <p>Dashboard</p>
                         </a>
                     </li>
                 </ul>
             </li>
-            <li>
-                <a class="sidebarRow" href="/description">
-                    <img src="{% static 'img/sliders.svg' %}" alt="description">
-                    <p>Description</p>
-                </a>
+            <li class="sidebarRow">
+                <img src="{% static 'img/sliders.svg' %}" alt="declaration">
+                <p>Declaration</p>
+                <ul class="sidebarNested">
+                    <li>
+                        <a class="sidebarRow" href="/declaration/host/">
+                            <img src="{% static 'img/server.svg' %}" alt="Hosts">
+                            <p>Hosts</p>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="sidebarRow" href="/declaration/hosttemplate/">
+                            <img src="{% static 'img/hosttemplate.svg' %}" alt="Host Templates">
+                            <p>Host Templates</p>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="sidebarRow" href="/declaration/metric/">
+                            <img src="{% static 'img/cpu.svg' %}" alt="Metrics">
+                            <p>Metrics</p>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="sidebarRow" href="/declaration/metrictemplate/">
+                            <img src="{% static 'img/metrictemplate.svg' %}" alt="Metric Templates">
+                            <p>Metric Templates</p>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="sidebarRow" href="/declaration/check/">
+                            <img src="{% static 'img/terminal.svg' %}" alt="Checks">
+                            <p>Checks</p>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="sidebarRow" href="/declaration/globalvariable/">
+                            <img src="{% static 'img/variable.svg' %}" alt="Global variables">
+                            <p>Global Variables</p>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="sidebarRow" href="/declaration/contact/">
+                            <img src="{% static 'img/user.svg' %}" alt="Contacts">
+                            <p>Contacts</p>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="sidebarRow" href="/declaration/contacttemplate/">
+                            <img src="{% static 'img/contacttemplate.svg' %}" alt="Contact Templates">
+                            <p>Contact Templates</p>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="sidebarRow" href="/declaration/timeperiod/">
+                            <img src="{% static 'img/calendar.svg' %}" alt="Time Periods">
+                            <p>Time Periods</p>
+                        </a>
+                    </li>
+                </ul>
             </li>
             <li class="sidebarRow">
                 <img src="{% static 'img/settings.svg' %}" alt="settings">
