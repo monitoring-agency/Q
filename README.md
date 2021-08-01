@@ -26,7 +26,7 @@ Use the endpoint as salt. The key for the checksum is "checksum".
     - Parameters: `username`, `password`
     - Returns: `token`
     
-You can use the retrieved token in the h eader `HTTP_AUTHENTICATION`. 
+You can use the retrieved token in the header `HTTP_AUTHENTICATION`. 
 To do so, generate a string in the form `"<username>:<token>"` use urlsafe b64encoding with UTF-8 encoding. 
 The resulting value should be put as the header value.  
 
