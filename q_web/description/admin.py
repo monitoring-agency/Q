@@ -56,3 +56,8 @@ class HostTemplateAdmin(admin.ModelAdmin):
 @admin.register(GlobalVariable)
 class GlobalVariableAdmin(admin.ModelAdmin):
     list_display = ("__str__",)
+
+
+@admin.register(Proxy)
+class ProxyAdmin(admin.ModelAdmin):
+    list_display = ("name", "address", "port")

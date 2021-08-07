@@ -11,7 +11,7 @@ days = [
     ]
 
 
-def create_days():
+def create_time_related():
     for x in days:
         Day.objects.get_or_create(name=x)
     period, _ = Period.objects.get_or_create(start_time=0000, stop_time=2400)

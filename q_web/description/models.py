@@ -226,10 +226,33 @@ class ContactGroup(models.Model):
                                        update_fields=update_fields)
 
 
+class Proxy(models.Model):
+    """Q Proxy instance"""
+    name = CharField(default="", max_length=255, unique=True)
+    address = CharField(default="", max_length=255)
+    port = PositiveIntegerField(default=8443)
+    disabled = BooleanField(default=False)
+    comment = CharField(default="", max_length=1024, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "address": self.address,
+            "port": self.port,
+            "disabled": self.disabled,
+            "comment": self.comment if self.comment else ""
+        }
+
+
 class HostTemplate(models.Model):
     """Template of a host"""
     name = CharField(default="", max_length=255, unique=True)
     address = CharField(default="", max_length=255, blank=True, null=True)
+    linked_proxy = ForeignKey(Proxy, on_delete=models.CASCADE)
     linked_check = ForeignKey(Check, on_delete=models.DO_NOTHING, blank=True, null=True)
     host_templates = ManyToManyField("self", blank=True, symmetrical=False)
     scheduling_interval = ForeignKey(SchedulingInterval, on_delete=models.DO_NOTHING, blank=True, null=True)
@@ -254,6 +277,7 @@ class HostTemplate(models.Model):
             "id": self.id,
             "name": self.name,
             "address": self.address if self.address else "",
+            "linked_proxy": self.linked_proxy_id,
             "linked_check": self.linked_check_id if self.linked_check else "",
             "host_templates": [x.id for x in self.host_templates.all()],
             "scheduling_interval": self.scheduling_interval.interval if self.scheduling_interval else "",
@@ -275,6 +299,7 @@ class Host(models.Model):
     """This class represents a host"""
     name = CharField(max_length=255, unique=True)
     address = CharField(default="", max_length=255, blank=True, null=True)
+    linked_proxy = ForeignKey(Proxy, on_delete=models.CASCADE)
     linked_check = ForeignKey(Check, on_delete=models.DO_NOTHING, blank=True, null=True)
     disabled = BooleanField(default=False, blank=True, null=True)
     host_templates = ManyToManyField(HostTemplate, blank=True)
@@ -300,6 +325,7 @@ class Host(models.Model):
             "id": self.id,
             "name": self.name,
             "address": self.address if self.address else "",
+            "linked_proxy": self.linked_proxy_id,
             "linked_check": self.linked_check_id if self.linked_check else "",
             "disabled": self.disabled,
             "host_templates": [x.id for x in self.host_templates.all()],
@@ -321,6 +347,7 @@ class Host(models.Model):
 class MetricTemplate(models.Model):
     """This class represents a template for a metric"""
     name = CharField(default="", max_length=255, unique=True)
+    linked_proxy = ForeignKey(Proxy, on_delete=models.CASCADE)
     linked_check = ForeignKey(Check, on_delete=models.DO_NOTHING, blank=True, null=True)
     metric_templates = ManyToManyField("self", blank=True, symmetrical=False)
     scheduling_interval = ForeignKey(SchedulingInterval, on_delete=models.DO_NOTHING, blank=True, null=True)
@@ -344,6 +371,7 @@ class MetricTemplate(models.Model):
         return {
             "id": self.id,
             "name": self.name,
+            "linked_proxy": self.linked_proxy_id,
             "linked_check": self.linked_check_id if self.linked_check else "",
             "metric_templates": [x.id for x in self.metric_templates.all()],
             "scheduling_interval": self.scheduling_interval.interval if self.scheduling_interval else "",
@@ -364,6 +392,7 @@ class MetricTemplate(models.Model):
 class Metric(models.Model):
     """This class represents a Metric"""
     name = CharField(default="", max_length=255)
+    linked_proxy = ForeignKey(Proxy, on_delete=models.CASCADE)
     linked_check = ForeignKey(Check, on_delete=models.DO_NOTHING, blank=True, null=True)
     linked_host = ForeignKey(Host, on_delete=models.CASCADE)
     disabled = BooleanField(default=False, blank=True, null=True)
@@ -389,6 +418,7 @@ class Metric(models.Model):
         return {
             "id": self.id,
             "name": self.name,
+            "linked_proxy": self.linked_proxy_id,
             "linked_check": self.linked_check_id if self.linked_check else "",
             "linked_host": self.linked_host_id if self.linked_host else "",
             "disabled": self.disabled,
