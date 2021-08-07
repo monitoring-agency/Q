@@ -1,7 +1,7 @@
 # Q
 Q is a lightweight monitoring and reporting system.
 
-The name Q originates from the fictional character as well as its race in the series [Star Trek](https://en.wikipedia.org/wiki/Q_(Star_Trek)).
+The name Q originates from the fictional character as well as its species in the series [Star Trek](https://en.wikipedia.org/wiki/Q_(Star_Trek)).
 
 ## Structure
 
