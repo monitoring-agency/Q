@@ -21,6 +21,7 @@ def create_acl_models():
         "/api/v1/timeperiod",
         "/api/v1/contact",
         "/api/v1/contactgroup",
+        "/api/v1/proxy"
     ]
 
     acl_list = [

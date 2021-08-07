@@ -13,7 +13,7 @@ from django.views.decorators.csrf import csrf_exempt
 from api.models import AccountModel, ACLModel
 from description.description import export
 from description.models import Check, CheckType, Host, Metric, TimePeriod, SchedulingInterval, GenericKVP, Label, Day, \
-    Period, DayTimePeriod, GlobalVariable, Contact, ContactGroup, MetricTemplate, HostTemplate
+    Period, DayTimePeriod, GlobalVariable, Contact, ContactGroup, MetricTemplate, HostTemplate, Proxy
 
 
 @method_decorator(csrf_exempt, "dispatch")
@@ -277,7 +277,7 @@ class MetricView(CheckOptionalMixinView):
     def __init__(self, **kwargs):
         super(MetricView, self).__init__(
             api_class=Metric,
-            required_post=["name", "linked_host"],
+            required_post=["name", "linked_host", "linked_proxy"],
             **kwargs
         )
 
@@ -373,13 +373,20 @@ class MetricView(CheckOptionalMixinView):
                 {"success": False, "message": f"Host with id {params['linked_host']} does not exist"},
                 status=404
             )
+        try:
+            linked_proxy = Proxy.objects.get(id=params["linked_proxy"])
+        except Proxy.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "message": f"Proxy with id {params['linked_proxy']} does not exist"},
+                status=404
+            )
 
         # Create check
         if Metric.objects.filter(name=params["name"], linked_host=linked_host).exists():
             return JsonResponse(
                 {"success": False, "message": "Metric with this name already exists"}, status=409
             )
-        metric = Metric.objects.create(name=params["name"], linked_host=linked_host)
+        metric = Metric.objects.create(name=params["name"], linked_host=linked_host, linked_proxy=linked_proxy)
         # Optional params
         ret = self.optional(metric, params)
         if isinstance(ret, JsonResponse):
@@ -406,6 +413,14 @@ class MetricView(CheckOptionalMixinView):
                     {"success": False, "message": f"Host with id {params['linked_host']} does not exist"},
                     status=404
                 )
+        if "linked_proxy" in params:
+            try:
+                proxy = Proxy.objects.get(id=params["linked_proxy"])
+                metric.linked_proxy = proxy
+            except Proxy.DoesNotExist:
+                return JsonResponse(
+                    {"success": False, "message": f"Proxy with id {params['linked_proxy']} does not exist"}, status=404
+                )
         if "name" in params:
             metric.name = params["name"]
 
@@ -421,7 +436,7 @@ class MetricTemplateView(CheckOptionalMixinView):
     def __init__(self):
         super(MetricTemplateView, self).__init__(
             api_class=MetricTemplate,
-            required_post=["name"],
+            required_post=["name", "linked_proxy"],
         )
 
     def optional(self, metric_template, params, overwrite=False):
@@ -505,7 +520,14 @@ class MetricTemplateView(CheckOptionalMixinView):
                 {"success": False, "message": "MetricTemplate with this name already exists"},
                 status=409
             )
-        metric_template = MetricTemplate.objects.create(name=params["name"])
+        try:
+            linked_proxy = Proxy.objects.get(id=params["linked_proxy"])
+        except Proxy.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "message": f"Proxy with id {params['linked_proxy']} does not exist"},
+                status=404
+            )
+        metric_template = MetricTemplate.objects.create(name=params["name"], linked_proxy=linked_proxy)
         # Optional params
         ret = self.optional(metric_template, params)
         if isinstance(ret, JsonResponse):
@@ -527,6 +549,14 @@ class MetricTemplateView(CheckOptionalMixinView):
             )
         if "name" in params:
             metric_template.name = params["name"]
+        if "linked_proxy" in params:
+            try:
+                proxy = Proxy.objects.get(id=params["linked_proxy"])
+                metric_template.linked_proxy = proxy
+            except Proxy.DoesNotExist:
+                return JsonResponse(
+                    {"success": False, "message": f"Proxy with id {params['linked_proxy']} does not exist"}, status=404
+                )
 
         ret = self.optional(metric_template, params, overwrite=True)
         if isinstance(ret, JsonResponse):
@@ -540,7 +570,7 @@ class HostView(CheckOptionalMixinView):
     def __init__(self):
         super(HostView, self).__init__(
             api_class=Host,
-            required_post=["name"]
+            required_post=["name", "linked_proxy"]
         )
 
     def optional(self, host, params, overwrite=False):
@@ -638,7 +668,14 @@ class HostView(CheckOptionalMixinView):
             return JsonResponse(
                 {"success": False, "message": f"Host with name {params['name']} already exists"}, status=409
             )
-        host = Host.objects.create(name=params["name"])
+        try:
+            linked_proxy = Proxy.objects.get(id=params["linked_proxy"])
+        except Proxy.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "message": f"Proxy with id {params['linked_proxy']} does not exist"},
+                status=404
+            )
+        host = Host.objects.create(name=params["name"], linked_proxy=linked_proxy)
 
         ret = self.optional(host, params)
         if isinstance(ret, JsonResponse):
@@ -664,6 +701,14 @@ class HostView(CheckOptionalMixinView):
                     {"success": False, "message": f"Host with name {params['name']} already exists"}, status=409
                 )
             host.name = params["name"]
+        if "linked_proxy" in params:
+            try:
+                proxy = Proxy.objects.get(id=params["linked_proxy"])
+                host.linked_proxy = proxy
+            except Proxy.DoesNotExist:
+                return JsonResponse(
+                    {"success": False, "message": f"Proxy with id {params['linked_proxy']} does not exist"}, status=404
+                )
 
         ret = self.optional(host, params, overwrite=True)
         if isinstance(ret, JsonResponse):
@@ -677,7 +722,7 @@ class HostTemplateView(CheckOptionalMixinView):
     def __init__(self):
         super(HostTemplateView, self).__init__(
             api_class=HostTemplate,
-            required_post=["name"]
+            required_post=["name", "linked_proxy"]
         )
 
     def optional(self, host_template, params, overwrite=False):
@@ -773,7 +818,14 @@ class HostTemplateView(CheckOptionalMixinView):
             return JsonResponse(
                 {"success": False, "message": f"HostTemplate with name {params['name']} already exists"}, status=409
             )
-        host_template = HostTemplate.objects.create(name=params["name"])
+        try:
+            linked_proxy = Proxy.objects.get(id=params["linked_proxy"])
+        except Proxy.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "message": f"Proxy with id {params['linked_proxy']} does not exist"},
+                status=404
+            )
+        host_template = HostTemplate.objects.create(name=params["name"], linked_proxy=linked_proxy)
 
         ret = self.optional(host_template, params)
         if isinstance(ret, JsonResponse):
@@ -799,6 +851,15 @@ class HostTemplateView(CheckOptionalMixinView):
                     {"success": False, "message": f"HostTemplate with name {params['name']} already exists"}, status=409
                 )
             host_template.name = params["name"]
+        if "linked_proxy" in params:
+            try:
+                proxy = Proxy.objects.get(id=params["linked_proxy"])
+                host_template.linked_proxy = proxy
+            except Proxy.DoesNotExist:
+                return JsonResponse(
+                    {"success": False, "message": f"Proxy with id {params['linked_proxy']} already exists"},
+                    status=409
+                )
 
         ret = self.optional(host_template, params, overwrite=True)
         if isinstance(ret, JsonResponse):
@@ -1153,6 +1214,62 @@ class ContactGroupView(CheckOptionalMixinView):
             return ret
 
         contact_group.save()
+        return JsonResponse({"success": True, "message": "Changes were successful"})
+
+
+class ProxyView(CheckOptionalMixinView):
+    def __init__(self):
+        super(ProxyView, self).__init__(
+            api_class=Proxy,
+            required_post=["name", "address", "port"]
+        )
+
+    def optional(self, proxy, params):
+        if "disabled" in params:
+            if isinstance(params["disabled"], bool):
+                proxy.disabled = params["disabled"]
+            else:
+                return JsonResponse({"success": False, "message": "Parameter disabled has to be a bool"}, status=400)
+        if "comment" in params:
+            proxy.comment = params["comment"]
+
+    def save_post(self, params, *args, **kwargs):
+        if Proxy.objects.filter(name=params["name"]).exists():
+            return JsonResponse(
+                {"success": False, "message": f"Proxy with name {params['name']} already exists"}, status=409
+            )
+        proxy = Proxy.objects.create(
+            name=params["name"],
+            address=params["address"],
+            port=params["port"]
+        )
+        ret = self.optional(proxy, params)
+        if isinstance(ret, JsonResponse):
+            return ret
+
+        return JsonResponse(
+            {"success": True, "message": "Proxy was created successful", "data": proxy.id}, status=201
+        )
+
+    def save_put(self, params, *args, **kwargs):
+        try:
+            proxy = Proxy.objects.get(id=kwargs["sid"])
+        except Proxy.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "message": f"Proxy with id {kwargs['sid']} does not exist"}, status=404
+            )
+        if "name" in params:
+            proxy.name = params["name"]
+        if "address" in params:
+            proxy.address = params["address"]
+        if "port" in params:
+            proxy.poret = params["port"]
+
+        ret = self.optional(proxy, params, overwrite=True)
+        if isinstance(ret, JsonResponse):
+            return ret
+
+        proxy.save()
         return JsonResponse({"success": True, "message": "Changes were successful"})
 
 
