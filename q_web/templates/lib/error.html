@@ -1,0 +1,12 @@
+{% extends "lib/loading_animation.html" %}
+{% block content %}
+
+<div class="flexRow centered">
+    <div class="flexColumn centered">
+        <h2>{{ error_header }}</h2>
+        <p>{{ error_text }}</p>
+        <a href="{{ request.META.HTTP_REFERER }}">Back</a>
+    </div>
+</div>
+
+{% endblock %}

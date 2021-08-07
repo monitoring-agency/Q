@@ -1,0 +1,60 @@
+{% extends "menus.html" %}
+{% block content %}
+
+<div class="declarationContent flexColumn centered">
+    <form method="POST" {% if existing %}action="/declaration/metrictemplate/update/{{ existing.id }}" {% else %}action="/declaration/metrictemplate/create" {% endif %}>
+        <div class="declarationBox">
+            {% csrf_token %}
+            <h3>{% if existing %}Update existing {% else %}Create new {% endif %}Metric Template</h3>
+        {% if error %}
+            <p class="error centered">{{ error }}</p>
+        {% endif %}
+            <table>
+                <tr>
+                    <td>
+                        <label for="name">Name</label>
+                    </td>
+                    <td>
+                        <input name="key" id="name" required {% if existing %}value="{{ existing.key }}" {% endif %}>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="linked_check">Linked check</label>
+                    </td>
+                    <td>
+                        <select id="linked_check" name="linked_check">
+                            <option value=""></option>
+                        {% for entry in linked_checks %}
+                        {% if existing.linked_check.id == entry.id %}
+                            <option value="{{ entry.id }}" selected>{{ entry.name }}</option>
+                        {% else %}
+                            <option value="{{ entry.id }}">{{ entry.name }}</option>
+                        {% endif %}
+                        {% endfor %}
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="value">Value</label>
+                    </td>
+                    <td>
+                        <input name="value" id="value" required {% if existing %}value="{{ existing.value }}" {% endif %}>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="comment">Comment</label>
+                    </td>
+                    <td>
+                        <textarea name="comment" id="comment" maxlength="1024">{% if existing %}{{ existing.comment }}{% endif %}</textarea>
+                    </td>
+                </tr>
+            </table>
+            <button>Submit</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

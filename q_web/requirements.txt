@@ -1,0 +1,5 @@
+Django~=3.2.6
+gunicorn~=20.1.0
+
+# apt install python3-dev default-libmysqlclient-dev build-essential
+mysqlclient~=2.0.3
