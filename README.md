@@ -6,20 +6,24 @@ The name Q originates from the fictional character as well as its race in the se
 ## Structure
 
 ```
-        +------------+              +------------+
-        |     Q      |------------->|     Q      |
-        |    Main    |<-------------|    Proxy   |
-        +------------+              +------------+
-       /              \                    |
-      /                \                   |
+                     +-------------+
+                     |      Q      |
+                     |     Web     |
+                     +-------------+
+                    /               \
+                   /                 \
+        +-----------+                +-----------+
+        |     Q     |                |     Q     |
+        |   Proxy   |                |   Proxy   |
+        +-----------+                +-----------+
+        /           \                      |
+       /             \                     |
 +-----------+   +-----------+        +-----------+
 | Machine 1 |   | Machine 2 |        | Machine 3 |
 +-----------+   +-----------+        +-----------+
 ```
 
 ## API
-
-
 Use the endpoint as salt. The key for the checksum is "checksum".
   
 - POST `/api/v1/authenticate`
