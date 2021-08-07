@@ -1,0 +1,23 @@
+[Unit]
+Description=Q Proxy
+Requires=q-proxy.socket
+After=network.target
+
+[Service]
+Type=notify
+# the specific user that our service will run as
+User=q-web
+Group=q-web
+# another option for an even more restricted service is
+# DynamicUser=yes
+# see http://0pointer.net/blog/dynamic-users-with-systemd.html
+RuntimeDirectory=gunicorn
+WorkingDirectory=/usr/sbin/q-proxy/
+ExecStart=/usr/sbin/q-proxy/venv/bin/gunicorn -c /etc/q-proxy/gunicorn.conf.py q_proxy.wsgi
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=5
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
