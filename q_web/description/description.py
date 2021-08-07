@@ -238,8 +238,8 @@ def export_description():
 def export():
     t = time.time()
     desc = export_description()
-    #with open(os.path.join(settings.DESCRIPTION_DIRECTORY, "declaration.json"), "w") as fh:
-    #    json.dump(desc, fh)
+    with open(os.path.join(settings.DESCRIPTION_DIRECTORY, "declaration.json"), "w") as fh:
+        json.dump(desc, fh)
 
     return time.time()-t
 
