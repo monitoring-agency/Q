@@ -9,8 +9,8 @@ Group=q-scheduler
 # another option for an even more restricted service is
 # DynamicUser=yes
 # see http://0pointer.net/blog/dynamic-users-with-systemd.html
-WorkingDirectory=/var/lib/q-scheduler/q_scheduler
-ExecStart=/var/lib/q-scheduler/venv/bin/python3 /var/lib/q-scheduler/main.py
+WorkingDirectory=/usr/sbin/q-scheduler/
+ExecStart=/usr/sbin/q-scheduler/venv/bin/python3 /usr/sbin/q-scheduler/main.py
 ExecReload=/bin/kill -s HUP $MAINPID
 KillMode=mixed
 TimeoutStopSec=5

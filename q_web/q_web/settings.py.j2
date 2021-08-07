@@ -84,11 +84,11 @@ WSGI_APPLICATION = 'q_web.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': "q",
-        'USER': 'q_db',
-        'PASSWORD': 'change_me',
-        'HOST': '10.100.100.117',
-        'PORT': 3306
+        'NAME': "{{ db.name }}",
+        'USER': "{{ db.user }}",
+        'PASSWORD': "{{ db.password }}",
+        'HOST': "{{ db.host }}",
+        'PORT': {{ db.port }}
     }
 }
 
@@ -145,7 +145,7 @@ LOGOUT_REDIRECT_URL = "/login"
 LOGIN_REDIRECT_URL = "/"
 LOGIN_URL = "/login"
 
-DESCRIPTION_DIRECTORY = "/etc/q-scheduler/"
+DESCRIPTION_DIRECTORY = "/var/lib/q/"
 
 logging.basicConfig(
     filename="/var/log/q/q-web-django.log",
