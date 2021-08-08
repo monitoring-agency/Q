@@ -5,17 +5,18 @@ import time
 from collections import ChainMap
 from typing import Union
 
+import httpx as httpx
 from django.contrib.contenttypes.models import ContentType
 
 from description.models import Host, Metric, Check, GlobalVariable, GenericKVP, Label, TimePeriod, SchedulingInterval, \
-    HostTemplate, MetricTemplate
+    HostTemplate, MetricTemplate, Proxy
 from q_web import settings
 
 logger = logging.getLogger("export")
 
-def export_description():
-    start = time.time()
 
+def export_declaration(proxy_id_list):
+    """This function generates the description to be forwarded to the specific proxies"""
     # ContentTypes
     chost = ContentType.objects.get_for_model(Host).id
     cmetric = ContentType.objects.get_for_model(Metric).id
@@ -23,12 +24,14 @@ def export_description():
     cmetric_template = ContentType.objects.get_for_model(MetricTemplate).id
 
     # Prefetched data
-    hosts = Host.objects.filter(disabled=False)
-    host_dict = {x.id: x for x in hosts}
+    proxies = [x for x in Proxy.objects.filter(id__in=proxy_id_list, disabled=False)]
+    hosts = Host.objects.filter(disabled=False, linked_proxy_id__in=proxy_id_list)
     host_templates = {x.id: x for x in HostTemplate.objects.all()}
     host_template_relations = {}
     host_template_recursions = {}
-    metrics = [x for x in Metric.objects.filter(disabled=False)]
+    metrics = [x for x in Metric.objects.filter(
+        disabled=False, linked_host__disabled=False, linked_proxy_id__in=proxy_id_list
+    )]
     metric_templates = {x.id: x for x in MetricTemplate.objects.all()}
     metric_template_relations = {}
     metric_template_recursions = {}
@@ -186,67 +189,106 @@ def export_description():
     for x in metric_templates:
         metric_template_recursions[x] = retrieve_metrictemplate(metric_templates[x].id)
 
-    a = time.time()
-    description = {}
-    for host in hosts:
-        h = {
-            "id": host.id,
-            "metrics": [],
-            "linked_check": "",
+    # Has to have the following structure:
+    """
+    {
+        proxy_id: 
+        {
+            address: "",
+            port: "",
+            hosts:
+            [
+            
+            ]
+            metrics:
+            [
+            
+            ]
         }
+    }
+    """
+    declaration = {}
+    for proxy in proxies:
+        declaration[proxy.id] = {
+            "address": proxy.address,
+            "port": proxy.port,
+            "hosts": [],
+            "metrics": []
+        }
+
+    host_vars = {}
+    for host in hosts:
+        h = {"linked_check": "", "address": "", "scheduling_period": "", "scheduling_interval": ""}
+        export_host = {"id": host.id, "linked_check": ""}
+        additional_host_vars = {}
+
+        # Get reverse attributes
         if (host.id, chost) in host_template_relations:
             for x in host_template_relations[(host.id, chost)]:
                 h.update(retrieve_hosttemplate(x))
+
+        # Check host attributes
+        if host.address:
+            h["address"] = host.address
+        if host.linked_check_id:
+            h["linked_check"] = checks[host.linked_check_id]
         if host.scheduling_interval_id:
             h["scheduling_interval"] = scheduling_intervals[host.scheduling_interval_id]
         if host.scheduling_period_id:
             h["scheduling_period"] = time_periods[host.scheduling_period_id]
-        if host.linked_check_id:
-            h["linked_check"] = checks[host.linked_check_id]
-        if h["linked_check"]:
-            logger.error(f"Test {type(variables)} {retrieve_variables(host, chost, [])}")
-            h["linked_check"] = h["linked_check"].to_export(
-                dict(ChainMap(*variables, retrieve_variables(host, chost, [])))
-            )
-        description[host.id] = h
+
+        # Set host_vars
+        additional_host_vars["address"] = h["address"]
+        additional_host_vars.update(dict(ChainMap(*variables, retrieve_variables(host, chost, []))))
+        host_vars[host.id] = additional_host_vars
+
+        # Fill export dict
+        if h["linked_check"] and h["scheduling_period"] and h["scheduling_interval"]:
+            export_host["linked_check"] = h["linked_check"].to_export(additional_host_vars)
+            export_host["scheduling_period"] = h["scheduling_period"]
+            export_host["scheduling_interval"] = h["scheduling_interval"]
+            declaration[host.linked_proxy_id]["hosts"].append(export_host)
 
     for metric in metrics:
-        m = {
-            "id": metric.id,
-            "linked_check": "",
-        }
+        m = {"linked_check": ""}
+        export_metric = {"id": metric.id, "linked_check": "", "scheduling_period": "", "scheduling_interval": ""}
+        # Get reverse attributes
         if (metric.id, cmetric) in metric_template_relations:
             for x in metric_template_relations[(metric.id, cmetric)]:
                 m.update(retrieve_metrictemplate(x))
-        host = host_dict[metric.linked_host_id]
+
+        # Check metric attributes
         if metric.scheduling_interval_id:
             m["scheduling_interval"] = scheduling_intervals[metric.scheduling_interval_id]
         if metric.scheduling_period_id:
             m["scheduling_period"] = time_periods[metric.scheduling_period_id]
         if metric.linked_check_id:
             m["linked_check"] = checks[metric.linked_check_id]
-        host_vars = retrieve_variables(host, chost, [])
-        metric_vars = retrieve_variables(metric, cmetric, [])
-        if m["linked_check"]:
-            m["linked_check"] = m["linked_check"].to_export(dict(ChainMap(
-                *variables, metric_vars, host_vars
-            )))
-        description[metric.linked_host_id]["metrics"].append(m)
-    return description
+
+        # Set metric vars
+        metric_vars = dict(ChainMap(host_vars[metric.linked_host_id], retrieve_variables(metric, cmetric, [])))
+
+        # Fill export dict
+        if m["linked_check"] and m["scheduling_period"] and m["scheduling_interval"]:
+            export_metric["linked_check"] = m["linked_check"].to_export(metric_vars)
+            export_metric["scheduling_period"] = m["scheduling_period"]
+            export_metric["scheduling_interval"] = m["scheduling_interval"]
+            declaration[metric.linked_proxy_id]["metrics"].append(export_metric)
+    return declaration
 
 
-def export():
+def export_to_proxy(declaration: dict):
+    client = httpx.Client()
+    for x in declaration:
+        proxy = declaration[x]
+        client.post(
+            f"https://{proxy['address']}:{proxy['port']}/api/v1/updateDeclaration",
+            json={"hosts": proxy["hosts"], "metrics": proxy["metrics"]}
+        )
+
+
+def export(proxy_id_list: list):
     t = time.time()
-    desc = export_description()
-    with open(os.path.join(settings.DESCRIPTION_DIRECTORY, "declaration.json"), "w") as fh:
-        json.dump(desc, fh)
-
+    declaration = export_declaration(proxy_id_list)
+    export_to_proxy(declaration)
     return time.time()-t
-
-
-def test():
-    a = []
-    for i in range(100):
-        a.append(export())
-    print(sum(a)/100)
-
