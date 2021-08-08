@@ -256,7 +256,7 @@ class CheckView(CheckOptionalMixinView):
         self.optional(check, params)
 
         check.save()
-        return JsonResponse({"success": True, "message": "Object was created"}, status=201)
+        return JsonResponse({"success": True, "message": "Object was created", "data": check.id}, status=201)
 
     def save_put(self, params, *args, **kwargs):
         try:
@@ -619,7 +619,7 @@ class HostView(CheckOptionalMixinView):
                 host.host_templates.clear()
         if "scheduling_interval" in params:
             if params["scheduling_interval"]:
-                scheduling_interval = SchedulingInterval.objects.get_or_create(interval=params["scheduling_interval"])
+                scheduling_interval, _ = SchedulingInterval.objects.get_or_create(interval=params["scheduling_interval"])
                 host.scheduling_interval = scheduling_interval
             else:
                 host.scheduling_interval = None
