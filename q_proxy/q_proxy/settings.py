@@ -9,7 +9,8 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
-
+import logging
+import time
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -29,7 +30,6 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
 ]
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -46,7 +46,6 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -126,3 +125,11 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+logging.basicConfig(
+    filename="/var/log/q/q-proxy-django.log",
+    format='%(asctime)s :: %(levelname)s: %(message)s',
+    datefmt='%d-%m-%Y %H:%M:%S',
+    level=logging.DEBUG
+)
+logging.Formatter.converter = time.gmtime
