@@ -23,8 +23,7 @@ capture_output = False
 
 # [ WORKER ]
 # handle with care
-import multiprocessing
-workers = 2 * multiprocessing.cpu_count()
+workers = 1
 worker_class = "sync"
 threads = 1
 
