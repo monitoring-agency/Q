@@ -7,6 +7,11 @@ server {
 {% if https %}
     return 301 https://$host$request_uri;
 {% else %}
+    location /static {
+        root /var/www/html;
+        try_files $uri $uri/ =404;
+    }
+
     location / {
         proxy_pass http://unix:/run/q-web.sock;
         proxy_http_version 1.1;
@@ -14,11 +19,6 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "Upgrade";
-    }
-
-    location /static {
-        root /var/www/html;
-        try_files $uri $uri/ =404;
     }
 {% endif %}
 
@@ -29,7 +29,19 @@ server {
     listen 443 ssl;
     listen [::]:443 ssl;
 
+    ssl_certificate {{ cert }};
+    ssl_certificate_key {{ cert_key }};
+
     server_name {{ server_name }};
+
+    location /proxy/api/v1/ {
+        deny all;
+    }
+
+    location /static {
+        root /var/www/html;
+        try_files $uri $uri/ =404;
+    }
 
     location / {
         proxy_pass http://unix:/run/q-web.sock;
@@ -39,10 +51,28 @@ server {
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "Upgrade";
     }
-
-    location /static {
-        root /var/www/html;
-        try_files $uri $uri/ =404;
-    }
 }
 {% endif %}
+
+server {
+    listen 4443 ssl;
+    listen [::]:4443 ssl;
+
+    ssl_certificate /var/lib/q/certs/q-web-fullchain.pem;
+    ssl_certificate_key /var/lib/q/certs/q-web-privkey.pem;
+
+    server_name {{ server_name }};
+
+    location /proxy/api/v1/ {
+        proxy_pass http://unix:/run/q-web.sock;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+    }
+
+    location / {
+        deny all;
+    }
+}
