@@ -145,10 +145,7 @@ class Check(models.Model):
                 cmd = cmd.replace(x, kvp[x])
         else:
             cmd = ""
-        return {
-            "id": self.id,
-            "cmd": cmd
-        }
+        return cmd
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -252,7 +249,6 @@ class HostTemplate(models.Model):
     """Template of a host"""
     name = CharField(default="", max_length=255, unique=True)
     address = CharField(default="", max_length=255, blank=True, null=True)
-    linked_proxy = ForeignKey(Proxy, on_delete=models.CASCADE)
     linked_check = ForeignKey(Check, on_delete=models.DO_NOTHING, blank=True, null=True)
     host_templates = ManyToManyField("self", blank=True, symmetrical=False)
     scheduling_interval = ForeignKey(SchedulingInterval, on_delete=models.DO_NOTHING, blank=True, null=True)
@@ -347,7 +343,6 @@ class Host(models.Model):
 class MetricTemplate(models.Model):
     """This class represents a template for a metric"""
     name = CharField(default="", max_length=255, unique=True)
-    linked_proxy = ForeignKey(Proxy, on_delete=models.CASCADE)
     linked_check = ForeignKey(Check, on_delete=models.DO_NOTHING, blank=True, null=True)
     metric_templates = ManyToManyField("self", blank=True, symmetrical=False)
     scheduling_interval = ForeignKey(SchedulingInterval, on_delete=models.DO_NOTHING, blank=True, null=True)
