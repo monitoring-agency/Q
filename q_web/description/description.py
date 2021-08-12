@@ -199,11 +199,15 @@ def export_declaration(proxy_id_list):
             hosts:
             [
             
-            ]
+            ],
             metrics:
             [
             
-            ]
+            ],
+            scheduling_periods:
+            {
+                scheduling_period_id: scheduling_period
+            }
         }
     }
     """
@@ -213,7 +217,8 @@ def export_declaration(proxy_id_list):
             "address": proxy.address,
             "port": proxy.port,
             "hosts": [],
-            "metrics": []
+            "metrics": [],
+            "scheduling_periods": {}
         }
 
     host_vars = {}
@@ -245,9 +250,11 @@ def export_declaration(proxy_id_list):
         # Fill export dict
         if h["linked_check"] and h["scheduling_period"] and h["scheduling_interval"]:
             export_host["linked_check"] = h["linked_check"].to_export(additional_host_vars)
-            export_host["scheduling_period"] = h["scheduling_period"]
             export_host["scheduling_interval"] = h["scheduling_interval"]
+            export_host["scheduling_period"] = h["scheduling_period"]["id"]
             declaration[host.linked_proxy_id]["hosts"].append(export_host)
+            if h["scheduling_period"]["id"] not in declaration[host.linked_proxy_id]["scheduling_periods"]:
+                declaration[host.linked_proxy_id]["scheduling_periods"][h["scheduling_period"]["id"]] = h["scheduling_period"]
 
     for metric in metrics:
         m = {"linked_check": ""}
@@ -271,9 +278,11 @@ def export_declaration(proxy_id_list):
         # Fill export dict
         if m["linked_check"] and m["scheduling_period"] and m["scheduling_interval"]:
             export_metric["linked_check"] = m["linked_check"].to_export(metric_vars)
-            export_metric["scheduling_period"] = m["scheduling_period"]
             export_metric["scheduling_interval"] = m["scheduling_interval"]
+            export_metric["scheduling_period"] = m["scheduling_period"]["id"]
             declaration[metric.linked_proxy_id]["metrics"].append(export_metric)
+            if m["scheduling_period"]["id"] not in declaration[metric.linked_proxy_id]["scheduling_periods"]:
+                declaration[metric.linked_proxy_id]["scheduling_periods"][m["scheduling_period"]["id"]] = m["scheduling_period"]
     return declaration
 
 
@@ -283,7 +292,11 @@ def export_to_proxy(declaration: dict):
         proxy = declaration[x]
         client.post(
             f"https://{proxy['address']}:{proxy['port']}/api/v1/updateDeclaration",
-            json={"hosts": proxy["hosts"], "metrics": proxy["metrics"]}
+            json={
+                "hosts": proxy["hosts"],
+                "metrics": proxy["metrics"],
+                "scheduling_periods": proxy["scheduling_periods"]
+            }
         )
 
 
