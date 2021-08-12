@@ -18,9 +18,11 @@ from django.urls import path, include
 
 import api.urls
 import frontend.urls
+import proxy.urls
 
 urlpatterns = [
     path("", include(frontend.urls)),
     path('admin/', admin.site.urls),
     path('api/v1/', include(api.urls)),
+    path('proxy/api/v1', include(proxy.urls))
 ]
