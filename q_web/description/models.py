@@ -227,7 +227,9 @@ class Proxy(models.Model):
     """Q Proxy instance"""
     name = CharField(default="", max_length=255, unique=True)
     address = CharField(default="", max_length=255)
-    port = PositiveIntegerField(default=8443)
+    port = PositiveIntegerField(default=8443),
+    web_address = CharField(default="", max_length=255)
+    web_port = PositiveIntegerField(default=4443),
     disabled = BooleanField(default=False)
     comment = CharField(default="", max_length=1024, blank=True, null=True)
 
@@ -240,6 +242,8 @@ class Proxy(models.Model):
             "name": self.name,
             "address": self.address,
             "port": self.port,
+            "web_address": self.web_address,
+            "web_port": self.web_port,
             "disabled": self.disabled,
             "comment": self.comment if self.comment else ""
         }
