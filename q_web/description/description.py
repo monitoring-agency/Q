@@ -216,6 +216,8 @@ def export_declaration(proxy_id_list):
         declaration[proxy.id] = {
             "address": proxy.address,
             "port": proxy.port,
+            "web_address": proxy.web_address,
+            "web_port": proxy.web_port,
             "hosts": [],
             "metrics": [],
             "scheduling_periods": {}
@@ -293,6 +295,8 @@ def export_to_proxy(declaration: dict):
         client.post(
             f"https://{proxy['address']}:{proxy['port']}/api/v1/updateDeclaration",
             json={
+                "web_address": proxy["web_address"],
+                "web_port": proxy["web_port"],
                 "hosts": proxy["hosts"],
                 "metrics": proxy["metrics"],
                 "scheduling_periods": proxy["scheduling_periods"]
