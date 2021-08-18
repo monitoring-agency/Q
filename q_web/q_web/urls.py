@@ -24,5 +24,5 @@ urlpatterns = [
     path("", include(frontend.urls)),
     path('admin/', admin.site.urls),
     path('api/v1/', include(api.urls)),
-    path('proxy/api/v1', include(proxy.urls))
+    path('proxy/api/v1/', include(proxy.urls))
 ]

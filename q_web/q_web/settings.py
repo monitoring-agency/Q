@@ -27,7 +27,7 @@ SECRET_KEY = 'change_me'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-
+    "127.0.0.1",
 ]
 
 
@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'api',
     'description',
     "frontend",
+    "proxy",
 ]
 
 MIDDLEWARE = [
