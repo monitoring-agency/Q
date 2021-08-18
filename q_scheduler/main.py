@@ -34,6 +34,10 @@ async def start_scheduler(declaration, config):
         checks.append(Check(**x, context="host"))
     for x in declaration["metrics"]:
         checks.append(Check(**x, context="metric"))
+    # If no checks are scheduled, run forever to not cause the systemd unit to fail
+    if not checks:
+        while True:
+            await asyncio.sleep(5)
 
     ex_pool = ExecutorPool(config.workers)
     s = Scheduler(checks, scheduling_periods, ex_pool)

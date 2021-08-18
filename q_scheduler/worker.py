@@ -1,8 +1,9 @@
 import asyncio
+import json
 import logging
 import time
+from datetime import datetime
 
-import httpx
 from httpx import AsyncClient
 
 from objects import CheckResult
@@ -25,11 +26,19 @@ class Worker:
         proc = await asyncio.create_subprocess_shell(self.check.linked_check, stdout=asyncio.subprocess.PIPE)
         stdout, _ = await proc.communicate()
         process_end = time.time()-process_start
+        utc_now = datetime.utcnow().timestamp()
+
+        try:
+            decoded = json.loads(stdout)
+            if "data" in decoded:
+                data = decoded["data"]
+        except json.JSONDecodeError:
+            data = []
 
         cr = CheckResult(
             self.check.id, self.check.context, process_stdout=stdout.decode("utf-8"),
-            process_return_code=proc.returncode, process_execution_time=process_end
+            process_return_code=proc.returncode, process_execution_time=process_end, process_time=utc_now, data=data
         )
-        logger.debug(f"Got result from worker on {self.check.id}:{self.check.context}: {cr.to_json()}")
 
-
+        logger.debug(f"Got result from worker on {self.check.id}:{self.check.context}: {cr.to_dict()}")
+        await self.submit_result(cr)

@@ -1,6 +1,3 @@
-import json
-
-
 class SchedulingPeriod:
     def __init__(self, id, name, comment, time_periods):
         self.id = id
@@ -18,20 +15,24 @@ class Check:
 
 
 class CheckResult:
-    def __init__(self, id, context, *, process_stdout, process_return_code, process_execution_time):
+    def __init__(self, id, context, *, process_stdout, process_return_code, process_execution_time, process_time, data):
         self.id = id
         self.context = context
         self.process_stdout = process_stdout
         self.process_return_code = process_return_code
+        self.data = data
         self.process_execution_time = process_execution_time
+        self.process_time = process_time
 
     def to_dict(self):
         return {
             "id": self.id,
             "context": self.context,
-            "process_stdout": self.process_stdout,
-            "process_return_code": self.process_return_code,
+            "stdout": self.process_stdout,
+            "return_code": self.process_return_code,
+            "data": self.data,
             "meta": {
+                "process_time": self.process_time,
                 "process_execution_time": self.process_execution_time
-            }
+            },
         }
