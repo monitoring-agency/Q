@@ -78,7 +78,7 @@ WSGI_APPLICATION = 'q_proxy.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': BASE_DIR / 'proxy_db.sqlite3',
     }
 }
 
@@ -125,6 +125,8 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+DECLARATION_PATH = "/var/lib/q/declaration.json"
 
 logging.basicConfig(
     filename="/var/log/q/q-proxy-django.log",
