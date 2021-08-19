@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import time
+from signal import signal, SIGINT
 
 import certifi
 
@@ -23,6 +24,11 @@ def append_ca_bundle():
             return
     with open(ca_bundle, "ab") as fh:
         fh.write(q_ca)
+
+
+def handle_sigkill(signal_received, frame):
+    asyncio.get_event_loop().stop()
+    exit(0)
 
 
 async def start_scheduler(declaration, config):
@@ -67,4 +73,5 @@ if __name__ == '__main__':
         level=logging.DEBUG
     )
     logging.Formatter.converter = time.gmtime
+    signal(SIGINT, handle_sigkill)
     main()

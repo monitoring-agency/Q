@@ -2,7 +2,7 @@
 Description=Q Scheduler
 
 [Service]
-Type=notify
+Type=simple
 # the specific user that our service will run as
 User=q-scheduler
 Group=q-scheduler
@@ -11,7 +11,7 @@ Group=q-scheduler
 # see http://0pointer.net/blog/dynamic-users-with-systemd.html
 WorkingDirectory=/usr/sbin/q-scheduler/
 ExecStart=/usr/sbin/q-scheduler/venv/bin/python3 /usr/sbin/q-scheduler/main.py
-ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s 2 $MAINPID
 KillMode=mixed
 TimeoutStopSec=5
 PrivateTmp=true
