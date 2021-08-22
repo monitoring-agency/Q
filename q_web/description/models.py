@@ -228,6 +228,8 @@ class Proxy(models.Model):
     name = CharField(default="", max_length=255, unique=True)
     address = CharField(default="", max_length=255)
     port = PositiveIntegerField(default=8443)
+    secret = CharField(default="", max_length=255)
+    web_secret = CharField(default="", max_length=255)
     web_address = CharField(default="", max_length=255)
     web_port = PositiveIntegerField(default=4443)
     disabled = BooleanField(default=False)
@@ -242,6 +244,8 @@ class Proxy(models.Model):
             "name": self.name,
             "address": self.address,
             "port": self.port,
+            "secret": self.secret,
+            "web_secret": self.web_secret,
             "web_address": self.web_address,
             "web_port": self.web_port,
             "disabled": self.disabled,
