@@ -6,8 +6,6 @@ from datetime import datetime
 
 from httpx import AsyncClient
 
-from objects import CheckResult
-
 
 logger = logging.getLogger(__name__)
 
@@ -17,8 +15,8 @@ class Worker:
         self.check = check
         self.client = client
 
-    async def submit_result(self, cr):
-        await self.client.post(f"https://127.0.0.1:8443/scheduler/api/v1/submit", json=cr.to_dict(), timeout=10)
+    async def submit_result(self, check_result):
+        await self.client.post(f"https://127.0.0.1:8443/scheduler/api/v1/submit", json=check_result, timeout=10)
 
     async def run(self):
         logger.debug(f"Starting worker on {self.check.id}:{self.check.context}")
@@ -30,15 +28,21 @@ class Worker:
 
         try:
             decoded = json.loads(stdout)
-            if "data" in decoded:
-                data = decoded["data"]
+            decoded = {**decoded, "meta": {
+                "process_end_time": utc_now,
+                "process_execution_time": process_end - process_start
+            }}
         except json.JSONDecodeError:
-            data = []
+            await self.submit_result({
+                "state": "unknown",
+                "output": "stdout could not be decoded as json",
+                "datasets": [],
+                "meta": {
+                    "process_end_time": utc_now,
+                    "process_execution_time": process_end - process_start
+                }
+            })
+            return
 
-        cr = CheckResult(
-            self.check.id, self.check.context, process_stdout=stdout.decode("utf-8"),
-            process_return_code=proc.returncode, process_execution_time=process_end, process_time=utc_now, data=data
-        )
-
-        logger.debug(f"Got result from worker on {self.check.id}:{self.check.context}: {cr.to_dict()}")
-        await self.submit_result(cr)
+        logger.debug(f"Got result from worker on {self.check.id}:{self.check.context}: {decoded}")
+        await self.submit_result(decoded)
