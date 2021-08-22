@@ -289,7 +289,7 @@ def export_declaration(proxy_id_list):
 
 
 def export_to_proxy(declaration: dict):
-    client = httpx.Client()
+    client = httpx.Client(cert=("/var/lib/q-web-fullchain.pem", "/var/lib/q/certs/q-web-privkey.pem"))
     for x in declaration:
         proxy = declaration[x]
         client.post(

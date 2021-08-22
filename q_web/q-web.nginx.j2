@@ -60,6 +60,8 @@ server {
 
     ssl_certificate /var/lib/q/certs/q-web-fullchain.pem;
     ssl_certificate_key /var/lib/q/certs/q-web-privkey.pem;
+    ssl_client_certificate /var/lib/q/certs/q-ca.pem;
+    ssl_verify_client on;
 
     server_name {{ server_name }};
 

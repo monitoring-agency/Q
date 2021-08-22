@@ -9,7 +9,9 @@ class ExecutorPool:
     def __init__(self, workers):
         self.queue = []
         self.workers = workers
-        self.client = httpx.AsyncClient()
+        self.client = httpx.AsyncClient(
+            cert=("/var/lib/q/certs/q-scheduler-fullchain.pem", "/var/lib/q/certs/q-scheduler-privkey.pem")
+        )
 
     def append_task(self, task):
         self.queue.append(task)

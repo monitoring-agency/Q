@@ -50,7 +50,10 @@ class SubmitView(View):
                 CheckResultModel.objects.create(json=json.dumps(decoded))
                 return JsonResponse({"success": True, "message": "Data was saved to backlog"})
             c = ConfigurationModel.objects.first()
-            httpx.post(f"https://{c.web_address}:{c.web_port}/proxy/api/v1/submit", timeout=3, json=decoded)
+            httpx.post(
+                f"https://{c.web_address}:{c.web_port}/proxy/api/v1/submit", timeout=3, json=decoded,
+                cert=("/var/lib/q/certs/q-proxy-fullchain.pem", "/var/lib/q/certs/q-proxy-privkey.pem")
+            )
         except httpx.ConnectTimeout or ConfigurationModel.DoesNotExist:
             logger.warning(f"Could not reach q-web, saving to backlog")
             CheckResultModel.objects.create(json=json.dumps(decoded))
