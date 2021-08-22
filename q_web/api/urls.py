@@ -28,5 +28,5 @@ urlpatterns = [
     path("contactgroup/<str:sid>", ContactGroupView.as_view()),
 
     # Routine API
-    path("reloadDeclaration", ReloadConfigurationView.as_view()),
+    path("updateDeclaration", UpdateDeclarationView.as_view()),
 ]

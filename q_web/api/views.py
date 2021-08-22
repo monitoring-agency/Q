@@ -1285,12 +1285,14 @@ class ProxyView(CheckOptionalMixinView):
         return JsonResponse({"success": True, "message": "Changes were successful"})
 
 
-class ReloadConfigurationView(CheckMixinView):
+class UpdateDeclarationView(CheckMixinView):
     def __init__(self):
-        super(ReloadConfigurationView, self).__init__(
-            required_post=["proxies"]
-        )
+        super(UpdateDeclarationView, self).__init__()
 
     def cleaned_post(self, params, *args, **kwargs):
-        export_time = export(params["proxies"] if isinstance(params["proxies"], list) else [params["proxies"]])
+        if "proxies" not in params:
+            proxies = [x.id for x in Proxy.objects.filter(disabled=False)]
+            export_time = export(proxies)
+        else:
+            export_time = export(params["proxies"] if isinstance(params["proxies"], list) else [params["proxies"]])
         return JsonResponse({"success": True, "message": "Configuration was reloaded.", "data": export_time})
