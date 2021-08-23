@@ -1,3 +1,5 @@
+import base64
+import json
 from collections import ChainMap
 
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
@@ -251,6 +253,9 @@ class Proxy(models.Model):
             "disabled": self.disabled,
             "comment": self.comment if self.comment else ""
         }
+
+    def to_base64(self):
+        return base64.b64encode(json.dumps(self.to_dict()).encode("utf-8")).decode("utf-8")
 
 
 class HostTemplate(models.Model):

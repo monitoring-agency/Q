@@ -1296,3 +1296,19 @@ class UpdateDeclarationView(CheckMixinView):
         else:
             export_time = export(params["proxies"] if isinstance(params["proxies"], list) else [params["proxies"]])
         return JsonResponse({"success": True, "message": "Configuration was reloaded.", "data": export_time})
+
+
+class GenerateProxyConfigurationView(CheckMixinView):
+    def __init__(self):
+        super(GenerateProxyConfigurationView, self).__init__(
+            required_post=["proxy"]
+        )
+
+    def cleaned_post(self, params, *args, **kwargs):
+        try:
+            proxy = Proxy.objects.get(id=params["proxy"])
+        except Proxy.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "message": f"Proxy with id {params['proxy']} does not exist"}, status=404
+            )
+        return JsonResponse({"success": True, "message": "Request was successful", "data": proxy.to_base64()})

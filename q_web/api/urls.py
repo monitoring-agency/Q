@@ -26,7 +26,10 @@ urlpatterns = [
     path("contact/<str:sid>", ContactView.as_view()),
     path("contactgroup", ContactGroupView.as_view()),
     path("contactgroup/<str:sid>", ContactGroupView.as_view()),
+    path("proxy", ProxyView.as_view()),
+    path("proxy/<str:sid>", ProxyView.as_view()),
 
     # Routine API
     path("updateDeclaration", UpdateDeclarationView.as_view()),
+    path("generateProxyConfiguration", GenerateProxyConfigurationView.as_view()),
 ]

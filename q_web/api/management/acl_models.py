@@ -26,7 +26,8 @@ def create_acl_models():
 
     acl_list = [
         "API:POST:/api/v1/authenticate",
-        "API:POST:/api/v1/updateDeclaration"
+        "API:POST:/api/v1/updateDeclaration",
+        "API:POST:/api/v1/generateProxyDeclaration",
     ]
     [append_acl(acl_list, x) for x in api_endpoints]
 
