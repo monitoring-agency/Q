@@ -286,7 +286,6 @@ class HostTemplate(models.Model):
             "id": self.id,
             "name": self.name,
             "address": self.address if self.address else "",
-            "linked_proxy": self.linked_proxy_id,
             "linked_check": self.linked_check_id if self.linked_check else "",
             "host_templates": [x.id for x in self.host_templates.all()],
             "scheduling_interval": self.scheduling_interval.interval if self.scheduling_interval else "",
@@ -379,7 +378,6 @@ class MetricTemplate(models.Model):
         return {
             "id": self.id,
             "name": self.name,
-            "linked_proxy": self.linked_proxy_id,
             "linked_check": self.linked_check_id if self.linked_check else "",
             "metric_templates": [x.id for x in self.metric_templates.all()],
             "scheduling_interval": self.scheduling_interval.interval if self.scheduling_interval else "",
