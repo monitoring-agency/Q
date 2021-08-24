@@ -15,7 +15,7 @@
                         <label for="name">Name</label>
                     </td>
                     <td>
-                        <input name="key" id="name" required {% if existing %}value="{{ existing.key }}" {% endif %}>
+                        <input name="name" id="name" required {% if existing %}value="{{ existing.name }}" {% endif %}>
                     </td>
                 </tr>
                 <tr>
@@ -25,8 +25,8 @@
                     <td>
                         <select id="linked_check" name="linked_check">
                             <option value=""></option>
-                        {% for entry in linked_checks %}
-                        {% if existing.linked_check.id == entry.id %}
+                        {% for entry in checks %}
+                        {% if existing.linked_check == entry.id %}
                             <option value="{{ entry.id }}" selected>{{ entry.name }}</option>
                         {% else %}
                             <option value="{{ entry.id }}">{{ entry.name }}</option>
@@ -37,10 +37,60 @@
                 </tr>
                 <tr>
                     <td>
-                        <label for="value">Value</label>
+                        <label for="metric_templates">Metric Templates</label>
                     </td>
                     <td>
-                        <input name="value" id="value" required {% if existing %}value="{{ existing.value }}" {% endif %}>
+                        <pre>#TODO</pre>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="variables">Variables</label>
+                    </td>
+                    <td>
+                        <pre>#TODO</pre>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="scheduling_interval">Scheduling Interval</label>
+                    </td>
+                    <td>
+                        <input id="scheduling_interval" name="scheduling_interval" {% if existing.scheduling_interval %}value="{{ existing.scheduling_interval }}"{% endif %}>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="scheduling_period">Scheduling Period</label>
+                    </td>
+                    <td>
+                        <select id="scheduling_period" name="scheduling_period">
+                            <option value=""></option>
+                        {% for entry in time_periods %}
+                        {% if existing.scheduling_period == entry.id %}
+                            <option value="{{ entry.id }}" selected>{{ entry.name }}</option>
+                        {% else %}
+                            <option value="{{ entry.id }}">{{ entry.name }}</option>
+                        {% endif %}
+                        {% endfor %}
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="notification_period">Notification Period</label>
+                    </td>
+                    <td>
+                        <select id="notification_period" name="notification_period">
+                            <option value=""></option>
+                        {% for entry in time_periods %}
+                        {% if existing.notification_period == entry.id %}
+                            <option value="{{ entry.id }}" selected>{{ entry.name }}</option>
+                        {% else %}
+                            <option value="{{ entry.id }}">{{ entry.name }}</option>
+                        {% endif %}
+                        {% endfor %}
+                        </select>
                     </td>
                 </tr>
                 <tr>

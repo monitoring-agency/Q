@@ -36,5 +36,8 @@ generate_url_paths(
 )
 generate_url_paths(
     api.views.MetricTemplateView, models.MetricTemplate,
-    {"linked_checks": models.Check.objects.all()}
+    {
+        "checks": models.Check.objects.all(),
+        "time_periods": models.TimePeriod.objects.all(),
+     }
 )

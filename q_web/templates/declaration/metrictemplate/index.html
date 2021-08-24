@@ -16,7 +16,6 @@
                 <th><label><input type="checkbox" id="check_all"></label></th>
                 <th>ID</th>
                 <th>Name</th>
-                <th>Value</th>
                 <th>Comment</th>
                 <th>Delete</th>
             </tr>
@@ -24,11 +23,10 @@
             <tr class="clickable" onclick="window.location = '/declaration/metrictemplate/update/{{ item.id }}';">
                 <td class="smallCell"><label><input type="checkbox"></label></td>
                 <td class="smallCell" id="id-{{ item.id }}">{{ item.id }}</td>
-                <td class="normalCell">{{ item.key }}</td>
-                <td class="normalCell">{{ item.value }}</td>
+                <td class="normalCell">{{ item.name }}</td>
                 <td>{{ item.comment|truncatechars:100 }}</td>
                 <td class="normalCell">
-                    <form method="POST" action="/declaration/globalvariable/delete/{{ item.id }}">
+                    <form method="POST" action="/declaration/metrictemplate/delete/{{ item.id }}">
                         {% csrf_token %}
                         <button class="colorless"><img src="{% static 'img/delete.svg' %}" alt="Delete"></button>
                     </form>
