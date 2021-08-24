@@ -1,0 +1,150 @@
+{% extends "menus.html" %}
+{% block content %}
+
+<div class="declarationContent flexColumn centered">
+    <form method="POST" {% if existing %}action="/declaration/metric/update/{{ existing.id }}" {% else %}action="/declaration/metric/create" {% endif %}>
+        <div class="declarationBox">
+            {% csrf_token %}
+            <h3>{% if existing %}Update existing {% else %}Create new {% endif %}Metric</h3>
+        {% if error %}
+            <p class="error centered">{{ error }}</p>
+        {% endif %}
+            <table>
+                <tr>
+                    <td>
+                        <label for="name">Name</label>
+                    </td>
+                    <td>
+                        <input name="name" id="name" required {% if existing %}value="{{ existing.name }}" {% endif %}>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="linked_host">Linked Host</label>
+                    </td>
+                    <td>
+                        <select id="linked_host" name="linked_host">
+                        {% for entry in hosts %}
+                        {% if entry.id == existing.linked_host %}
+                            <option value="{{ entry.id }}" selected>{{ entry.name }}</option>
+                        {% else %}
+                            <option value="{{ entry.id }}">{{ entry.name }}</option>
+                        {% endif %}
+                        {% endfor %}
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="linked_proxy">Linked proxy</label>
+                    </td>
+                    <td>
+                        <select id="linked_proxy" name="linked_proxy">
+                        {% for entry in proxies %}
+                        {% if existing.linked_proxy == entry.id %}
+                            <option value="{{ entry.id }}" selected>{{ entry.name }}</option>
+                        {% else %}
+                            <option value="{{ entry.id }}">{{ entry.name }}</option>
+                        {% endif %}
+                        {% endfor %}
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="linked_check">Linked check</label>
+                    </td>
+                    <td>
+                        <select id="linked_check" name="linked_check">
+                            <option value=""></option>
+                        {% for entry in checks %}
+                        {% if existing.linked_check == entry.id %}
+                            <option value="{{ entry.id }}" selected>{{ entry.name }}</option>
+                        {% else %}
+                            <option value="{{ entry.id }}">{{ entry.name }}</option>
+                        {% endif %}
+                        {% endfor %}
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="metric_templates">Metric Templates</label>
+                    </td>
+                    <td>
+                        <pre>#TODO</pre>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="variables">Variables</label>
+                    </td>
+                    <td>
+                        <pre>#TODO</pre>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="scheduling_interval">Scheduling Interval</label>
+                    </td>
+                    <td>
+                        <input id="scheduling_interval" name="scheduling_interval" {% if existing.scheduling_interval %}value="{{ existing.scheduling_interval }}"{% endif %}>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="scheduling_period">Scheduling Period</label>
+                    </td>
+                    <td>
+                        <select id="scheduling_period" name="scheduling_period">
+                            <option value=""></option>
+                        {% for entry in time_periods %}
+                        {% if existing.scheduling_period == entry.id %}
+                            <option value="{{ entry.id }}" selected>{{ entry.name }}</option>
+                        {% else %}
+                            <option value="{{ entry.id }}">{{ entry.name }}</option>
+                        {% endif %}
+                        {% endfor %}
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="notification_period">Notification Period</label>
+                    </td>
+                    <td>
+                        <select id="notification_period" name="notification_period">
+                            <option value=""></option>
+                        {% for entry in time_periods %}
+                        {% if existing.notification_period == entry.id %}
+                            <option value="{{ entry.id }}" selected>{{ entry.name }}</option>
+                        {% else %}
+                            <option value="{{ entry.id }}">{{ entry.name }}</option>
+                        {% endif %}
+                        {% endfor %}
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="disabled">Disabled</label>
+                    </td>
+                    <td>
+                        <input type="checkbox" id="disabled" name="disabled" {% if existing.disabled %}checked{% endif %}>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="comment">Comment</label>
+                    </td>
+                    <td>
+                        <textarea name="comment" id="comment" maxlength="1024">{% if existing %}{{ existing.comment }}{% endif %}</textarea>
+                    </td>
+                </tr>
+            </table>
+            <button>Submit</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

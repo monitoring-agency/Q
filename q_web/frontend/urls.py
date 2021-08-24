@@ -66,3 +66,13 @@ generate_url_paths(
     },
     [correct_request]
 )
+generate_url_paths(
+    api.views.MetricView, models.Metric,
+    {
+        "checks": models.Check.objects.all(),
+        "time_periods": models.TimePeriod.objects.all(),
+        "proxies": models.Proxy.objects.all(),
+        "hosts": models.Host.objects.all()
+    },
+    [correct_request]
+)
