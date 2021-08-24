@@ -319,7 +319,7 @@ class MetricView(CheckOptionalMixinView):
                 metric.metric_templates.clear()
         if "scheduling_interval" in params:
             if params["scheduling_interval"]:
-                scheduling_interval = SchedulingInterval.objects.get_or_create(interval=params["scheduling_interval"])
+                scheduling_interval, _ = SchedulingInterval.objects.get_or_create(interval=params["scheduling_interval"])
                 metric.scheduling_interval = scheduling_interval
             else:
                 metric.scheduling_interval = None
@@ -408,7 +408,7 @@ class MetricView(CheckOptionalMixinView):
             )
         if "linked_host" in params:
             try:
-                linked_host = Host.objects.get(params["linked_host"])
+                linked_host = Host.objects.get(id=params["linked_host"])
                 metric.linked_host = linked_host
             except Host.DoesNotExist:
                 return JsonResponse(
