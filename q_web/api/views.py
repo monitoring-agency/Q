@@ -438,7 +438,7 @@ class MetricTemplateView(CheckOptionalMixinView):
     def __init__(self):
         super(MetricTemplateView, self).__init__(
             api_class=MetricTemplate,
-            required_post=["name", "linked_proxy"],
+            required_post=["name"],
         )
 
     def optional(self, metric_template, params, overwrite=False):
@@ -710,7 +710,7 @@ class HostTemplateView(CheckOptionalMixinView):
     def __init__(self):
         super(HostTemplateView, self).__init__(
             api_class=HostTemplate,
-            required_post=["name", "linked_proxy"]
+            required_post=["name"]
         )
 
     def optional(self, host_template, params, overwrite=False):
@@ -757,7 +757,7 @@ class HostTemplateView(CheckOptionalMixinView):
                 host_template.host_templates.clear()
         if "scheduling_interval" in params:
             if params["scheduling_interval"]:
-                scheduling_interval = SchedulingInterval.objects.get_or_create(interval=params["scheduling_interval"])
+                scheduling_interval, _ = SchedulingInterval.objects.get_or_create(interval=params["scheduling_interval"])
                 host_template.scheduling_interval = scheduling_interval
             else:
                 host_template.scheduling_interval = None
@@ -806,14 +806,7 @@ class HostTemplateView(CheckOptionalMixinView):
             return JsonResponse(
                 {"success": False, "message": f"HostTemplate with name {params['name']} already exists"}, status=409
             )
-        try:
-            linked_proxy = Proxy.objects.get(id=params["linked_proxy"])
-        except Proxy.DoesNotExist:
-            return JsonResponse(
-                {"success": False, "message": f"Proxy with id {params['linked_proxy']} does not exist"},
-                status=404
-            )
-        host_template = HostTemplate.objects.create(name=params["name"], linked_proxy=linked_proxy)
+        host_template = HostTemplate.objects.create(name=params["name"])
 
         ret = self.optional(host_template, params)
         if isinstance(ret, JsonResponse):
@@ -835,19 +828,11 @@ class HostTemplateView(CheckOptionalMixinView):
 
         if "name" in params:
             if HostTemplate.objects.filter(name=params["name"]).exists():
-                return JsonResponse(
-                    {"success": False, "message": f"HostTemplate with name {params['name']} already exists"}, status=409
-                )
+                if params["name"] != host_template.name:
+                    return JsonResponse(
+                        {"success": False, "message": f"HostTemplate with name {params['name']} already exists"}, status=409
+                    )
             host_template.name = params["name"]
-        if "linked_proxy" in params:
-            try:
-                proxy = Proxy.objects.get(id=params["linked_proxy"])
-                host_template.linked_proxy = proxy
-            except Proxy.DoesNotExist:
-                return JsonResponse(
-                    {"success": False, "message": f"Proxy with id {params['linked_proxy']} already exists"},
-                    status=409
-                )
 
         ret = self.optional(host_template, params, overwrite=True)
         if isinstance(ret, JsonResponse):
