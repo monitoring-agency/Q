@@ -1,3 +1,4 @@
+import base64
 import json
 import logging
 import os
@@ -196,6 +197,7 @@ def export_declaration(proxy_id_list):
         {
             address: "",
             port: "",
+            proxy_secret: "",
             hosts:
             [
             
@@ -216,8 +218,7 @@ def export_declaration(proxy_id_list):
         declaration[proxy.id] = {
             "address": proxy.address,
             "port": proxy.port,
-            "web_address": proxy.web_address,
-            "web_port": proxy.web_port,
+            "proxy_secret": proxy.secret,
             "hosts": [],
             "metrics": [],
             "scheduling_periods": {}
@@ -295,11 +296,12 @@ def export_to_proxy(declaration: dict):
         client.post(
             f"https://{proxy['address']}:{proxy['port']}/api/v1/updateDeclaration",
             json={
-                "web_address": proxy["web_address"],
-                "web_port": proxy["web_port"],
                 "hosts": proxy["hosts"],
                 "metrics": proxy["metrics"],
                 "scheduling_periods": proxy["scheduling_periods"]
+            }, headers={
+                "Authentication":
+                    base64.urlsafe_b64encode(proxy["proxy_secret"].encode("utf-8")).decode("utf-8")
             }
         )
 
