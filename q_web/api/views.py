@@ -684,9 +684,10 @@ class HostView(CheckOptionalMixinView):
 
         if "name" in params:
             if Host.objects.filter(name=params["name"]).exists():
-                return JsonResponse(
-                    {"success": False, "message": f"Host with name {params['name']} already exists"}, status=409
-                )
+                if params["name"] != host.name:
+                    return JsonResponse(
+                        {"success": False, "message": f"Host with name {params['name']} already exists"}, status=409
+                    )
             host.name = params["name"]
         if "linked_proxy" in params:
             try:
