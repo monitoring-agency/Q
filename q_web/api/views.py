@@ -522,14 +522,7 @@ class MetricTemplateView(CheckOptionalMixinView):
                 {"success": False, "message": "MetricTemplate with this name already exists"},
                 status=409
             )
-        try:
-            linked_proxy = Proxy.objects.get(id=params["linked_proxy"])
-        except Proxy.DoesNotExist:
-            return JsonResponse(
-                {"success": False, "message": f"Proxy with id {params['linked_proxy']} does not exist"},
-                status=404
-            )
-        metric_template = MetricTemplate.objects.create(name=params["name"], linked_proxy=linked_proxy)
+        metric_template = MetricTemplate.objects.create(name=params["name"])
         # Optional params
         ret = self.optional(metric_template, params)
         if isinstance(ret, JsonResponse):
@@ -551,14 +544,6 @@ class MetricTemplateView(CheckOptionalMixinView):
             )
         if "name" in params:
             metric_template.name = params["name"]
-        if "linked_proxy" in params:
-            try:
-                proxy = Proxy.objects.get(id=params["linked_proxy"])
-                metric_template.linked_proxy = proxy
-            except Proxy.DoesNotExist:
-                return JsonResponse(
-                    {"success": False, "message": f"Proxy with id {params['linked_proxy']} does not exist"}, status=404
-                )
 
         ret = self.optional(metric_template, params, overwrite=True)
         if isinstance(ret, JsonResponse):
