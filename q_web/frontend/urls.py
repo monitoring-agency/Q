@@ -41,3 +41,21 @@ generate_url_paths(
         "time_periods": models.TimePeriod.objects.all(),
      }
 )
+
+
+def correct_request(params, model_class, sid=""):
+    if "disabled" in params:
+        params["disabled"] = True
+    else:
+        params["disabled"] = False
+
+
+generate_url_paths(
+    api.views.HostView, models.Host,
+    {
+        "checks": models.Check.objects.all(),
+        "time_periods": models.TimePeriod.objects.all(),
+        "proxies": models.Proxy.objects.all()
+    },
+    [correct_request]
+)

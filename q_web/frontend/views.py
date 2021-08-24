@@ -35,14 +35,11 @@ class DeclarationTemplateIndex(LoginRequiredMixin, TemplateView):
 
 
 class DeclarationTemplateDelete(LoginRequiredMixin, View):
-    def post(self, request, sid="", model_class=None, callback_list=None, *args, **kwargs):
+    def post(self, request, sid="", model_class=None, *args, **kwargs):
         try:
             entry = model_class.objects.get(id=sid)
         except model_class.DoesNotExist:
             return redirect(f"/declaration/{model_class.__name__.lower()}/")
-        if callback_list:
-            for x in callback_list:
-                x(request, sid, model_class)
         entry.delete()
         return redirect(f"/declaration/{model_class.__name__.lower()}/")
 
@@ -52,9 +49,15 @@ class DeclarationTemplateCreate(LoginRequiredMixin, TemplateView):
         template_name = f"declaration/{model_class.__name__.lower()}/create_or_update.html"
         return render(request, template_name, extended_params)
 
-    def post(self, request, api_class=None, model_class=None, extended_params=None, *args, **kwargs):
+    def post(self, request, api_class=None, model_class=None, extended_params=None, callback_list=None, *args, **kwargs):
         template_name = f"declaration/{model_class.__name__.lower()}/create_or_update.html"
-        ret = api_class().save_post(params=request.POST)
+        params = dict(request.POST)
+        for x in params:
+            params[x] = params[x][0]
+        if callback_list:
+            for x in callback_list:
+                x(params, model_class)
+        ret = api_class().save_post(params=params)
         if ret.status_code != 200 and ret.status_code != 201:
             return render(
                 request, template_name, {"error": json.loads(ret.content)["message"], **extended_params}
@@ -74,9 +77,15 @@ class DeclarationTemplateUpdate(LoginRequiredMixin, TemplateView):
             )
         return render(request, template_name, {"existing": existing, **extended_params})
 
-    def post(self, request, sid="", api_class=None, model_class=None, extended_params=None, *args, **kwargs):
+    def post(self, request, sid="", api_class=None, model_class=None, extended_params=None, callback_list=None, *args, **kwargs):
         template_name = f"declaration/{model_class.__name__.lower()}/create_or_update.html"
-        ret = api_class().save_put(params=request.POST, sid=sid)
+        params = dict(request.POST)
+        for x in params:
+            params[x] = params[x][0]
+        if callback_list:
+            for x in callback_list:
+                x(params, model_class, sid)
+        ret = api_class().save_put(params=params, sid=sid)
         if ret.status_code != 200:
             return render(request, template_name, {"error": json.loads(ret.content)["message"]}, **extended_params)
         return redirect(f"/declaration/{model_class.__name__.lower()}/")
