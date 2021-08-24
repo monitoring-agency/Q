@@ -1240,7 +1240,7 @@ class ProxyView(CheckOptionalMixinView):
             return JsonResponse(
                 {"success": False, "message": f"Proxy with name {params['name']} already exists"}, status=409
             )
-        alphabet = string.ascii_letters + string.digits + string.punctuation
+        alphabet = string.ascii_letters + string.digits
         proxy = Proxy.objects.create(
             name=params["name"],
             address=params["address"],

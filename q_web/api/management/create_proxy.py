@@ -5,7 +5,7 @@ from description.models import Proxy
 
 
 def create_proxy():
-    alphabet = string.ascii_letters + string.digits + string.punctuation
+    alphabet = string.ascii_letters + string.digits
     if Proxy.objects.filter(name="local").exists():
         Proxy.objects.get(name="local").delete()
     proxy, _ = Proxy.objects.get_or_create(
