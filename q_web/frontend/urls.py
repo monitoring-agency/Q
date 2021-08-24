@@ -41,6 +41,13 @@ generate_url_paths(
         "time_periods": models.TimePeriod.objects.all(),
      }
 )
+generate_url_paths(
+    api.views.HostTemplateView, models.HostTemplate,
+    {
+        "checks": models.Check.objects.all(),
+        "time_periods": models.TimePeriod.objects.all()
+    }
+)
 
 
 def correct_request(params, model_class, sid=""):
