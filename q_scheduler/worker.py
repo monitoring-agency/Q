@@ -23,7 +23,7 @@ class Worker:
         process_start = time.time()
         proc = await asyncio.create_subprocess_shell(self.check.linked_check, stdout=asyncio.subprocess.PIPE)
         stdout, _ = await proc.communicate()
-        process_end = time.time()-process_start
+        process_end = time.time()
         utc_now = datetime.utcnow().timestamp()
 
         try:
