@@ -1,6 +1,7 @@
 import base64
+import datetime
 import json
-from datetime import datetime
+import logging
 
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
@@ -8,7 +9,9 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
 from description.models import Proxy
-from proxy.models import DataModel, CheckResult
+from proxy.models import CheckResult, CheckState, DataSet
+
+logger = logging.getLogger(__name__)
 
 
 @method_decorator(csrf_exempt, "dispatch")
@@ -84,28 +87,22 @@ class SubmitView(AuthenticationView):
             decoded = json.loads(request.body)
         except json.JSONDecodeError:
             return JsonResponse({"success": False, "message": "Json could not be decoded"}, status=400)
-
-        if "stdout" not in decoded:
-            return JsonResponse({"success": False, "message": "stdout not in json"}, status=400)
-        if "return_code" not in decoded:
-            return JsonResponse({"success": False, "message": "return_code not in json"}, status=400)
-        if "meta" not in decoded:
-            return JsonResponse({"success": False, "message": "meta not in json"}, status=400)
-        if "process_time" not in decoded["meta"]:
-            return JsonResponse({"success": False, "message": "process_time not in meta"}, status=400)
-        if "process_execution_time" not in decoded["meta"]:
-            return JsonResponse({"success": False, "message": "process_execution_time not in meta"}, status=400)
-        if "data" not in decoded:
-            return JsonResponse({"success": False, "message": "data not in json"}, status=400)
-
+        logger.debug(f"Retrieved CheckResult: {decoded}")
+        try:
+            state = CheckState.objects.get(state=decoded["state"])
+        except CheckState.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "message": f"CheckState {decoded['state']} is not valid"},
+                status=400
+            )
         cr = CheckResult.objects.create(
-            stdout=decoded["stdout"], return_code=decoded["return_code"],
-            meta_process_time=datetime.fromtimestamp(decoded["meta"]["process_time"]),
-            meta_process_execution_time=decoded["meta"]["process_execution_time"]
+            state=state,
+            output=decoded["output"],
+            meta_process_execution_time=decoded["meta"]["process_execution_time"],
+            meta_process_end_time=datetime.datetime.fromtimestamp(decoded["meta"]["process_end_time"])
         )
-        for d in decoded["data"]:
-            dm, _ = DataModel.objects.get_or_create(value=d)
-            cr.linked_data.add(dm)
+        for x in decoded["datasets"]:
+            ds, _ = DataSet.objects.get_or_create(name=x["name"], value=x["value"])
+            cr.data_sets.add(ds)
         cr.save()
-
         return JsonResponse({"success": True})

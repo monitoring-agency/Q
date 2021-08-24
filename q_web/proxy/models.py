@@ -1,15 +1,18 @@
-from django.db.models import Model, CharField, DateTimeField, FloatField, IntegerField, ManyToManyField
+from django.db.models import Model, CharField, DateTimeField, FloatField, ManyToManyField, ForeignKey, CASCADE
 
 
-class DataModel(Model):
+class DataSet(Model):
+    name = CharField(default="", max_length=255)
     value = FloatField(default=0)
 
 
+class CheckState(Model):
+    state = CharField(default="", max_length=255)
+
+
 class CheckResult(Model):
-    stdout = CharField(default="", max_length=8192)
-    return_code = IntegerField(default=-1)
-    linked_data = ManyToManyField(DataModel, blank=True)
-    linked_object = IntegerField(default=0)
-    linked_object_type = IntegerField(default=0)
-    meta_process_time = DateTimeField()
-    meta_process_execution_time = FloatField()
+    output = CharField(default="", max_length=8192)
+    state = ForeignKey(CheckState, on_delete=CASCADE, null=True)
+    meta_process_end_time = DateTimeField()
+    meta_process_execution_time = FloatField(default=0)
+    data_sets = ManyToManyField(DataSet)
