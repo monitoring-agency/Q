@@ -1108,10 +1108,11 @@ class ContactView(CheckOptionalMixinView):
             )
         if "name" in params:
             if Contact.objects.filter(name=params["name"]).exists():
-                return JsonResponse(
-                    {"success": False, "message": "Contact with the name of the parameter name already exists"},
-                    status=409
-                )
+                if params["name"] != contact.name:
+                    return JsonResponse(
+                        {"success": False, "message": "Contact with the name of the parameter name already exists"},
+                        status=409
+                    )
             contact.name = params["name"]
         ret = self.optional(contact, params, overwrite=True)
         if isinstance(ret, JsonResponse):
