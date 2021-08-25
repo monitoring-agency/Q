@@ -83,3 +83,9 @@ generate_url_paths(
         "checks": models.Check.objects.all(),
     }
 )
+generate_url_paths(
+    api.views.ContactGroupView, models.ContactGroup,
+    {
+        "contacts": models.Contact.objects.all()
+    }
+)
