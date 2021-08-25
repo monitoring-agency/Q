@@ -1,0 +1,101 @@
+{% extends "menus.html" %}
+{% block content %}
+
+<div class="declarationContent flexColumn centered">
+    <form method="POST" {% if existing %}action="/declaration/contact/update/{{ existing.id }}" {% else %}action="/declaration/contact/create" {% endif %}>
+        <div class="declarationBox">
+            {% csrf_token %}
+            <h3>{% if existing %}Update existing {% else %}Create new {% endif %}Contact</h3>
+        {% if error %}
+            <p class="error centered">{{ error }}</p>
+        {% endif %}
+            <table>
+                <tr>
+                    <td>
+                        <label for="name">Name</label>
+                    </td>
+                    <td>
+                        <input name="name" id="name" required {% if existing %}value="{{ existing.name }}"{% endif %}>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="mail">Mail</label>
+                    </td>
+                    <td>
+                        <input name="mail" id="mail" {% if existing %}value="{{ existing.mail }}"{% endif %}>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="host_notifications">Host notifications</label>
+                    </td>
+                    <td>
+                        <pre>#TODO</pre>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="linked_host_notification_period">Host notification period</label>
+                    </td>
+                    <td>
+                        <select id="linked_host_notification_period" name="linked_host_notification_period">
+                            <option value=""></option>
+                        {% for entry in time_periods %}
+                        {% if entry.id == existing.linked_host_notification_period %}
+                            <option value="{{ entry.id }}" selected>{{ entry.name }}</option>
+                        {% else %}
+                            <option value="{{ entry.id }}">{{ entry.name }}</option>
+                        {% endif %}
+                        {% endfor %}
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="metric_notifications">Metric notifications</label>
+                    </td>
+                    <td>
+                        <pre>#TODO</pre>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="linked_metric_notification_period">Metric notification period</label>
+                    </td>
+                    <td>
+                        <select id="linked_metric_notification_period" name="linked_metric_notification_period">
+                            <option value=""></option>
+                        {% for entry in time_periods %}
+                        {% if entry.id == existing.linked_metric_notification_period %}
+                            <option value="{{ entry.id }}" selected>{{ entry.name }}</option>
+                        {% else %}
+                            <option value="{{ entry.id }}">{{ entry.name }}</option>
+                        {% endif %}
+                        {% endfor %}
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="variables">Variables</label>
+                    </td>
+                    <td>
+                        <pre>#TODO</pre>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="comment">Comment</label>
+                    </td>
+                    <td>
+                        <textarea name="comment" id="comment" maxlength="1024">{% if existing %}{{ existing.comment }}{% endif %}</textarea>
+                    </td>
+                </tr>
+            </table>
+            <button>Submit</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

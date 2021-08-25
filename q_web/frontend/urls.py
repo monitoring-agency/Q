@@ -76,3 +76,10 @@ generate_url_paths(
     },
     [correct_request]
 )
+generate_url_paths(
+    api.views.ContactView, models.Contact,
+    {
+        "time_periods": models.TimePeriod.objects.all(),
+        "checks": models.Check.objects.all(),
+    }
+)
