@@ -1,0 +1,43 @@
+{% extends "menus.html" %}
+{% block content %}
+
+<div class="declarationContent flexColumn centered">
+    <form method="POST" {% if existing %}action="/declaration/contactgroup/update/{{ existing.id }}" {% else %}action="/declaration/contactgroup/create" {% endif %}>
+        <div class="declarationBox">
+            {% csrf_token %}
+            <h3>{% if existing %}Update existing {% else %}Create new {% endif %}Contact Group</h3>
+        {% if error %}
+            <p class="error centered">{{ error }}</p>
+        {% endif %}
+            <table>
+                <tr>
+                    <td>
+                        <label for="name">Name</label>
+                    </td>
+                    <td>
+                        <input name="name" id="name" required {% if existing %}value="{{ existing.name }}"{% endif %}>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="linked_contacts">Linked contacts</label>
+                    </td>
+                    <td>
+                        <pre>#TODO</pre>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="comment">Comment</label>
+                    </td>
+                    <td>
+                        <textarea name="comment" id="comment" maxlength="1024">{% if existing %}{{ existing.comment }}{% endif %}</textarea>
+                    </td>
+                </tr>
+            </table>
+            <button>Submit</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "menus.html" %}
+{% block content %}
+{% load static %}
+    <div class="declarationContent">
+    <div class="declarationHeader">
+        <div class="flexRow">
+            <a class="buttonLink" href="/declaration/contactgroup/create">Add Contact Group</a>
+        </div>
+    </div>
+    <div class="declarationList">
+    {% if entries|length == 0 %}
+        There are no contact groups.
+    {% else %}
+        <table>
+            <tr>
+                <th><label><input type="checkbox" id="check_all"></label></th>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Comment</th>
+                <th>Delete</th>
+            </tr>
+        {% for item in entries %}
+            <tr class="clickable" onclick="window.location = '/declaration/contactgroup/update/{{ item.id }}';">
+                <td class="smallCell"><label><input type="checkbox"></label></td>
+                <td class="smallCell" id="id-{{ item.id }}">{{ item.id }}</td>
+                <td class="normalCell">{{ item.name }}</td>
+                <td>{{ item.comment|truncatechars:100 }}</td>
+                <td class="normalCell">
+                    <form method="POST" action="/declaration/contactgroup/delete/{{ item.id }}">
+                        {% csrf_token %}
+                        <button class="colorless"><img src="{% static 'img/delete.svg' %}" alt="Delete"></button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </table>
+    {% endif %}
+    </div>
+</div>
+{% endblock %}
