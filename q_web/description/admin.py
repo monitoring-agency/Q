@@ -61,3 +61,13 @@ class GlobalVariableAdmin(admin.ModelAdmin):
 @admin.register(Proxy)
 class ProxyAdmin(admin.ModelAdmin):
     list_display = ("name", "address", "port")
+
+
+@admin.register(Contact)
+class ContactAdmin(admin.ModelAdmin):
+    list_display = ("name", "mail", "comment")
+
+
+@admin.register(ContactGroup)
+class ContactGroupAdmin(admin.ModelAdmin):
+    list_display = ("name", "comment",)
