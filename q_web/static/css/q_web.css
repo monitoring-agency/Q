@@ -45,6 +45,7 @@ body {
 
 .content {
     margin-left: 20em;
+    margin-top: 5em;
     min-width: fit-content;
     transition: margin-left ease-in-out 250ms;
 }
@@ -52,7 +53,6 @@ body {
 .content.close {
     margin-left: 5em;
 }
-
 
 button,
 .buttonLink {
@@ -170,6 +170,9 @@ Menu Declaration
  */
 
 .topbar {
+    position: fixed;
+    top: 0;
+    width: calc(100vw - 22em);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -178,11 +181,12 @@ Menu Declaration
     padding-left: 1em;
     padding-right: 1em;
     margin-left: 20em;
-    transition: margin-left ease-in-out 250ms;
+    transition: all ease-in-out 250ms;
 }
 
 .topbar.close {
     margin-left: 5em;
+    width: calc(100vw - 7em);
 }
 
 .topbar img {
@@ -222,6 +226,7 @@ Menu Declaration
     text-align: center;
     background-color: var(--level-2);
     left: 0;
+    top: 0;
     transition: width ease-in-out 250ms;
 }
 
