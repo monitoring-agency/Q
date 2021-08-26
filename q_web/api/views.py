@@ -881,34 +881,20 @@ class TimePeriodView(CheckOptionalMixinView):
         for day, periods in day_periods:
             period_list = []
             for period in periods:
-                p, created = Period.objects.get_or_create(
-                    start_time=period["start_time"], stop_time=period["stop_time"]
-                )
-                if created:
-                    try:
-                        p.save()
-                    except ValueError:
-                        return None
+                if period["start_time"] == "" and period["stop_time"] == "":
+                    continue
+                try:
+                    p, _ = Period.objects.get_or_create(
+                        start_time=period["start_time"], stop_time=period["stop_time"]
+                    )
+                except ValueError:
+                    return None
                 period_list.append(p)
             day = Day.objects.get(name=day)
-            existing_dtp = DayTimePeriod.objects.filter(day=day)
-            if len(existing_dtp) > 0:
-                for existing in existing_dtp:
-                    flag = True
-                    for existing_period in existing.periods:
-                        if existing_period.id not in [x.id for x in period_list]:
-                            flag = False
-                    for p in period_list:
-                        if p.id not in [x.id for x in existing.periods]:
-                            flag = False
-                    if flag:
-                        day_time_periods.append(existing)
-                        break
-            else:
-                d = DayTimePeriod.objects.create(day=day)
-                [d.periods.add(x) for x in periods]
-                d.save()
-                day_time_periods.append(d)
+            d = DayTimePeriod.objects.create(day=day)
+            [d.periods.add(x) for x in period_list]
+            d.save()
+            day_time_periods.append(d)
         return day_time_periods
 
     def save_post(self, params, *args, **kwargs):
@@ -936,7 +922,7 @@ class TimePeriodView(CheckOptionalMixinView):
 
     def save_put(self, params, *args, **kwargs):
         try:
-            time_period = TimePeriod.objects.get(kwargs["sid"])
+            time_period = TimePeriod.objects.get(id=kwargs["sid"])
         except TimePeriod.DoesNotExist:
             return JsonResponse(
                 {"success": False, "message": f"TimePeriod with id {kwargs['sid']} does not exist"},
@@ -950,6 +936,7 @@ class TimePeriodView(CheckOptionalMixinView):
             day_time_periods = self.get_day_time_periods(params["time_periods"])
             if not day_time_periods:
                 return JsonResponse({"success": False, "message": "stop_time has to be after start_time"})
+            time_period.time_periods.clear()
             [time_period.time_periods.add(x) for x in day_time_periods]
         if "comment" in params:
             time_period.comment = params["comment"]
