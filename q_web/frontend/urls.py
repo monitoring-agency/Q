@@ -89,3 +89,32 @@ generate_url_paths(
         "contacts": models.Contact.objects.all()
     }
 )
+
+
+def fix_time_periods(params, model_class, sid=""):
+    days = models.Day.objects.all()
+    time_periods = {}
+    for d in days:
+        time_periods[d.name] = []
+        for item in params:
+            if item.startswith(str(d.id)) and item.endswith("_end") and params[item]:
+                start_item = item[0:-3] + "start"
+                if params[item] == "00:00":
+                    params[item] = "24:00"
+                if start_item in params:
+                    if params[start_item]:
+                        time_periods[d.name].append({"start_time": params[start_item].replace(":", ""), "stop_time": params[item].replace(":", "")})
+
+    for day in time_periods:
+        if len(time_periods[day]) == 0:
+            time_periods[day] = [{"start_time": "", "stop_time": ""}]
+    params["time_periods"] = time_periods
+
+
+generate_url_paths(
+    api.views.TimePeriodView, models.TimePeriod,
+    {
+        "days": models.Day.objects.all(),
+    },
+    [fix_time_periods]
+)

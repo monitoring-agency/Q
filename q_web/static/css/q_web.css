@@ -564,3 +564,16 @@ Declaration Declaration
     cursor: pointer;
     background-color: var(--level-5) !important;
 }
+
+.tableSeparator {
+    background-color: var(--level-4);
+}
+
+.declarationBox table {
+    border-collapse: collapse;
+}
+
+.tableSeparator td {
+    height: 1px;
+    padding: 0;
+}

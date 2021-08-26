@@ -1,0 +1,116 @@
+{% extends "menus.html" %}
+{% block content %}
+{% load static %}
+{% load time %}
+<div class="declarationContent flexColumn centered">
+    <form method="POST" {% if existing %}action="/declaration/timeperiod/update/{{ existing.id }}" {% else %}action="/declaration/timeperiod/create" {% endif %}>
+        <div class="declarationBox">
+            {% csrf_token %}
+            <h3>{% if existing %}Update existing {% else %}Create new {% endif %}Timeperiod</h3>
+        {% if error %}
+            <p class="error centered">{{ error }}</p>
+        {% endif %}
+            <table id="timeperiod_table">
+                <tr>
+                    <td>
+                        <label for="name">Name</label>
+                    </td>
+                    <td>
+                        <input name="name" id="name" required {% if existing %}value="{{ existing.name }}" {% endif %}>
+                    </td>
+                    <td class="smallCell"></td>
+                </tr>
+                <tr class="tableSeparator"><td></td><td></td></tr>
+    {% if existing %}
+        {% for ex_day, time_periods in existing.time_periods.items %}
+            {% if time_periods|length is 0 %}
+                <tr id="day_{% for day in days %}{% if ex_day == day.name %}{{ day.id }}{% endif %}{% endfor %}_0">
+                    <td>
+                        <label>{{ ex_day }}</label>
+                    </td>
+                    <td>
+                        <label>
+                            <input type="time" name="{% for day in days %}{% if ex_day == day.name %}{{ day.id }}{% endif %}{% endfor %}_0_start" value="">
+                        </label> - <label>
+                            <input type="time" name="{% for day in days %}{% if ex_day == day.name %}{{ day.id }}{% endif %}{% endfor %}_0_end" value="">
+                        </label>
+                    </td>
+                    <td>
+                        <button type="button" class="colorless" id="row_add_{% for day in days %}{% if ex_day == day.name %}{{ day.id }}{% endif %}{% endfor %}_0">
+                            <img src="{% static 'img/plus-circle.svg' %}" alt="Add row">
+                        </button>
+                    </td>
+                </tr>
+            {% endif %}
+            {% for period in time_periods %}
+                <tr id="day_{% for day in days %}{% if ex_day == day.name %}{{ day.id }}{% endif %}{% endfor %}_{{ forloop.counter|add:-1 }}">
+                    <td>
+                        <label>{{ ex_day }}</label>
+                    </td>
+                    <td>
+                        <label>
+                            <input type="time" name="{% for day in days %}{% if ex_day == day.name %}{{ day.id }}{% endif %}{% endfor %}_{{ forloop.counter|add:-1 }}_start" value="{{ period.start_time|time }}">
+                        </label> - <label>
+                            <input type="time" name="{% for day in days %}{% if ex_day == day.name %}{{ day.id }}{% endif %}{% endfor %}_{{ forloop.counter|add:-1 }}_end" value="{{ period.stop_time|time }}">
+                        </label>
+                    </td>
+                {% if foorloop.counter is time_periods|length %}
+                    <td>
+                        <button type="button" class="colorless" id="row_remove_{% for day in days %}{% if ex_day == day.name %}{{ day.id }}{% endif %}{% endfor %}_{{ forloop.counter|add:-1 }}">
+                            <img src="{% static 'img/minus-circle.svg' %}" alt="Remove rew">
+                        </button>
+                    </td>
+                    <td>
+                        <button type="button" class="colorless" id="row_add_{% for day in days %}{% if ex_day == day.name %}{{ day.id }}{% endif %}{% endfor %}_{{ forloop.counter|add:-1 }}" style="display: none;">
+                            <img src="{% static 'img/plus-circle.svg' %}" alt="Add row">
+                        </button>
+                    </td>
+                {% else %}
+                    <td>
+                        <button type="button" class="colorless" id="row_add_{% for day in days %}{% if ex_day == day.name %}{{ day.id }}{% endif %}{% endfor %}_{{ forloop.counter|add:-1 }}">
+                            <img src="{% static 'img/plus-circle.svg' %}" alt="Add row">
+                        </button>
+                    </td>
+                {% endif %}
+                </tr>
+            {% endfor %}
+                <tr class="tableSeparator"><td></td><td></td></tr>
+        {% endfor %}
+    {% else %}
+        {% for day in days %}
+                <tr>
+                    <td>
+                        <label>{{ day.name }}</label>
+                    </td>
+                    <td>
+                        <label>
+                            <input type="time" name="{{ day.id }}_0_start" value="">
+                        </label> -
+                        <label>
+                            <input type="time" name="{{ day.id }}_0_end" value="">
+                        </label>
+                    </td>
+                    <td>
+                        <button type="button" class="colorless" id="row_add_{{ day.id }}_0">
+                            <img src="{% static 'img/plus-circle.svg' %}" alt="Add Row">
+                        </button>
+                    </td>
+                </tr>
+                <tr class="tableSeparator"><td></td><td></td></tr>
+        {% endfor %}
+    {% endif %}
+                <tr>
+                    <td>
+                        <label for="comment">Comment</label>
+                    </td>
+                    <td colspan="2">
+                        <textarea name="comment" id="comment" maxlength="1024">{% if existing %}{{ existing.comment }}{% endif %}</textarea>
+                    </td>
+                </tr>
+            </table>
+            <button>Submit</button>
+        </div>
+    </form>
+</div>
+<script src="{% static 'js/q_web_buttons.js' %}"></script>
+{% endblock %}
