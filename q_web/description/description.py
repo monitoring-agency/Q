@@ -291,9 +291,10 @@ def export_declaration(proxy_id_list):
 
 def export_to_proxy(declaration: dict):
     client = httpx.Client(cert=("/var/lib/q/certs/q-web-fullchain.pem", "/var/lib/q/certs/q-web-privkey.pem"))
+    status_list = []
     for x in declaration:
         proxy = declaration[x]
-        client.post(
+        ret = client.post(
             f"https://{proxy['address']}:{proxy['port']}/api/v1/updateDeclaration",
             json={
                 "hosts": proxy["hosts"],
@@ -304,10 +305,15 @@ def export_to_proxy(declaration: dict):
                     base64.urlsafe_b64encode(proxy["proxy_secret"].encode("utf-8")).decode("utf-8")
             }
         )
+        status_list.append(ret)
+    return status_list
 
 
 def export(proxy_id_list: list):
     t = time.time()
     declaration = export_declaration(proxy_id_list)
-    export_to_proxy(declaration)
-    return time.time()-t
+    status = export_to_proxy(declaration)
+
+    return {
+        "elapsed_time": time.time()-t, "status": [{"return_code": x.status_code, "message": x.text} for x in status]
+    }

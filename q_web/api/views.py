@@ -1251,10 +1251,10 @@ class UpdateDeclarationView(CheckMixinView):
     def cleaned_post(self, params, *args, **kwargs):
         if "proxies" not in params:
             proxies = [x.id for x in Proxy.objects.filter(disabled=False)]
-            export_time = export(proxies)
+            data = export(proxies)
         else:
-            export_time = export(params["proxies"] if isinstance(params["proxies"], list) else [params["proxies"]])
-        return JsonResponse({"success": True, "message": "Configuration was reloaded.", "data": export_time})
+            data = export(params["proxies"] if isinstance(params["proxies"], list) else [params["proxies"]])
+        return JsonResponse({"success": True, "message": "Request was successful.", "data": data})
 
 
 class GenerateProxyConfigurationView(CheckMixinView):

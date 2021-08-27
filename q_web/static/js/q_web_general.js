@@ -84,15 +84,17 @@ function updateDeclaration(proxyId, csrf_token) {
         if (ret_code === 200 || ret_code === 201) {
             var ret = JSON.parse(xhr.responseText);
             img.src = "/static/img/check-circle.svg";
-            text.innerHTML = ret.message + "<br>" + "Elapsed time: " + ret.data + "s";
+            var msg = "";
+            for (let i = 0; i < ret.data.status.length; i++) {
+                if (ret.data.status[i]["return_code"] !== 200) {
+                    img.src = "/static/img/x-circle.svg";
+                }
+                msg += ret.data.status[i]["return_code"].toString()  + " " + ret.data.status[i]["message"] + "<br>";
+            }
+            text.innerHTML = "Elapsed time: " + ret.data["elapsed_time"] + "s <br>" + msg;
         } else {
             img.src = "/static/img/x-circle.svg";
-            if (ret_code !== 500) {
-                var ret = JSON.parse(xhr.responseText);
-                text.innerText = ret.message;
-            } else {
-                text.innerText = "Internal server error occurred";
-            }
+            text.innerText = "Internal server error occurred";
         }
     }
 }
