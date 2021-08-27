@@ -29,8 +29,8 @@ class Worker:
         try:
             decoded = json.loads(stdout)
             decoded = {**decoded, "meta": {
-                "process_end_time": utc_now,
-                "process_execution_time": process_end - process_start
+                "process_end_time": round(utc_now, 0),
+                "process_execution_time": round(process_end - process_start, 4)
             }}
         except json.JSONDecodeError:
             await self.submit_result({
@@ -38,8 +38,8 @@ class Worker:
                 "output": "stdout could not be decoded as json",
                 "datasets": [],
                 "meta": {
-                    "process_end_time": utc_now,
-                    "process_execution_time": process_end - process_start
+                    "process_end_time": round(utc_now, 0),
+                    "process_execution_time": round(process_end - process_start, 4)
                 }
             })
             return
