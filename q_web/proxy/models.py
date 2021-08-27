@@ -1,4 +1,5 @@
-from django.db.models import Model, CharField, DateTimeField, FloatField, ManyToManyField, ForeignKey, CASCADE
+from django.db.models import Model, CharField, DateTimeField, FloatField, ManyToManyField, ForeignKey, CASCADE, \
+    PositiveIntegerField
 
 
 class DataSet(Model):
@@ -11,6 +12,8 @@ class CheckState(Model):
 
 
 class CheckResult(Model):
+    object_id = PositiveIntegerField(default=0)
+    context = CharField(default="", max_length=255)
     output = CharField(default="", max_length=8192)
     state = ForeignKey(CheckState, on_delete=CASCADE, null=True)
     meta_process_end_time = DateTimeField()

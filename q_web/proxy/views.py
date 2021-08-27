@@ -96,6 +96,8 @@ class SubmitView(AuthenticationView):
                 status=400
             )
         cr = CheckResult.objects.create(
+            object_id=decoded["object_id"],
+            context=decoded["context"],
             state=state,
             output=decoded["output"],
             meta_process_execution_time=decoded["meta"]["process_execution_time"],

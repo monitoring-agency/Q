@@ -28,12 +28,19 @@ class Worker:
 
         try:
             decoded = json.loads(stdout)
-            decoded = {**decoded, "meta": {
-                "process_end_time": round(utc_now, 0),
-                "process_execution_time": round(process_end - process_start, 4)
-            }}
+            decoded = {
+                **decoded,
+                "object_id": self.check.id,
+                "context": self.check.context,
+                "meta": {
+                    "process_end_time": round(utc_now, 0),
+                    "process_execution_time": round(process_end - process_start, 4)
+                }
+            }
         except json.JSONDecodeError:
             await self.submit_result({
+                "object_id": self.check.id,
+                "context": self.check.context,
                 "state": "unknown",
                 "output": "stdout could not be decoded as json",
                 "datasets": [],
