@@ -1270,4 +1270,8 @@ class GenerateProxyConfigurationView(CheckMixinView):
             return JsonResponse(
                 {"success": False, "message": f"Proxy with id {params['proxy']} does not exist"}, status=404
             )
-        return JsonResponse({"success": True, "message": "Request was successful", "data": proxy.to_base64()})
+        return JsonResponse({
+            "success": True,
+            "message": "Request was successful",
+            "data": f"/usr/sbin/q-proxy/venv/bin/python3 /usr/sbin/q-proxy/manage.py init --b64 '{proxy.to_base64()}'"
+        })
