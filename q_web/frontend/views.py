@@ -2,9 +2,12 @@ import json
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.views import View
 from django.views.generic import TemplateView
+
+from api import views
 
 
 class Login(LoginView):
@@ -89,3 +92,18 @@ class DeclarationTemplateUpdate(LoginRequiredMixin, TemplateView):
         if ret.status_code != 200:
             return render(request, template_name, {"error": json.loads(ret.content)["message"]}, **extended_params)
         return redirect(f"/declaration/{model_class.__name__.lower()}/")
+
+
+#
+# Specific views for declaration
+#
+class UpdateDeclarationView(LoginRequiredMixin, View):
+    def post(self, request, sid="", *args, **kwargs):
+        ret = views.UpdateDeclarationView().cleaned_post({"proxies": [sid]})
+        return ret
+
+
+class GenerateConfigurationView(LoginRequiredMixin, View):
+    def post(self, request, sid="", *args, **kwargs):
+        ret = views.GenerateProxyConfigurationView().cleaned_post({"proxy": sid})
+        return ret

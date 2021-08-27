@@ -26,3 +26,155 @@ document.getElementById("sidebarToggle").addEventListener("click", function() {
         toggle.classList.remove("open");
     }
 });
+
+function destroySelf(evt) {
+    var modal = document.getElementById(evt.currentTarget.id);
+    modal.remove();
+}
+
+function generateModal() {
+    var back = document.createElement("div");
+    back.classList.add("modalBackground");
+    back.id = "modal";
+    back.addEventListener("click", destroySelf)
+
+    var box = document.createElement("div");
+    box.classList.add("modalBox");
+    box.addEventListener("click", (evt) => {evt.stopPropagation();});
+
+    back.appendChild(box);
+    document.body.appendChild(back);
+    return box;
+}
+
+function updateDeclaration(proxyId, csrf_token) {
+    var url = "/declaration/proxy/" + proxyId + "/updateDeclaration";
+    var params = "csrfmiddlewaretoken=" + csrf_token;
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", url, true);
+    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+    var modal = generateModal();
+    var img = document.createElement("img");
+    img.src = "/static/img/loader.svg";
+    img.alt = "Loading..";
+    img.classList.add("rotate");
+    img.classList.add("bigImg");
+    modal.appendChild(img);
+
+    var text = document.createElement("p");
+    text.innerText = "Waiting...";
+    modal.appendChild(text);
+
+    var button = document.createElement("button");
+    button.addEventListener("click", function () {
+        document.getElementById("modal").remove();
+    });
+    button.innerText = "OK";
+    button.type = "button";
+    button.style = "display: none";
+    modal.appendChild(button);
+
+    xhr.send(params);
+    xhr.onload = () => {
+        button.style = "";
+        img.classList.remove("rotate");
+
+        var ret_code = xhr.status;
+        if (ret_code === 200 || ret_code === 201) {
+            var ret = JSON.parse(xhr.responseText);
+            img.src = "/static/img/check-circle.svg";
+            text.innerHTML = ret.message + "<br>" + "Elapsed time: " + ret.data + "s";
+        } else {
+            img.src = "/static/img/x-circle.svg";
+            if (ret_code !== 500) {
+                var ret = JSON.parse(xhr.responseText);
+                text.innerText = ret.message;
+            } else {
+                text.innerText = "Internal server error occurred";
+            }
+        }
+    }
+}
+
+function generateConfiguration(proxyId, csrf_token) {
+    var url = "/declaration/proxy/" + proxyId + "/generateConfiguration";
+    var params = "csrfmiddlewaretoken=" + csrf_token;
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", url, true);
+    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+    var modal = generateModal();
+    var img = document.createElement("img");
+    img.src = "/static/img/loader.svg";
+    img.alt = "Loading..";
+    img.classList.add("rotate");
+    img.classList.add("bigImg");
+    modal.appendChild(img);
+
+    var text = document.createElement("p");
+    text.innerText = "Waiting...";
+    modal.appendChild(text);
+
+    var div = document.createElement("div");
+    div.classList.add("modalRow");
+    modal.appendChild(div);
+
+    var input = document.createElement("textarea");
+    input.classList.add("darkInput");
+    input.style = "display: none";
+    div.appendChild(input);
+
+    var copy = document.createElement("button");
+    copy.style = "display: none;"
+    copy.classList.add("colorless");
+    copy.addEventListener("click", () => {
+        if (input.select) {
+            input.select();
+            try {
+                document.execCommand("copy");
+            } catch (err) {
+                alert('please press Ctrl/Cmd+C to copy manually');
+            }
+        }
+    });
+    div.appendChild(copy);
+
+    var copyImg = document.createElement("img");
+    copyImg.src = "/static/img/clipboard.svg";
+    copyImg.alt = "Copy";
+    copy.appendChild(copyImg);
+
+    var button = document.createElement("button");
+    button.addEventListener("click", function () {
+        document.getElementById("modal").remove();
+    });
+    button.innerText = "OK";
+    button.type = "button";
+    button.style = "display: none";
+    modal.appendChild(button);
+
+    xhr.send(params);
+    xhr.onload = () => {
+        button.style = "";
+        img.classList.remove("rotate");
+
+        var ret_code = xhr.status;
+        if (ret_code === 200 || ret_code === 201) {
+            var ret = JSON.parse(xhr.responseText);
+            img.remove();
+            text.innerHTML = "Execute the following on the proxy. (Beware of sensitive data)";
+            input.innerText = ret.data;
+            input.style = "width: 550px; height: 200px;";
+            copy.style = "";
+        } else {
+            img.src = "/static/img/x-circle.svg";
+            if (ret_code !== 500) {
+                var ret = JSON.parse(xhr.responseText);
+                text.innerText = ret.message;
+            } else {
+                text.innerText = "Internal server error occurred";
+            }
+        }
+    }
+}

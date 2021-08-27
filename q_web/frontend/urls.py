@@ -7,7 +7,11 @@ from frontend.views import *
 urlpatterns = [
     path("login", Login.as_view()),
     path("logout", Logout.as_view()),
+
     path("", DashboardView.as_view()),
+
+    path("declaration/proxy/<str:sid>/updateDeclaration", UpdateDeclarationView.as_view()),
+    path("declaration/proxy/<str:sid>/generateConfiguration", GenerateConfigurationView.as_view()),
     # Model specific views that can use the API are added with the function below
 ]
 
@@ -117,4 +121,10 @@ generate_url_paths(
         "days": models.Day.objects.all(),
     },
     [fix_time_periods]
+)
+generate_url_paths(
+    api.views.ProxyView, models.Proxy,
+    {
+        "proxies": models.Proxy.objects.all()
+    }
 )
