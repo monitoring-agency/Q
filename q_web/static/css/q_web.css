@@ -21,6 +21,10 @@ BASE Declaration
 
 }
 
+@font-face {
+    font-family: FreeSans; src: url('/static/font/FreeSans.ttf');
+}
+
 body {
     margin: 0;
     background-color: var(--level-0);
@@ -58,6 +62,7 @@ button,
 .buttonLink {
     color: black;
     text-decoration: none;
+    margin: 0.5em 0 0.5em 0;
     padding: 0.25em 1em 0.25em 1em;
     background-color: var(--prim);
     border: none;
@@ -100,50 +105,31 @@ select:focus {
 Login Declaration
  */
 
-.loginContent {
-    font-size: larger;
+.fullscreen {
+    display: flex;
+    flex-direction: row;
+    width: 100vw;
+    height: 80vh;
+}
+
+#q {
+    font-family: FreeSans, serif;
+    font-size: 10em;
+    margin-bottom: 2rem;
+    margin-top: 0;
+    color: var(--prim);
+}
+
+.loginBox {
     display: flex;
     flex-direction: column;
-    height: 100vh;
-    justify-content: center;
+    padding: 3.5em;
+    background-color: var(--level-2);
+}
+
+.loginBox div {
+    display: flex;
     align-items: center;
-}
-
-.loginContent input {
-    padding: 0.25em 0.5em 0.25em 0.5em;
-    background-color: var(--level-0);
-    border: 2px solid var(--prim);
-    border-radius: 5px;
-    margin-bottom: 1em;
-    color: inherit;
-    text-align: center;
-    transition: border linear 200ms;
-}
-
-.loginContent input:hover {
-    border: 2px solid var(--prim-light);
-}
-
-.loginContent button {
-    background-color: var(--level-0);
-    color: white;
-    padding: 0.25em 6em 0.25em 6em;
-    border-radius: 5px;
-    margin-top: 0.5em;
-    border: 2px solid var(--prim);
-    cursor: pointer;
-    transition: background-color 300ms;
-}
-
-.loginContent button:hover {
-    background-color: var(--prim);
-}
-
-#qLogin {
-    position: absolute;
-    top: 0;
-    width: 90vh;
-    z-index: -1;
 }
 
 /*

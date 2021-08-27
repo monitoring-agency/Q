@@ -180,3 +180,19 @@ function generateConfiguration(proxyId, csrf_token) {
         }
     }
 }
+
+
+function showHidePassword() {
+    var pw = document.getElementById("id_password");
+    var toggleImg = document.getElementById("toggleEyePwImg");
+    var static_path = toggleImg.src.split("/");
+    static_path.pop();
+    static_path = static_path.join("/")
+    if (pw.type === "password") {
+        pw.type = "text";
+        toggleImg.src =  static_path + "/eye-off.svg"
+    } else {
+        pw.type = "password";
+        toggleImg.src =  static_path + "/eye.svg"
+    }
+}
