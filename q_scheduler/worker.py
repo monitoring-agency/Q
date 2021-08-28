@@ -20,8 +20,9 @@ class Worker:
 
     async def run(self):
         logger.debug(f"Starting worker on {self.check.id}:{self.check.context}")
+        linked_check = self.check.linked_check.replace("\r\n", " ")
         process_start = time.time()
-        proc = await asyncio.create_subprocess_shell(self.check.linked_check, stdout=asyncio.subprocess.PIPE)
+        proc = await asyncio.create_subprocess_shell(linked_check, stdout=asyncio.subprocess.PIPE)
         stdout, _ = await proc.communicate()
         process_end = time.time()
         utc_now = datetime.utcnow().timestamp()
