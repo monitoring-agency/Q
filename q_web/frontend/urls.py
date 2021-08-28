@@ -140,17 +140,27 @@ def fix_time_periods(params, model_class, sid=""):
     params["time_periods"] = time_periods
 
 
+def time_period_callback():
+    return {
+        "days": models.Day.objects.all(),
+    }
+
+
 generate_url_paths(
     api.views.TimePeriodView, models.TimePeriod,
-    {
-        "days": models.Day.objects.all(),
-    },
+    [time_period_callback],
     [fix_time_periods]
 )
+
+
+def proxy_callback():
+    return {
+        "proxies": models.Proxy.objects.all()
+    }
+
+
 generate_url_paths(
     api.views.ProxyView, models.Proxy,
-    {
-        "proxies": models.Proxy.objects.all()
-    },
+    [proxy_callback],
     [correct_request]
 )
