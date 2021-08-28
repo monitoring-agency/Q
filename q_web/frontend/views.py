@@ -31,9 +31,13 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 #
 class DeclarationTemplateIndex(LoginRequiredMixin, TemplateView):
 
-    def get(self, request, model_class=None, extended_params=None, *args, **kwargs):
+    def get(self, request, model_class=None, extended_params_callback_list=None, *args, **kwargs):
         template_name = f"declaration/{model_class.__name__.lower()}/index.html"
         entries = [x.to_dict() for x in model_class.objects.all()]
+        extended_params = {}
+        if extended_params_callback_list:
+            for x in extended_params_callback_list:
+                extended_params = {**extended_params, **x()}
         return render(request, template_name, {"entries": entries, **extended_params})
 
 
@@ -48,15 +52,23 @@ class DeclarationTemplateDelete(LoginRequiredMixin, View):
 
 
 class DeclarationTemplateCreate(LoginRequiredMixin, TemplateView):
-    def get(self, request, model_class=None, extended_params=None, *args, **kwargs):
+    def get(self, request, model_class=None, extended_params_callback_list=None, *args, **kwargs):
         template_name = f"declaration/{model_class.__name__.lower()}/create_or_update.html"
+        extended_params = {}
+        if extended_params_callback_list:
+            for x in extended_params_callback_list:
+                extended_params = {**extended_params, **x()}
         return render(request, template_name, extended_params)
 
-    def post(self, request, api_class=None, model_class=None, extended_params=None, callback_list=None, *args, **kwargs):
+    def post(self, request, api_class=None, model_class=None, extended_params_callback_list=None, callback_list=None, *args, **kwargs):
         template_name = f"declaration/{model_class.__name__.lower()}/create_or_update.html"
         params = dict(request.POST)
         for x in params:
             params[x] = params[x][0]
+        extended_params = {}
+        if extended_params_callback_list:
+            for x in extended_params_callback_list:
+                extended_params = {**extended_params, **x()}
         if callback_list:
             for x in callback_list:
                 x(params, model_class)
@@ -69,8 +81,12 @@ class DeclarationTemplateCreate(LoginRequiredMixin, TemplateView):
 
 
 class DeclarationTemplateUpdate(LoginRequiredMixin, TemplateView):
-    def get(self, request, sid="", model_class=None, extended_params=None, *args, **kwargs):
+    def get(self, request, sid="", model_class=None, extended_params_callback_list=None, *args, **kwargs):
         template_name = f"declaration/{model_class.__name__.lower()}/create_or_update.html"
+        extended_params = {}
+        if extended_params_callback_list:
+            for x in extended_params_callback_list:
+                extended_params = {**extended_params, **x()}
         try:
             existing = model_class.objects.get(id=sid).to_dict()
         except model_class.DoesNotExist:
@@ -80,11 +96,15 @@ class DeclarationTemplateUpdate(LoginRequiredMixin, TemplateView):
             )
         return render(request, template_name, {"existing": existing, **extended_params})
 
-    def post(self, request, sid="", api_class=None, model_class=None, extended_params=None, callback_list=None, *args, **kwargs):
+    def post(self, request, sid="", api_class=None, model_class=None, extended_params_callback_list=None, callback_list=None, *args, **kwargs):
         template_name = f"declaration/{model_class.__name__.lower()}/create_or_update.html"
         params = dict(request.POST)
         for x in params:
             params[x] = params[x][0]
+        extended_params = {}
+        if extended_params_callback_list:
+            for x in extended_params_callback_list:
+                extended_params = {**extended_params, **x()}
         if callback_list:
             for x in callback_list:
                 x(params, model_class, sid)

@@ -16,12 +16,12 @@ urlpatterns = [
 ]
 
 
-def generate_url_paths(api_class, model_class, extended_params=None, callback_list=None):
+def generate_url_paths(api_class, model_class, extended_params_callback_list=None, callback_list=None):
     name = model_class.__name__.lower()
     params = {
         "api_class": api_class,
         "model_class": model_class,
-        "extended_params": extended_params if extended_params else {},
+        "extended_params_callback_list": extended_params_callback_list if extended_params_callback_list else [],
         "callback_list": callback_list if callback_list else []
     }
     [urlpatterns.append(x) for x in [
@@ -38,19 +38,22 @@ generate_url_paths(
 generate_url_paths(
     api.views.CheckView, models.Check
 )
-generate_url_paths(
-    api.views.MetricTemplateView, models.MetricTemplate,
-    {
+
+
+def host_metric_template_callback():
+    return {
         "checks": models.Check.objects.all(),
         "time_periods": models.TimePeriod.objects.all(),
      }
+
+
+generate_url_paths(
+    api.views.MetricTemplateView, models.MetricTemplate,
+    [host_metric_template_callback]
 )
 generate_url_paths(
     api.views.HostTemplateView, models.HostTemplate,
-    {
-        "checks": models.Check.objects.all(),
-        "time_periods": models.TimePeriod.objects.all()
-    }
+    [host_metric_template_callback]
 )
 
 
@@ -61,37 +64,59 @@ def correct_request(params, model_class, sid=""):
         params["disabled"] = False
 
 
-generate_url_paths(
-    api.views.HostView, models.Host,
-    {
+def host_callback():
+    return {
         "checks": models.Check.objects.all(),
         "time_periods": models.TimePeriod.objects.all(),
         "proxies": models.Proxy.objects.all()
-    },
+    }
+
+
+generate_url_paths(
+    api.views.HostView, models.Host,
+    [host_callback],
     [correct_request]
 )
-generate_url_paths(
-    api.views.MetricView, models.Metric,
-    {
+
+
+def metric_callback():
+    return {
         "checks": models.Check.objects.all(),
         "time_periods": models.TimePeriod.objects.all(),
         "proxies": models.Proxy.objects.all(),
         "hosts": models.Host.objects.all()
-    },
+    }
+
+
+generate_url_paths(
+    api.views.MetricView, models.Metric,
+    [metric_callback],
     [correct_request]
 )
-generate_url_paths(
-    api.views.ContactView, models.Contact,
-    {
+
+
+def contact_callback():
+    return {
         "time_periods": models.TimePeriod.objects.all(),
         "checks": models.Check.objects.all(),
     }
-)
+
+
 generate_url_paths(
-    api.views.ContactGroupView, models.ContactGroup,
-    {
+    api.views.ContactView, models.Contact,
+    [contact_callback]
+)
+
+
+def contact_group_callback():
+    return {
         "contacts": models.Contact.objects.all()
     }
+
+
+generate_url_paths(
+    api.views.ContactGroupView, models.ContactGroup,
+    [contact_group_callback]
 )
 
 
