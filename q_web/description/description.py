@@ -315,5 +315,6 @@ def export(proxy_id_list: list):
     status = export_to_proxy(declaration)
 
     return {
-        "elapsed_time": time.time()-t, "status": [{"return_code": x.status_code, "message": x.text} for x in status]
+        "elapsed_time": round(time.time()-t, 2),
+        "status": [{"return_code": x.status_code, "message": x.text} for x in status]
     }
