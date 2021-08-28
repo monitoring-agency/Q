@@ -126,5 +126,6 @@ generate_url_paths(
     api.views.ProxyView, models.Proxy,
     {
         "proxies": models.Proxy.objects.all()
-    }
+    },
+    [correct_request]
 )
