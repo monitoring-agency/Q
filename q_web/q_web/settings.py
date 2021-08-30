@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'description',
     "frontend",
     "proxy",
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -78,6 +79,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'q_web.wsgi.application'
 
+ASGI_APPLICATION = 'q_web.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases

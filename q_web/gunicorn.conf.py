@@ -23,9 +23,8 @@ capture_output = False
 
 # [ WORKER ]
 # handle with care
-import multiprocessing
-workers = 2 * multiprocessing.cpu_count()
-worker_class = "sync"
+workers = 4
+worker_class = "uvicorn.workers.UvicornWorker"
 threads = 1
 
 # [ LOGGING ]

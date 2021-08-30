@@ -13,7 +13,7 @@ Group=q-web
 # see http://0pointer.net/blog/dynamic-users-with-systemd.html
 RuntimeDirectory=gunicorn
 WorkingDirectory=/usr/sbin/q-web/
-ExecStart=/usr/sbin/q-web/venv/bin/gunicorn -c /etc/q-web/gunicorn.conf.py q_web.wsgi
+ExecStart=/usr/sbin/q-web/venv/bin/gunicorn -c /etc/q-web/gunicorn.conf.py q_web.asgi
 ExecReload=/bin/kill -s HUP $MAINPID
 KillMode=mixed
 TimeoutStopSec=5
