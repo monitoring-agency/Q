@@ -11,12 +11,13 @@ from django.contrib.contenttypes.models import ContentType
 
 from description.models import Host, Metric, Check, GlobalVariable, GenericKVP, Label, TimePeriod, SchedulingInterval, \
     HostTemplate, MetricTemplate, Proxy
+from proxy.models import ScheduledObject
 from q_web import settings
 
 logger = logging.getLogger("export")
 
 
-def export_declaration(proxy_id_list):
+def generate_declaration(proxy_id_list):
     """This function generates the description to be forwarded to the specific proxies"""
     # ContentTypes
     chost = ContentType.objects.get_for_model(Host).id
@@ -289,6 +290,34 @@ def export_declaration(proxy_id_list):
     return declaration
 
 
+def generate_scheduled_objects(declaration):
+    """This method is used to create instances of scheduled objects if not existent yet"""
+    creation = []
+    host_content_type = ContentType.objects.get_for_model(Host)
+    metric_content_type = ContentType.objects.get_for_model(Metric)
+    existing_hosts = [x.object_id for x in ScheduledObject.objects.filter(content_type=host_content_type)]
+    existing_metrics = [x.object_id for x in ScheduledObject.objects.filter(content_type=metric_content_type)]
+    intermediate = []
+    [intermediate.extend(declaration[x]["hosts"]) for x in declaration]
+    [
+        creation.append(ScheduledObject(
+            content_type=host_content_type,
+            object_id=x["id"]
+        ))
+        for x in intermediate if x["id"] not in existing_hosts
+    ]
+    intermediate.clear()
+    [intermediate.extend(declaration[x]["metrics"]) for x in declaration]
+    [
+        creation.append(ScheduledObject(
+            content_type=metric_content_type,
+            object_id=x["id"]
+        ))
+        for x in intermediate if x["id"] not in existing_metrics
+    ]
+    ScheduledObject.objects.bulk_create(creation)
+
+
 def export_to_proxy(declaration: dict):
     client = httpx.Client(cert=("/var/lib/q/certs/q-web-fullchain.pem", "/var/lib/q/certs/q-web-privkey.pem"))
     status_list = []
@@ -311,7 +340,8 @@ def export_to_proxy(declaration: dict):
 
 def export(proxy_id_list: list):
     t = time.time()
-    declaration = export_declaration(proxy_id_list)
+    declaration = generate_declaration(proxy_id_list)
+    generate_scheduled_objects(declaration)
     status = export_to_proxy(declaration)
 
     return {

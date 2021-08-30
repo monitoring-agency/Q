@@ -3,13 +3,14 @@ import datetime
 import json
 import logging
 
+from django.contrib.contenttypes.models import ContentType
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
-from description.models import Proxy
-from proxy.models import CheckResult, CheckState, DataSet
+from description.models import Proxy, Host, Metric
+from proxy.models import CheckResult, CheckState, DataSet, ScheduledObject
 
 logger = logging.getLogger(__name__)
 
@@ -95,16 +96,32 @@ class SubmitView(AuthenticationView):
                 {"success": False, "message": f"CheckState {decoded['state']} is not valid"},
                 status=400
             )
-        cr = CheckResult.objects.create(
-            object_id=decoded["object_id"],
-            context=decoded["context"],
-            state=state,
-            output=decoded["output"],
-            meta_process_execution_time=decoded["meta"]["process_execution_time"],
-            meta_process_end_time=datetime.datetime.fromtimestamp(decoded["meta"]["process_end_time"])
-        )
-        for x in decoded["datasets"]:
-            ds, _ = DataSet.objects.get_or_create(name=x["name"], value=x["value"])
-            cr.data_sets.add(ds)
-        cr.save()
+        try:
+            if decoded["context"] == "host":
+                content_type = ContentType.objects.get_for_model(Host)
+            elif decoded["context"] == "metric":
+                content_type = ContentType.objects.get_for_model(Metric)
+            else:
+                return JsonResponse({"success": False, "message": "Context is not in ['host', 'metric']"}, status=400)
+            scheduled_object = ScheduledObject.objects.get(object_id=decoded["object_id"], content_type=content_type)
+            cr = CheckResult.objects.create(
+                state=state,
+                output=decoded["output"],
+                meta_process_execution_time=decoded["meta"]["process_execution_time"],
+                meta_process_end_time=datetime.datetime.fromtimestamp(decoded["meta"]["process_end_time"])
+            )
+            for x in decoded["datasets"]:
+                ds, _ = DataSet.objects.get_or_create(name=x["name"], value=x["value"])
+                cr.data_sets.add(ds)
+            cr.save()
+            scheduled_object.linked_check_results.add(cr)
+            scheduled_object.save()
+        except ScheduledObject.DoesNotExist:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": f"Object with id {decoded['object_id']} does not exist"
+                },
+                status=400
+            )
         return JsonResponse({"success": True})
