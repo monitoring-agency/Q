@@ -21,6 +21,8 @@ def _check_auth(request):
     secret = base64.urlsafe_b64decode(auth).decode("utf-8")
     try:
         config = ConfigurationModel.objects.first()
+        if config is None:
+            raise ConfigurationModel.DoesNotExist
     except ConfigurationModel.DoesNotExist:
         return JsonResponse({"success": False, "message": "Configuration is incomplete"}, status=500)
     if config.secret != secret:
