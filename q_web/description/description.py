@@ -247,7 +247,7 @@ def generate_declaration(proxy_id_list):
             h["scheduling_period"] = time_periods[host.scheduling_period_id]
 
         # Set host_vars
-        additional_host_vars["address"] = h["address"]
+        additional_host_vars["$host_address$"] = h["address"]
         additional_host_vars.update(dict(ChainMap(*variables, retrieve_variables(host, chost, []))))
         host_vars[host.id] = additional_host_vars
 

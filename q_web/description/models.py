@@ -307,6 +307,7 @@ class Host(models.Model):
     """This class represents a host"""
     name = CharField(max_length=255, unique=True)
     address = CharField(default="", max_length=255, blank=True, null=True)
+    "Variable: $host_address$"
     linked_proxy = ForeignKey(Proxy, on_delete=models.CASCADE)
     linked_check = ForeignKey(Check, on_delete=models.DO_NOTHING, blank=True, null=True)
     disabled = BooleanField(default=False, blank=True, null=True)
