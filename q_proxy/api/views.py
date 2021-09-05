@@ -69,7 +69,11 @@ class SubmitView(View):
                         base64.urlsafe_b64encode(f"{c.proxy_id}:{c.web_secret}".encode("utf-8")).decode("utf-8")
                 }
             )
-            logger.debug(ret.text)
+            if ret.status_code != 200:
+                logger.debug(ret.text)
+                logger.warning(f"Could not reach q-web, saving to backlog")
+                CheckResultModel.objects.create(json=json.dumps(decoded))
+                return JsonResponse({"success": True, "message": "Data was saved to backlog"})
         except httpx.ConnectTimeout or ConfigurationModel.DoesNotExist:
             logger.warning(f"Could not reach q-web, saving to backlog")
             CheckResultModel.objects.create(json=json.dumps(decoded))
