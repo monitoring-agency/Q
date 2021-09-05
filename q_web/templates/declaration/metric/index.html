@@ -1,6 +1,7 @@
 {% extends "menus.html" %}
 {% block content %}
 {% load static %}
+{% load dvalue %}
     <div class="declarationContent">
     <div class="declarationHeader">
         <div class="flexRow">
@@ -25,7 +26,7 @@
                 <td class="smallCell"><label><input type="checkbox"></label></td>
                 <td class="smallCell" id="id-{{ item.id }}">{{ item.id }}</td>
                 <td class="normalCell">{{ item.name }}</td>
-                <td class="normalCell">{{ item.linked_host }}</td>
+                <td class="normalCell">{{ hosts_dict|dvalue:item.linked_host }}</td>
                 <td>{{ item.comment|truncatechars:100 }}</td>
                 <td class="normalCell">
                     <form method="POST" action="/declaration/metric/delete/{{ item.id }}">
