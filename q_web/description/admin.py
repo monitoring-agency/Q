@@ -8,14 +8,9 @@ class SchedulingIntervalAdmin(admin.ModelAdmin):
     list_display = ("__str__", "interval")
 
 
-@admin.register(CheckType)
-class CheckTypeAdmin(admin.ModelAdmin):
-    list_display = ("__str__", "name")
-
-
 @admin.register(Check)
 class CheckAdmin(admin.ModelAdmin):
-    list_display = ("__str__", "name", "check_type")
+    list_display = ("__str__", "name")
 
 
 @admin.register(Metric)
