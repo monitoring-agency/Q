@@ -14,7 +14,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from api.models import AccountModel, ACLModel
 from description.description import export
-from description.models import Check, CheckType, Host, Metric, TimePeriod, SchedulingInterval, GenericKVP, Label, Day, \
+from description.models import Check, Host, Metric, TimePeriod, SchedulingInterval, GenericKVP, Label, Day, \
     Period, DayTimePeriod, GlobalVariable, Contact, ContactGroup, MetricTemplate, HostTemplate, Proxy
 
 
@@ -241,12 +241,6 @@ class CheckView(CheckOptionalMixinView):
     def optional(self, check, params):
         if "comment" in params:
             check.comment = params["comment"]
-        if "check_type" in params:
-            if params["check_type"]:
-                ct, _ = CheckType.objects.get_or_create(name=params["check_type"])
-                check.check_type = ct
-            else:
-                check.check_type = None
         if "cmd" in params:
             check.cmd = params["cmd"]
 

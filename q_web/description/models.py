@@ -108,24 +108,9 @@ class TimePeriod(models.Model):
                                      update_fields=update_fields)
 
 
-class CheckType(models.Model):
-    name = CharField(default="", max_length=255, unique=True)
-
-    def __str__(self):
-        return self.name
-
-    def save(self, force_insert=False, force_update=False, using=None,
-             update_fields=None):
-        if self.name == "":
-            raise ValueError("Name of a CheckType can not be \"\"")
-        super(CheckType, self).save(force_insert=force_insert, force_update=force_update, using=using,
-                                    update_fields=update_fields)
-
-
 class Check(models.Model):
     name = CharField(default="", max_length=255, unique=True)
     cmd = CharField(default="", max_length=1024, blank=True, null=True)
-    check_type = ForeignKey(CheckType, on_delete=models.DO_NOTHING, blank=True, null=True)
     comment = CharField(default="", max_length=1024, blank=True, null=True)
 
     def __str__(self):
@@ -137,7 +122,6 @@ class Check(models.Model):
             "name": self.name,
             "cmd": self.cmd if self.cmd else "",
             "comment": self.comment if self.comment else "",
-            "check_type": self.check_type.name if self.check_type else ""
         }
 
     def to_export(self, kvp: dict):
