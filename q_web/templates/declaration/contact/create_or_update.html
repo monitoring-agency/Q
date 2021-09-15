@@ -39,7 +39,7 @@
                         <label for="linked_host_notification_period">Host notification period</label>
                     </td>
                     <td>
-                        <select id="linked_host_notification_period" name="linked_host_notification_period">
+                        <select id="linked_host_notification_period" name="linked_host_notification_period" class="select">
                             <option value=""></option>
                         {% for entry in time_periods %}
                         {% if entry.id == existing.linked_host_notification_period %}
@@ -64,7 +64,7 @@
                         <label for="linked_metric_notification_period">Metric notification period</label>
                     </td>
                     <td>
-                        <select id="linked_metric_notification_period" name="linked_metric_notification_period">
+                        <select id="linked_metric_notification_period" name="linked_metric_notification_period" class="select">
                             <option value=""></option>
                         {% for entry in time_periods %}
                         {% if entry.id == existing.linked_metric_notification_period %}
@@ -93,7 +93,7 @@
                     </td>
                 </tr>
             </table>
-            <button>Submit</button>
+            <button class="button">Submit</button>
         </div>
     </form>
 </div>

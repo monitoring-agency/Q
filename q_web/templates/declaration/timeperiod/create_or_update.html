@@ -36,7 +36,7 @@
                         </label>
                     </td>
                     <td>
-                        <button type="button" class="colorless" id="row_add_{% for day in days %}{% if ex_day == day.name %}{{ day.id }}{% endif %}{% endfor %}_0">
+                        <button type="button" class="colorless button" id="row_add_{% for day in days %}{% if ex_day == day.name %}{{ day.id }}{% endif %}{% endfor %}_0">
                             <img src="{% static 'img/plus-circle.svg' %}" alt="Add row">
                         </button>
                     </td>
@@ -56,18 +56,18 @@
                     </td>
                 {% if foorloop.counter is time_periods|length %}
                     <td>
-                        <button type="button" class="colorless" id="row_remove_{% for day in days %}{% if ex_day == day.name %}{{ day.id }}{% endif %}{% endfor %}_{{ forloop.counter|add:-1 }}">
+                        <button type="button" class="colorless button" id="row_remove_{% for day in days %}{% if ex_day == day.name %}{{ day.id }}{% endif %}{% endfor %}_{{ forloop.counter|add:-1 }}">
                             <img src="{% static 'img/minus-circle.svg' %}" alt="Remove rew">
                         </button>
                     </td>
                     <td>
-                        <button type="button" class="colorless" id="row_add_{% for day in days %}{% if ex_day == day.name %}{{ day.id }}{% endif %}{% endfor %}_{{ forloop.counter|add:-1 }}" style="display: none;">
+                        <button type="button" class="colorless button" id="row_add_{% for day in days %}{% if ex_day == day.name %}{{ day.id }}{% endif %}{% endfor %}_{{ forloop.counter|add:-1 }}" style="display: none;">
                             <img src="{% static 'img/plus-circle.svg' %}" alt="Add row">
                         </button>
                     </td>
                 {% else %}
                     <td>
-                        <button type="button" class="colorless" id="row_add_{% for day in days %}{% if ex_day == day.name %}{{ day.id }}{% endif %}{% endfor %}_{{ forloop.counter|add:-1 }}">
+                        <button type="button" class="colorless button" id="row_add_{% for day in days %}{% if ex_day == day.name %}{{ day.id }}{% endif %}{% endfor %}_{{ forloop.counter|add:-1 }}">
                             <img src="{% static 'img/plus-circle.svg' %}" alt="Add row">
                         </button>
                     </td>
@@ -91,7 +91,7 @@
                         </label>
                     </td>
                     <td>
-                        <button type="button" class="colorless" id="row_add_{{ day.id }}_0">
+                        <button type="button" class="colorless button" id="row_add_{{ day.id }}_0">
                             <img src="{% static 'img/plus-circle.svg' %}" alt="Add Row">
                         </button>
                     </td>
@@ -108,7 +108,7 @@
                     </td>
                 </tr>
             </table>
-            <button>Submit</button>
+            <button class="button">Submit</button>
         </div>
     </form>
 </div>

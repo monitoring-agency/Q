@@ -22,6 +22,7 @@ function addRemoveButton(cell, day, currentRow, staticPath) {
     var remove_button = document.createElement("button");
     remove_button.id = "row_remove_" + day.toString() + "_" + currentRow.toString();
     remove_button.classList.add("colorless");
+    remove_button.classList.add("button");
     remove_button.type = "button";
     var remove_button_img = document.createElement("img");
     remove_button_img.alt = "Remove row";
@@ -38,6 +39,7 @@ function addAddButton(cell, day, currentRow, staticPath) {
     var add_button = document.createElement("button");
     add_button.id = "row_add_" + day.toString() + "_" + currentRow.toString();
     add_button.classList.add("colorless");
+    add_button.classList.add("button");
     add_button.type = "button";
     var add_button_img = document.createElement("img");
     add_button_img.alt = "Add row";

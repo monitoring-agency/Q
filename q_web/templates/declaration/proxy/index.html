@@ -30,19 +30,19 @@
                 <td class="normalCell">{{ item.address }}</td>
                 <td class="optional">{{ item.comment|truncatechars:100 }}</td>
                 <td class="smallCell">
-                    <button class="colorless" onclick="updateDeclaration({{ item.id }}, '{{ csrf_token }}');">
+                    <button class="colorless button" onclick="updateDeclaration({{ item.id }}, '{{ csrf_token }}');">
                         <img src="{% static 'img/share.svg' %}" alt="Reload Declaration">
                     </button>
                 </td>
                 <td class="smallCell">
-                    <button class="colorless" onclick="generateConfiguration({{ item.id }}, '{{ csrf_token }}');">
+                    <button class="colorless button" onclick="generateConfiguration({{ item.id }}, '{{ csrf_token }}');">
                         <img src="{% static 'img/key.svg' %}" alt="Generate Configuration">
                     </button>
                 </td>
                 <td class="smallCell">
                     <form method="POST" action="/declaration/proxy/delete/{{ item.id }}">
                         {% csrf_token %}
-                        <button class="colorless"><img src="{% static 'img/delete.svg' %}" alt="Delete"></button>
+                        <button class="colorless button"><img src="{% static 'img/delete.svg' %}" alt="Delete"></button>
                     </form>
                 </td>
             </tr>
