@@ -1027,7 +1027,7 @@ class ContactView(CheckOptionalMixinView):
                                 )
                     else:
                         try:
-                            check = Check.objects.get(id=notification)
+                            check = Check.objects.get(id=params[notification])
                             contact.__getattribute__(notification).add(check)
                         except Check.DoesNotExist:
                             return JsonResponse(

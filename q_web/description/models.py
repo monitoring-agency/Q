@@ -168,9 +168,9 @@ class Contact(models.Model):
             "id": self.id,
             "name": self.name,
             "mail": self.mail if self.mail else "",
-            "linked_host_notifications": self.linked_host_notifications if self.linked_metric_notifications else "",
+            "linked_host_notifications": [x.id for x in self.linked_host_notifications.all()] if self.linked_metric_notifications else "",
             "linked_host_notification_period": self.linked_host_notification_period_id if self.linked_host_notification_period else "",
-            "linked_metric_notifications": self.linked_metric_notifications if self.linked_metric_notifications else "",
+            "linked_metric_notifications": [x.id for x in self.linked_metric_notifications.all()] if self.linked_metric_notifications else "",
             "linked_metric_notification_period": self.linked_metric_notification_period_id if self.linked_metric_notification_period else "",
             "comment": self.comment if self.comment else "",
             "variables": dict(ChainMap(*[x.to_dict() for x in self.variables.all()][::-1]))

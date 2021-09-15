@@ -94,6 +94,14 @@ def correct_request(params, model_class, sid=""):
         params["host_templates"] = ""
     if "metric_templates" not in params:
         params["metric_templates"] = ""
+    if "metric_notifications" in params:
+        params["linked_metric_notifications"] = params["metric_notifications"]
+    else:
+        params["linked_metric_notifications"] = ""
+    if "host_notifications" in params:
+        params["linked_host_notifications"] = params["host_notifications"]
+    else:
+        params["linked_host_notifications"] = ""
 
 
 def host_callback():
@@ -140,7 +148,8 @@ def contact_callback():
 
 generate_url_paths(
     api.views.ContactView, models.Contact,
-    [contact_callback]
+    [contact_callback],
+    [correct_request]
 )
 
 

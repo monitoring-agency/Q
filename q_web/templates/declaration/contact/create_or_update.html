@@ -31,7 +31,15 @@
                         <label for="host_notifications">Host notifications</label>
                     </td>
                     <td>
-                        <pre>#TODO</pre>
+                        <select name="host_notifications" id="host_notifications" multiple="multiple" class="multiselect">
+                        {% for check in checks %}
+                        {% if existing and check.id in existing.linked_host_notifications %}
+                            <option value="{{ check.id }}" selected>{{ check.name }}</option>
+                        {% else %}
+                            <option value="{{ check.id }}">{{ check.name }}</option>
+                        {% endif %}
+                        {% endfor %}
+                        </select>
                     </td>
                 </tr>
                 <tr>
@@ -56,7 +64,15 @@
                         <label for="metric_notifications">Metric notifications</label>
                     </td>
                     <td>
-                        <pre>#TODO</pre>
+                        <select name="metric_notifications" id="metric_notifications" multiple="multiple" class="multiselect">
+                        {% for check in checks %}
+                        {% if existing and check.id in existing.linked_metric_notifications %}
+                            <option value="{{ check.id }}" selected>{{ check.name }}</option>
+                        {% else %}
+                            <option value="{{ check.id }}">{{ check.name }}</option>
+                        {% endif %}
+                        {% endfor %}
+                        </select>
                     </td>
                 </tr>
                 <tr>
