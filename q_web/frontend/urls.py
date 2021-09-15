@@ -1,3 +1,5 @@
+from collections import ChainMap
+
 from django.urls import path
 
 import api.views
@@ -62,13 +64,19 @@ def correct_request(params, model_class, sid=""):
         params["disabled"] = True
     else:
         params["disabled"] = False
+    if "host_templates" in params:
+        if not params["host_templates"]:
+            params["host_templates"] = ""
+    else:
+        params["host_templates"] = ""
 
 
 def host_callback():
     return {
         "checks": models.Check.objects.all(),
         "time_periods": models.TimePeriod.objects.all(),
-        "proxies": models.Proxy.objects.all()
+        "proxies": models.Proxy.objects.all(),
+        "host_templates": models.HostTemplate.objects.all(),
     }
 
 
@@ -80,11 +88,13 @@ generate_url_paths(
 
 
 def metric_callback():
+    hosts = models.Host.objects.all()
     return {
         "checks": models.Check.objects.all(),
         "time_periods": models.TimePeriod.objects.all(),
         "proxies": models.Proxy.objects.all(),
-        "hosts": models.Host.objects.all()
+        "hosts": hosts,
+        "hosts_dict": dict(ChainMap(*[{x.id: x} for x in hosts]))
     }
 
 

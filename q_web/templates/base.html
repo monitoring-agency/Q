@@ -5,12 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Q</title>
+    <link type="text/css" rel="stylesheet" href="{% static 'css/q_web_select2.css' %}"/>
     <link type="text/css" rel="stylesheet" href="{% static 'css/q_web.css' %}">
     <link type="text/css" rel="stylesheet" href="{% static 'css/q_web_loading.css' %}">
     <link rel="shortcut icon" href="{% static 'img/favicon.ico' %}"/>
 
     <script src="{% static 'js/q_web_preload.js' %}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body id="stop-scrolling">
 
@@ -20,5 +20,12 @@
 
 {% block body %}
 {% endblock %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+			crossorigin="anonymous">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="{% static 'js/q_web_general.js' %}"></script>
+    <script src="{% static 'js/q_web_select2.js' %}"></script>
 </body>

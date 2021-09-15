@@ -64,7 +64,8 @@ class DeclarationTemplateCreate(LoginRequiredMixin, TemplateView):
         template_name = f"declaration/{model_class.__name__.lower()}/create_or_update.html"
         params = dict(request.POST)
         for x in params:
-            params[x] = params[x][0]
+            if not len(params[x]) > 1:
+                params[x] = params[x][0]
         extended_params = {}
         if extended_params_callback_list:
             for x in extended_params_callback_list:
@@ -100,7 +101,8 @@ class DeclarationTemplateUpdate(LoginRequiredMixin, TemplateView):
         template_name = f"declaration/{model_class.__name__.lower()}/create_or_update.html"
         params = dict(request.POST)
         for x in params:
-            params[x] = params[x][0]
+            if not len(params[x]) > 1:
+                params[x] = params[x][0]
         extended_params = {}
         if extended_params_callback_list:
             for x in extended_params_callback_list:
