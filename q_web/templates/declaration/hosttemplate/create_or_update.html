@@ -31,7 +31,7 @@
                         <label for="linked_check">Linked check</label>
                     </td>
                     <td>
-                        <select id="linked_check" name="linked_check">
+                        <select id="linked_check" name="linked_check" class="select">
                             <option value=""></option>
                         {% for entry in checks %}
                         {% if existing.linked_check == entry.id %}
@@ -48,7 +48,15 @@
                         <label for="host_templates">Host Templates</label>
                     </td>
                     <td>
-                        <pre>#TODO</pre>
+                        <select multiple="multiple" name="host_templates" class="multiselect" id="host_templates">
+                            {% for ht in host_templates %}
+                            {% if existing and ht.id in existing.host_templates %}
+                                <option value="{{ ht.id }}" selected>{{ ht.name }}</option>
+                            {% else %}
+                                <option value="{{ ht.id }}">{{ ht.name }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
                     </td>
                 </tr>
                 <tr>
@@ -72,7 +80,7 @@
                         <label for="scheduling_period">Scheduling Period</label>
                     </td>
                     <td>
-                        <select id="scheduling_period" name="scheduling_period">
+                        <select id="scheduling_period" name="scheduling_period" class="select">
                             <option value=""></option>
                         {% for entry in time_periods %}
                         {% if existing.scheduling_period == entry.id %}
@@ -89,7 +97,7 @@
                         <label for="notification_period">Notification Period</label>
                     </td>
                     <td>
-                        <select id="notification_period" name="notification_period">
+                        <select id="notification_period" name="notification_period" class="select">
                             <option value=""></option>
                         {% for entry in time_periods %}
                         {% if existing.notification_period == entry.id %}
@@ -110,7 +118,7 @@
                     </td>
                 </tr>
             </table>
-            <button>Submit</button>
+            <button class="button">Submit</button>
         </div>
     </form>
 </div>

@@ -42,20 +42,45 @@ generate_url_paths(
 )
 
 
-def host_metric_template_callback():
+def metric_template_callback():
     return {
         "checks": models.Check.objects.all(),
         "time_periods": models.TimePeriod.objects.all(),
+        "metric_templates": models.MetricTemplate.objects.all(),
      }
+
+
+def correct_metric_template(params, model_class, sid=""):
+    if "metric_templates" not in params:
+        params["metric_templates"] = ""
 
 
 generate_url_paths(
     api.views.MetricTemplateView, models.MetricTemplate,
-    [host_metric_template_callback]
+    [metric_template_callback],
+    [correct_metric_template]
+
 )
+
+
+def host_template_callback():
+    return {
+        "checks": models.Check.objects.all(),
+        "time_periods": models.TimePeriod.objects.all(),
+        "host_templates": models.HostTemplate.objects.all(),
+    }
+
+
+def correct_host_template(params, model_class, sid=""):
+    if "host_templates" not in params:
+        params["host_templates"] = ""
+    print(params)
+
+
 generate_url_paths(
     api.views.HostTemplateView, models.HostTemplate,
-    [host_metric_template_callback]
+    [host_template_callback],
+    [correct_host_template]
 )
 
 
