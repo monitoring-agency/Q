@@ -73,7 +73,6 @@ def host_template_callback():
 def correct_host_template(params, model_class, sid=""):
     if "host_templates" not in params:
         params["host_templates"] = ""
-    print(params)
 
 
 generate_url_paths(
@@ -93,6 +92,8 @@ def correct_request(params, model_class, sid=""):
             params["host_templates"] = ""
     else:
         params["host_templates"] = ""
+    if "metric_templates" not in params:
+        params["metric_templates"] = ""
 
 
 def host_callback():
@@ -118,7 +119,8 @@ def metric_callback():
         "time_periods": models.TimePeriod.objects.all(),
         "proxies": models.Proxy.objects.all(),
         "hosts": hosts,
-        "hosts_dict": dict(ChainMap(*[{x.id: x} for x in hosts]))
+        "hosts_dict": dict(ChainMap(*[{x.id: x} for x in hosts])),
+        "metric_templates": models.MetricTemplate.objects.all(),
     }
 
 
