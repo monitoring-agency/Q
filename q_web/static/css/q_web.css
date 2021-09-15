@@ -58,7 +58,7 @@ body {
     margin-left: 5em;
 }
 
-button,
+.button,
 .buttonLink {
     color: black;
     text-decoration: none;
@@ -71,7 +71,7 @@ button,
     transition: background-color ease-in-out 250ms;
 }
 
-button:hover,
+.button:hover,
 .buttonLink:hover {
     background-color: var(--prim-light);
 }
@@ -82,7 +82,7 @@ button:hover,
 
 ::-moz-focus-inner {border:0;}
 
-select {
+.select {
     background-color: var(--level-1);
     border: 1px solid var(--level-5);
     color: var(--text);
@@ -94,11 +94,20 @@ select {
     transition: background-color ease-in-out 250ms, border ease-in-out 250ms;
 }
 
-select:hover,
-select:focus {
+.select:hover,
+.select:focus {
     background-color: var(--level-0);
     border: 1px solid var(--prim);
     cursor: pointer;
+}
+
+.buttonImg {
+    filter: invert(55%) sepia(0%) saturate(31%) hue-rotate(206deg) brightness(111%) contrast(89%);
+    transition: filter ease-in-out 250ms;
+}
+
+.buttonImg:hover {
+    filter: invert();
 }
 
 /*
@@ -486,6 +495,50 @@ Dashboard Declaration
     margin: 1em;
 }
 
+.dashboardList {
+    display: flex;
+    width: 100%;
+    padding: 1em;
+    margin: 1em;
+    background-color: var(--level-2);
+}
+
+.dashboardTable {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.dashboardTable tr td {
+    text-align: center;
+    padding: 0.25em 1em 0.25em 1em;
+}
+
+.dashboardTable tr th {
+    padding: 0.5em 1em 0.25em 1em;
+}
+
+.dashboardTable tr:nth-child(1) {
+    background-color: var(--level-4);
+}
+
+.dashboardTable tr:nth-child(odd):not(:nth-child(1)) {
+    background-color: var(--level-3);
+}
+
+.dashboardTable tr:nth-child(even) {
+    background-color: var(--level-2);
+}
+
+.graphColumn {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.graphContainer {
+    height: 400px;
+}
+
 /*
 Declaration Declaration
  */
@@ -595,8 +648,12 @@ Declaration Declaration
     transition: background-color ease-in-out 250ms, border ease-in-out 250ms;
 }
 
-.declarationBox button {
+.declarationBox .button {
     margin: 0.5em 0 0.5em 0;
+}
+
+.multiselect {
+    width: 16em;
 }
 
 .declarationBox input:hover,

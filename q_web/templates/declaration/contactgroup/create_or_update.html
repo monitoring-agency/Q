@@ -23,7 +23,15 @@
                         <label for="linked_contacts">Linked contacts</label>
                     </td>
                     <td>
-                        <pre>#TODO</pre>
+                        <select id="linked_contacts" class="multiselect" name="linked_contacts" multiple="multiple">
+                        {% for ct in contacts %}
+                        {% if existing and ct.id in existing.linked_contacts %}
+                            <option value="{{ ct.id }}" selected>{{ ct.name }}</option>
+                        {% else %}
+                            <option value="{{ ct.id }}">{{ ct.name }}</option>
+                        {% endif %}
+                        {% endfor %}
+                        </select>
                     </td>
                 </tr>
                 <tr>
@@ -35,7 +43,7 @@
                     </td>
                 </tr>
             </table>
-            <button>Submit</button>
+            <button class="button">Submit</button>
         </div>
     </form>
 </div>

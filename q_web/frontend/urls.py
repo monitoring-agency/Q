@@ -124,9 +124,15 @@ def contact_group_callback():
     }
 
 
+def correct_contact_group(params, model_class, sid=""):
+    if "linked_contacts" not in params:
+        params["linked_contacts"] = ""
+
+
 generate_url_paths(
     api.views.ContactGroupView, models.ContactGroup,
-    [contact_group_callback]
+    [contact_group_callback],
+    [correct_contact_group]
 )
 
 
