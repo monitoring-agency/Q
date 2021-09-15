@@ -59,7 +59,6 @@ generate_url_paths(
     api.views.MetricTemplateView, models.MetricTemplate,
     [metric_template_callback],
     [correct_metric_template]
-
 )
 
 
