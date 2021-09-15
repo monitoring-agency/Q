@@ -87,7 +87,7 @@ class DeclarationTemplateUpdate(LoginRequiredMixin, TemplateView):
         extended_params = {}
         if extended_params_callback_list:
             for x in extended_params_callback_list:
-                extended_params = {**extended_params, **x()}
+                extended_params = {**extended_params, **x(sid)}
         try:
             existing = model_class.objects.get(id=sid).to_dict()
         except model_class.DoesNotExist:
@@ -106,7 +106,7 @@ class DeclarationTemplateUpdate(LoginRequiredMixin, TemplateView):
         extended_params = {}
         if extended_params_callback_list:
             for x in extended_params_callback_list:
-                extended_params = {**extended_params, **x()}
+                extended_params = {**extended_params, **x(sid)}
         if callback_list:
             for x in callback_list:
                 x(params, model_class, sid)

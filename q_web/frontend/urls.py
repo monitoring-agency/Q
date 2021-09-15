@@ -42,11 +42,11 @@ generate_url_paths(
 )
 
 
-def metric_template_callback():
+def metric_template_callback(sid=""):
     return {
         "checks": models.Check.objects.all(),
         "time_periods": models.TimePeriod.objects.all(),
-        "metric_templates": models.MetricTemplate.objects.all(),
+        "metric_templates": models.MetricTemplate.objects.all() if not sid else [x for x in models.Metric.objects.all() if x.id != int(sid)],
      }
 
 
@@ -62,11 +62,11 @@ generate_url_paths(
 )
 
 
-def host_template_callback():
+def host_template_callback(sid=""):
     return {
         "checks": models.Check.objects.all(),
         "time_periods": models.TimePeriod.objects.all(),
-        "host_templates": models.HostTemplate.objects.all(),
+        "host_templates": models.HostTemplate.objects.all() if not sid else [x for x in models.HostTemplate.objects.all() if x.id != int(sid)],
     }
 
 
@@ -104,7 +104,7 @@ def correct_request(params, model_class, sid=""):
         params["linked_host_notifications"] = ""
 
 
-def host_callback():
+def host_callback(sid=""):
     return {
         "checks": models.Check.objects.all(),
         "time_periods": models.TimePeriod.objects.all(),
@@ -120,7 +120,7 @@ generate_url_paths(
 )
 
 
-def metric_callback():
+def metric_callback(sid=""):
     hosts = models.Host.objects.all()
     return {
         "checks": models.Check.objects.all(),
@@ -139,7 +139,7 @@ generate_url_paths(
 )
 
 
-def contact_callback():
+def contact_callback(sid=""):
     return {
         "time_periods": models.TimePeriod.objects.all(),
         "checks": models.Check.objects.all(),
@@ -153,7 +153,7 @@ generate_url_paths(
 )
 
 
-def contact_group_callback():
+def contact_group_callback(sid=""):
     return {
         "contacts": models.Contact.objects.all()
     }
@@ -191,7 +191,7 @@ def fix_time_periods(params, model_class, sid=""):
     params["time_periods"] = time_periods
 
 
-def time_period_callback():
+def time_period_callback(sid=""):
     return {
         "days": models.Day.objects.all(),
     }
@@ -204,7 +204,7 @@ generate_url_paths(
 )
 
 
-def proxy_callback():
+def proxy_callback(sid=""):
     return {
         "proxies": models.Proxy.objects.all()
     }
