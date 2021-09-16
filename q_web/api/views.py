@@ -311,6 +311,64 @@ class MetricView(CheckOptionalMixinView):
                     metric.metric_templates.add(metric_template)
             else:
                 metric.metric_templates.clear()
+        if "linked_contacts" in params:
+            if params["linked_contacts"]:
+                if overwrite:
+                    metric.linked_contacts.clear()
+                if isinstance(params["linked_contacts"], list):
+                    for contact_id in params['linked_contacts']:
+                        try:
+                            contact = Contact.objects.get(id=contact_id)
+                            metric.linked_contacts.add(contact)
+                        except Contact.DoesNotExist:
+                            return JsonResponse(
+                                {
+                                    "success": False,
+                                    "message": f"Contact with id {params['linked_contacts']} does not exist"
+                                }, status=404
+                            )
+                else:
+                    try:
+                        contact = Contact.objects.get(id=params["linked_contacts"])
+                        metric.linked_contacts.add(contact)
+                    except Contact.DoesNotExist:
+                        return JsonResponse(
+                            {
+                                "success": False,
+                                "message": f"Contact with id {params['linked_contacts']} does not exist"
+                            }, status=404
+                        )
+            else:
+                metric.linked_contacts.clear()
+        if "linked_contact_groups" in params:
+            if params["linked_contact_groups"]:
+                if overwrite:
+                    metric.linked_contact_groups.clear()
+                if isinstance(params["linked_contact_groups"], list):
+                    for contact_group_id in params['linked_contact_groups']:
+                        try:
+                            contact_group = ContactGroup.objects.get(id=contact_group_id)
+                            metric.linked_contact_groups.add(contact_group)
+                        except ContactGroup.DoesNotExist:
+                            return JsonResponse(
+                                {
+                                    "success": False,
+                                    "message": f"ContactGroup with id {params['linked_contact_groups']} does not exist"
+                                }, status=404
+                            )
+                else:
+                    try:
+                        contact_group = ContactGroup.objects.get(id=params["linked_contact_groups"])
+                        metric.linked_contact_groups.add(contact_group)
+                    except ContactGroup.DoesNotExist:
+                        return JsonResponse(
+                            {
+                                "success": False,
+                                "message": f"ContactGroup with id {params['linked_contact_group']} does not exist"
+                            }, status=404
+                        )
+            else:
+                metric.linked_contact_groups.clear()
         if "scheduling_interval" in params:
             if params["scheduling_interval"]:
                 scheduling_interval, _ = SchedulingInterval.objects.get_or_create(interval=params["scheduling_interval"])
@@ -463,6 +521,64 @@ class MetricTemplateView(CheckOptionalMixinView):
                         metric_template.metric_templates.add(x)
             else:
                 metric_template.metric_templates.clear()
+        if "linked_contacts" in params:
+            if params["linked_contacts"]:
+                if overwrite:
+                    metric_template.linked_contacts.clear()
+                if isinstance(params["linked_contacts"], list):
+                    for contact_id in params['linked_contacts']:
+                        try:
+                            contact = Contact.objects.get(id=contact_id)
+                            metric_template.linked_contacts.add(contact)
+                        except Contact.DoesNotExist:
+                            return JsonResponse(
+                                {
+                                    "success": False,
+                                    "message": f"Contact with id {params['linked_contacts']} does not exist"
+                                }, status=404
+                            )
+                else:
+                    try:
+                        contact = Contact.objects.get(id=params["linked_contacts"])
+                        metric_template.linked_contacts.add(contact)
+                    except Contact.DoesNotExist:
+                        return JsonResponse(
+                            {
+                                "success": False,
+                                "message": f"Contact with id {params['linked_contacts']} does not exist"
+                            }, status=404
+                        )
+            else:
+                metric_template.linked_contacts.clear()
+        if "linked_contact_groups" in params:
+            if params["linked_contact_groups"]:
+                if overwrite:
+                    metric_template.linked_contact_groups.clear()
+                if isinstance(params["linked_contact_groups"], list):
+                    for contact_group_id in params['linked_contact_groups']:
+                        try:
+                            contact_group = ContactGroup.objects.get(id=contact_group_id)
+                            metric_template.linked_contact_groups.add(contact_group)
+                        except ContactGroup.DoesNotExist:
+                            return JsonResponse(
+                                {
+                                    "success": False,
+                                    "message": f"ContactGroup with id {params['linked_contact_groups']} does not exist"
+                                }, status=404
+                            )
+                else:
+                    try:
+                        contact_group = ContactGroup.objects.get(id=params["linked_contact_groups"])
+                        metric_template.linked_contact_groups.add(contact_group)
+                    except ContactGroup.DoesNotExist:
+                        return JsonResponse(
+                            {
+                                "success": False,
+                                "message": f"ContactGroup with id {params['linked_contact_group']} does not exist"
+                            }, status=404
+                        )
+            else:
+                metric_template.linked_contact_groups.clear()
         if "scheduling_interval" in params:
             if params["scheduling_interval"]:
                 scheduling_interval, _ = SchedulingInterval.objects.get_or_create(interval=params["scheduling_interval"])
@@ -598,6 +714,64 @@ class HostView(CheckOptionalMixinView):
                         )
             else:
                 host.host_templates.clear()
+        if "linked_contacts" in params:
+            if params["linked_contacts"]:
+                if overwrite:
+                    host.linked_contacts.clear()
+                if isinstance(params["linked_contacts"], list):
+                    for contact_id in params['linked_contacts']:
+                        try:
+                            contact = Contact.objects.get(id=contact_id)
+                            host.linked_contacts.add(contact)
+                        except Contact.DoesNotExist:
+                            return JsonResponse(
+                                {
+                                    "success": False,
+                                    "message": f"Contact with id {params['linked_contacts']} does not exist"
+                                }, status=404
+                            )
+                else:
+                    try:
+                        contact = Contact.objects.get(id=params["linked_contacts"])
+                        host.linked_contacts.add(contact)
+                    except Contact.DoesNotExist:
+                        return JsonResponse(
+                            {
+                                "success": False,
+                                "message": f"Contact with id {params['linked_contacts']} does not exist"
+                            }, status=404
+                        )
+            else:
+                host.linked_contacts.clear()
+        if "linked_contact_groups" in params:
+            if params["linked_contact_groups"]:
+                if overwrite:
+                    host.linked_contact_groups.clear()
+                if isinstance(params["linked_contact_groups"], list):
+                    for contact_group_id in params['linked_contact_groups']:
+                        try:
+                            contact_group = ContactGroup.objects.get(id=contact_group_id)
+                            host.linked_contact_groups.add(contact_group)
+                        except ContactGroup.DoesNotExist:
+                            return JsonResponse(
+                                {
+                                    "success": False,
+                                    "message": f"ContactGroup with id {params['linked_contact_groups']} does not exist"
+                                }, status=404
+                            )
+                else:
+                    try:
+                        contact_group = ContactGroup.objects.get(id=params["linked_contact_groups"])
+                        host.linked_contact_groups.add(contact_group)
+                    except ContactGroup.DoesNotExist:
+                        return JsonResponse(
+                            {
+                                "success": False,
+                                "message": f"ContactGroup with id {params['linked_contact_group']} does not exist"
+                            }, status=404
+                        )
+            else:
+                host.linked_contact_groups.clear()
         if "scheduling_interval" in params:
             if params["scheduling_interval"]:
                 scheduling_interval, _ = SchedulingInterval.objects.get_or_create(interval=params["scheduling_interval"])
@@ -749,6 +923,64 @@ class HostTemplateView(CheckOptionalMixinView):
                         )
             else:
                 host_template.host_templates.clear()
+        if "linked_contacts" in params:
+            if params["linked_contacts"]:
+                if overwrite:
+                    host_template.linked_contacts.clear()
+                if isinstance(params["linked_contacts"], list):
+                    for contact_id in params['linked_contacts']:
+                        try:
+                            contact = Contact.objects.get(id=contact_id)
+                            host_template.linked_contacts.add(contact)
+                        except Contact.DoesNotExist:
+                            return JsonResponse(
+                                {
+                                    "success": False,
+                                    "message": f"Contact with id {params['linked_contacts']} does not exist"
+                                }, status=404
+                            )
+                else:
+                    try:
+                        contact = Contact.objects.get(id=params["linked_contacts"])
+                        host_template.linked_contacts.add(contact)
+                    except Contact.DoesNotExist:
+                        return JsonResponse(
+                            {
+                                "success": False,
+                                "message": f"Contact with id {params['linked_contacts']} does not exist"
+                            }, status=404
+                        )
+            else:
+                host_template.linked_contacts.clear()
+        if "linked_contact_groups" in params:
+            if params["linked_contact_groups"]:
+                if overwrite:
+                    host_template.linked_contact_groups.clear()
+                if isinstance(params["linked_contact_groups"], list):
+                    for contact_group_id in params['linked_contact_groups']:
+                        try:
+                            contact_group = ContactGroup.objects.get(id=contact_group_id)
+                            host_template.linked_contact_groups.add(contact_group)
+                        except ContactGroup.DoesNotExist:
+                            return JsonResponse(
+                                {
+                                    "success": False,
+                                    "message": f"ContactGroup with id {params['linked_contact_groups']} does not exist"
+                                }, status=404
+                            )
+                else:
+                    try:
+                        contact_group = ContactGroup.objects.get(id=params["linked_contact_groups"])
+                        host_template.linked_contact_groups.add(contact_group)
+                    except ContactGroup.DoesNotExist:
+                        return JsonResponse(
+                            {
+                                "success": False,
+                                "message": f"ContactGroup with id {params['linked_contact_group']} does not exist"
+                            }, status=404
+                        )
+            else:
+                host_template.linked_contact_groups.clear()
         if "scheduling_interval" in params:
             if params["scheduling_interval"]:
                 scheduling_interval, _ = SchedulingInterval.objects.get_or_create(interval=params["scheduling_interval"])

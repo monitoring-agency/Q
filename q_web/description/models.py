@@ -248,6 +248,8 @@ class HostTemplate(models.Model):
     address = CharField(default="", max_length=255, blank=True, null=True)
     linked_check = ForeignKey(Check, on_delete=models.DO_NOTHING, blank=True, null=True)
     host_templates = ManyToManyField("self", blank=True, symmetrical=False)
+    linked_contacts = ManyToManyField(Contact, blank=True)
+    linked_contact_groups = ManyToManyField(ContactGroup, blank=True)
     scheduling_interval = ForeignKey(SchedulingInterval, on_delete=models.DO_NOTHING, blank=True, null=True)
     scheduling_period = ForeignKey(
         TimePeriod, on_delete=models.DO_NOTHING,
@@ -272,6 +274,8 @@ class HostTemplate(models.Model):
             "address": self.address if self.address else "",
             "linked_check": self.linked_check_id if self.linked_check else "",
             "host_templates": [x.id for x in self.host_templates.all()],
+            "linked_contacts": [x.id for x in self.linked_contacts.all()],
+            "linked_contact_groups": [x.id for x in self.linked_contact_groups.all()],
             "scheduling_interval": self.scheduling_interval.interval if self.scheduling_interval else "",
             "scheduling_period": self.scheduling_period_id if self.scheduling_period else "",
             "notification_period": self.notification_period_id if self.notification_period else "",
@@ -296,6 +300,8 @@ class Host(models.Model):
     linked_check = ForeignKey(Check, on_delete=models.DO_NOTHING, blank=True, null=True)
     disabled = BooleanField(default=False, blank=True, null=True)
     host_templates = ManyToManyField(HostTemplate, blank=True)
+    linked_contacts = ManyToManyField(Contact, blank=True)
+    linked_contact_groups = ManyToManyField(ContactGroup, blank=True)
     scheduling_interval = ForeignKey(SchedulingInterval, on_delete=models.DO_NOTHING, blank=True, null=True)
     scheduling_period = ForeignKey(
         TimePeriod, on_delete=models.DO_NOTHING,
@@ -322,6 +328,8 @@ class Host(models.Model):
             "linked_check": self.linked_check_id if self.linked_check else "",
             "disabled": self.disabled,
             "host_templates": [x.id for x in self.host_templates.all()],
+            "linked_contacts": [x.id for x in self.linked_contacts.all()],
+            "linked_contact_groups": [x.id for x in self.linked_contact_groups.all()],
             "scheduling_interval": self.scheduling_interval.interval if self.scheduling_period else "",
             "scheduling_period": self.scheduling_period_id if self.scheduling_period else "",
             "notification_period": self.notification_period_id if self.notification_period else 2,
@@ -342,6 +350,8 @@ class MetricTemplate(models.Model):
     name = CharField(default="", max_length=255, unique=True)
     linked_check = ForeignKey(Check, on_delete=models.DO_NOTHING, blank=True, null=True)
     metric_templates = ManyToManyField("self", blank=True, symmetrical=False)
+    linked_contacts = ManyToManyField(Contact, blank=True)
+    linked_contact_groups = ManyToManyField(ContactGroup, blank=True)
     scheduling_interval = ForeignKey(SchedulingInterval, on_delete=models.DO_NOTHING, blank=True, null=True)
     scheduling_period = ForeignKey(
         TimePeriod, on_delete=models.DO_NOTHING,
@@ -365,6 +375,8 @@ class MetricTemplate(models.Model):
             "name": self.name,
             "linked_check": self.linked_check_id if self.linked_check else "",
             "metric_templates": [x.id for x in self.metric_templates.all()],
+            "linked_contacts": [x.id for x in self.linked_contacts.all()],
+            "linked_contact_groups": [x.id for x in self.linked_contact_groups.all()],
             "scheduling_interval": self.scheduling_interval.interval if self.scheduling_interval else "",
             "scheduling_period": self.scheduling_period_id if self.scheduling_period else "",
             "notification_period": self.notification_period_id if self.notification_period else "",
@@ -388,6 +400,8 @@ class Metric(models.Model):
     linked_host = ForeignKey(Host, on_delete=models.CASCADE)
     disabled = BooleanField(default=False, blank=True, null=True)
     metric_templates = ManyToManyField(MetricTemplate, blank=True)
+    linked_contacts = ManyToManyField(Contact, blank=True)
+    linked_contact_groups = ManyToManyField(ContactGroup, blank=True)
     scheduling_interval = ForeignKey(SchedulingInterval, on_delete=models.DO_NOTHING, blank=True, null=True)
     scheduling_period = ForeignKey(
         TimePeriod, on_delete=models.DO_NOTHING,
@@ -414,6 +428,8 @@ class Metric(models.Model):
             "linked_host": self.linked_host_id if self.linked_host else "",
             "disabled": self.disabled,
             "metric_templates": [x.id for x in self.metric_templates.all()],
+            "linked_contacts": [x.id for x in self.linked_contacts.all()],
+            "linked_contact_groups": [x.id for x in self.linked_contact_groups.all()],
             "scheduling_interval": self.scheduling_interval.interval if self.scheduling_interval else "",
             "scheduling_period": self.scheduling_period_id if self.scheduling_period else "",
             "notification_period": self.notification_period_id if self.notification_period else "",

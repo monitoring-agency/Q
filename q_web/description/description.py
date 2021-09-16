@@ -6,7 +6,7 @@ import time
 from collections import ChainMap
 from typing import Union
 
-import httpx as httpx
+import httpx
 from django.contrib.contenttypes.models import ContentType
 
 from description.models import Host, Metric, Check, GlobalVariable, GenericKVP, Label, TimePeriod, SchedulingInterval, \

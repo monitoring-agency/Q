@@ -69,6 +69,38 @@
                 </tr>
                 <tr>
                     <td>
+                        <label for="linked_contacts">Contacts</label>
+                    </td>
+                    <td>
+                        <select id="linked_contacts" multiple="multiple" name="linked_contacts" class="multiselect">
+                        {% for contact in contacts %}
+                        {% if existing and contact.id in existing.linked_contacts %}
+                            <option value="{{ contact.id }}" selected>{{ contact.name }}</option>
+                        {% else %}
+                            <option value="{{ contact.id }}">{{ contact.name }}</option>
+                        {% endif %}
+                        {% endfor %}
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="linked_contact_groups">Contact Groups</label>
+                    </td>
+                    <td>
+                        <select id="linked_contact_groups" name="linked_contact_groups" class="multiselect" multiple="multiple">
+                        {% for contact_group in contact_groups %}
+                        {% if existing and contact_group.id in existing.linked_contact_groups %}
+                            <option value="{{ contact_group.id }}" selected>{{ contact_group.name }}</option>
+                        {% else %}
+                            <option value="{{ contact_group.id }}">{{ contact_group.name }}</option>
+                        {% endif %}
+                        {% endfor %}
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
                         <label for="scheduling_interval">Scheduling Interval</label>
                     </td>
                     <td>

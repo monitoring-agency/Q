@@ -34,53 +34,6 @@ def generate_url_paths(api_class, model_class, extended_params_callback_list=Non
     ]]
 
 
-generate_url_paths(
-    api.views.GlobalVariableView, models.GlobalVariable
-)
-generate_url_paths(
-    api.views.CheckView, models.Check
-)
-
-
-def metric_template_callback(sid=""):
-    return {
-        "checks": models.Check.objects.all(),
-        "time_periods": models.TimePeriod.objects.all(),
-        "metric_templates": models.MetricTemplate.objects.all() if not sid else [x for x in models.Metric.objects.all() if x.id != int(sid)],
-     }
-
-
-def correct_metric_template(params, model_class, sid=""):
-    if "metric_templates" not in params:
-        params["metric_templates"] = ""
-
-
-generate_url_paths(
-    api.views.MetricTemplateView, models.MetricTemplate,
-    [metric_template_callback],
-    [correct_metric_template]
-)
-
-
-def host_template_callback(sid=""):
-    return {
-        "checks": models.Check.objects.all(),
-        "time_periods": models.TimePeriod.objects.all(),
-        "host_templates": models.HostTemplate.objects.all() if not sid else [x for x in models.HostTemplate.objects.all() if x.id != int(sid)],
-    }
-
-
-def correct_host_template(params, model_class, sid=""):
-    if "host_templates" not in params:
-        params["host_templates"] = ""
-
-
-generate_url_paths(
-    api.views.HostTemplateView, models.HostTemplate,
-    [host_template_callback],
-    [correct_host_template]
-)
-
 
 def correct_request(params, model_class, sid=""):
     if "disabled" in params:
@@ -102,6 +55,56 @@ def correct_request(params, model_class, sid=""):
         params["linked_host_notifications"] = params["host_notifications"]
     else:
         params["linked_host_notifications"] = ""
+    if "linked_contact_groups" not in params:
+        params["linked_contact_groups"] = ""
+    if "linked_contacts" not in params:
+        params["linked_contacts"] = ""
+    if "metric_templates" not in params:
+        params["metric_templates"] = ""
+    if "host_templates" not in params:
+        params["host_templates"] = ""
+
+
+generate_url_paths(
+    api.views.GlobalVariableView, models.GlobalVariable
+)
+generate_url_paths(
+    api.views.CheckView, models.Check
+)
+
+
+def metric_template_callback(sid=""):
+    return {
+        "checks": models.Check.objects.all(),
+        "time_periods": models.TimePeriod.objects.all(),
+        "metric_templates": models.MetricTemplate.objects.all() if not sid else [x for x in models.Metric.objects.all() if x.id != int(sid)],
+        "contacts": models.Contact.objects.all(),
+        "contact_groups": models.ContactGroup.objects.all(),
+     }
+
+
+generate_url_paths(
+    api.views.MetricTemplateView, models.MetricTemplate,
+    [metric_template_callback],
+    [correct_request]
+)
+
+
+def host_template_callback(sid=""):
+    return {
+        "checks": models.Check.objects.all(),
+        "time_periods": models.TimePeriod.objects.all(),
+        "host_templates": models.HostTemplate.objects.all() if not sid else [x for x in models.HostTemplate.objects.all() if x.id != int(sid)],
+        "contacts": models.Contact.objects.all(),
+        "contact_groups": models.ContactGroup.objects.all(),
+    }
+
+
+generate_url_paths(
+    api.views.HostTemplateView, models.HostTemplate,
+    [host_template_callback],
+    [correct_request]
+)
 
 
 def host_callback(sid=""):
@@ -110,6 +113,8 @@ def host_callback(sid=""):
         "time_periods": models.TimePeriod.objects.all(),
         "proxies": models.Proxy.objects.all(),
         "host_templates": models.HostTemplate.objects.all(),
+        "contacts": models.Contact.objects.all(),
+        "contact_groups": models.ContactGroup.objects.all(),
     }
 
 
@@ -129,6 +134,8 @@ def metric_callback(sid=""):
         "hosts": hosts,
         "hosts_dict": dict(ChainMap(*[{x.id: x} for x in hosts])),
         "metric_templates": models.MetricTemplate.objects.all(),
+        "contacts": models.Contact.objects.all(),
+        "contact_groups": models.ContactGroup.objects.all(),
     }
 
 
