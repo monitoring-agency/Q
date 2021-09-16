@@ -248,6 +248,7 @@ Menu Declaration
     padding-right: 1em;
     margin-left: 20em;
     transition: all ease-in-out 250ms;
+    z-index: 9999;
 }
 
 .topbar.close {
