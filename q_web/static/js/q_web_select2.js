@@ -5,5 +5,6 @@ $(document).ready(function() {
     $('.multiselect').on('select2:opening select2:closing', function (event) {
         var $searchfield = $(this).parent().find(".select2-search__field");
         $searchfield.prop("disabled", true);
-    })
+    });
+    $('.singleselect').select2();
 });
