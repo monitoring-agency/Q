@@ -23,7 +23,7 @@
                         <label for="linked_host">Linked Host</label>
                     </td>
                     <td>
-                        <select id="linked_host" name="linked_host" class="select">
+                        <select id="linked_host" name="linked_host" class="singleselect">
                         {% for entry in hosts %}
                         {% if entry.id == existing.linked_host %}
                             <option value="{{ entry.id }}" selected>{{ entry.name }}</option>
@@ -39,7 +39,7 @@
                         <label for="linked_proxy">Linked proxy</label>
                     </td>
                     <td>
-                        <select id="linked_proxy" name="linked_proxy" class="select">
+                        <select id="linked_proxy" name="linked_proxy" class="singleselect">
                         {% for entry in proxies %}
                         {% if existing.linked_proxy == entry.id %}
                             <option value="{{ entry.id }}" selected>{{ entry.name }}</option>
@@ -55,8 +55,8 @@
                         <label for="linked_check">Linked check</label>
                     </td>
                     <td>
-                        <select id="linked_check" name="linked_check" class="select">
-                            <option value=""></option>
+                        <select id="linked_check" name="linked_check" class="singleselect">
+                            <option value="">&nbsp;</option>
                         {% for entry in checks %}
                         {% if existing.linked_check == entry.id %}
                             <option value="{{ entry.id }}" selected>{{ entry.name }}</option>
@@ -136,8 +136,8 @@
                         <label for="scheduling_period">Scheduling Period</label>
                     </td>
                     <td>
-                        <select id="scheduling_period" name="scheduling_period" class="select">
-                            <option value=""></option>
+                        <select id="scheduling_period" name="scheduling_period" class="singleselect">
+                            <option value="">&nbsp;</option>
                         {% for entry in time_periods %}
                         {% if existing.scheduling_period == entry.id %}
                             <option value="{{ entry.id }}" selected>{{ entry.name }}</option>
@@ -153,8 +153,8 @@
                         <label for="notification_period">Notification Period</label>
                     </td>
                     <td>
-                        <select id="notification_period" name="notification_period" class="select">
-                            <option value=""></option>
+                        <select id="notification_period" name="notification_period" class="singleselect">
+                            <option value="">&nbsp;</option>
                         {% for entry in time_periods %}
                         {% if existing.notification_period == entry.id %}
                             <option value="{{ entry.id }}" selected>{{ entry.name }}</option>
