@@ -73,6 +73,7 @@ function updateDeclaration(proxyId, csrf_token) {
     button.innerText = "OK";
     button.type = "button";
     button.style = "display: none";
+    button.classList.add("button");
     modal.appendChild(button);
 
     xhr.send(params);
@@ -130,6 +131,7 @@ function generateConfiguration(proxyId, csrf_token) {
     var copy = document.createElement("button");
     copy.style = "display: none;"
     copy.classList.add("colorless");
+    copy.classList.add("button");
     copy.addEventListener("click", () => {
         if (input.select) {
             input.select();
@@ -154,6 +156,7 @@ function generateConfiguration(proxyId, csrf_token) {
     button.innerText = "OK";
     button.type = "button";
     button.style = "display: none";
+    button.classList.add("button");
     modal.appendChild(button);
 
     xhr.send(params);
@@ -195,4 +198,9 @@ function showHidePassword() {
         pw.type = "password";
         toggleImg.src =  static_path + "/eye.svg"
     }
+}
+
+var buttonsStopPropagation = document.getElementsByClassName("stopPropagation");
+for (const buttonsStopPropagationElement of buttonsStopPropagation) {
+    buttonsStopPropagationElement.addEventListener("click", (evt) => {evt.stopPropagation();} );
 }
