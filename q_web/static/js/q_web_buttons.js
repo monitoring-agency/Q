@@ -13,7 +13,6 @@ function updateRows() {
             }
         }
     }
-    console.log(day_rows);
     return day_rows;
 }
 
@@ -62,8 +61,8 @@ function addRow(evt) {
     var day = parseInt(evt.currentTarget.id.split("_")[2]);
     var buttonId = evt.currentTarget.id;
     document.getElementById(buttonId).style.display = "none";
-    var day_rows = updateRows()[day];
-    console.log(day_rows);
+    var local_day_rows = updateRows()[day];
+
     var static_path = document.getElementById(buttonId).children[0].src.split("/");
     static_path.pop();
     static_path = static_path.join("/");
@@ -71,13 +70,13 @@ function addRow(evt) {
     var currentRow = buttonId.split("_")[buttonId.split("_").length - 1];
 
     if (currentRow === "0") {
-        var remove_button_cell = day_rows[0].insertCell(2);
+        var remove_button_cell = local_day_rows[0].insertCell(2);
         addRemoveButton(remove_button_cell, day, currentRow, static_path);
     }
 
     var nextRow;
     for (let i = 0; i < table.children[0].children.length; i++) {
-        if (table.children[0].children[i] === day_rows[currentRow]) {
+        if (table.children[0].children[i] === local_day_rows[currentRow]) {
             nextRow = i + 1;
         }
     }
@@ -97,51 +96,51 @@ function addRow(evt) {
 function deleteRow(evt) {
     var day = parseInt(evt.currentTarget.id.split("_")[2]);
     var currentRow = parseInt(evt.currentTarget.id.split("_")[3]);
-    var day_rows = updateRows()[day];
-    var row_name = day_rows[0].children[0].children[0].innerText;
+    var local_day_rows = updateRows()[day];
+    var row_name = local_day_rows[0].children[0].children[0].innerText;
     document.getElementById("day_" + day + "_" + currentRow).remove();
     var replace_ids = false;
-    for (let i = 0; i < day_rows.length; i++) {
+    for (let i = 0; i < local_day_rows.length; i++) {
         if (i === currentRow) {
             replace_ids = true;
             continue;
         }
         if (replace_ids) {
-            day_rows[i].id = "day_" + day.toString() + "_" + (i - 1).toString();
-            for (let j = 0; j < day_rows[i].children.length; j++) {
-                if (day_rows[i].children[j].children.length > 0) {
-                    if (day_rows[i].children[j].children[0].tagName === "LABEL") {
-                        for (let k = 0; k < day_rows[i].children[j].children.length; k++) {
-                            if (day_rows[i].children[j].children[k].tagName === "LABEL") {
-                                if (day_rows[i].children[j].children[k].children[0].name.endsWith("start")) {
-                                    day_rows[i].children[j].children[k].children[0].name = day.toString() + "_" + (i - 1).toString() + "_start";
+            local_day_rows[i].id = "day_" + day.toString() + "_" + (i - 1).toString();
+            for (let j = 0; j < local_day_rows[i].children.length; j++) {
+                if (local_day_rows[i].children[j].children.length > 0) {
+                    if (local_day_rows[i].children[j].children[0].tagName === "LABEL") {
+                        for (let k = 0; k < local_day_rows[i].children[j].children.length; k++) {
+                            if (local_day_rows[i].children[j].children[k].tagName === "LABEL") {
+                                if (local_day_rows[i].children[j].children[k].children[0].name.endsWith("start")) {
+                                    local_day_rows[i].children[j].children[k].children[0].name = day.toString() + "_" + (i - 1).toString() + "_start";
                                 }
-                                if (day_rows[i].children[j].children[k].children[0].name.endsWith("end")) {
-                                    day_rows[i].children[j].children[k].children[0].name = day.toString() + "_" + (i - 1).toString() + "_end";
+                                if (local_day_rows[i].children[j].children[k].children[0].name.endsWith("end")) {
+                                    local_day_rows[i].children[j].children[k].children[0].name = day.toString() + "_" + (i - 1).toString() + "_end";
                                 }
                             }
                         }
                     }
-                    if (day_rows[i].children[j].children[0].id.startsWith("row_remove")) {
-                        day_rows[i].children[j].children[0].id = "row_remove_" + day.toString() + "_" + (i - 1).toString();
+                    if (local_day_rows[i].children[j].children[0].id.startsWith("row_remove")) {
+                        local_day_rows[i].children[j].children[0].id = "row_remove_" + day.toString() + "_" + (i - 1).toString();
                     }
-                    if (day_rows[i].children[j].children[0].id.startsWith("row_add")) {
-                        day_rows[i].children[j].children[0].id = "row_add_" + day.toString() + "_" + (i - 1).toString();
+                    if (local_day_rows[i].children[j].children[0].id.startsWith("row_add")) {
+                        local_day_rows[i].children[j].children[0].id = "row_add_" + day.toString() + "_" + (i - 1).toString();
                     }
                 }
             }
         }
     }
 
-    var day_rows = updateRows()[day];
-    if (day_rows.length === 1) {
-        day_rows[0].deleteCell(2);
+    local_day_rows = updateRows()[day];
+    if (local_day_rows.length === 1) {
+        local_day_rows[0].deleteCell(2);
     }
-    day_rows[0].children[0].innerHTML = "<label>" + row_name + "</label>";
-    if (day_rows[day_rows.length - 1].children.length === 3) {
-        day_rows[day_rows.length - 1].children[2].children[0].style = "";
+    local_day_rows[0].children[0].innerHTML = "<label>" + row_name + "</label>";
+    if (local_day_rows[local_day_rows.length - 1].children.length === 3) {
+        local_day_rows[local_day_rows.length - 1].children[2].children[0].style = "";
     } else {
-        day_rows[day_rows.length - 1].children[3].children[0].style = "";
+        local_day_rows[local_day_rows.length - 1].children[3].children[0].style = "";
     }
 }
 

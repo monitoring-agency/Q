@@ -78,7 +78,7 @@
         {% endfor %}
     {% else %}
         {% for day in days %}
-                <tr>
+                <tr id="day_{{ day.id}}_0">
                     <td>
                         <label>{{ day.name }}</label>
                     </td>
