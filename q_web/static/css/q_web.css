@@ -25,6 +25,13 @@ BASE Declaration
     font-family: FreeSans; src: url('/static/font/FreeSans.ttf');
 }
 
+.disableSelection {
+    user-select:none;
+   -ms-user-selec:none;
+   -moz-user-select:none;
+   -webkit-user-select:none;
+}
+
 body {
     margin: 0;
     background-color: var(--level-0);
