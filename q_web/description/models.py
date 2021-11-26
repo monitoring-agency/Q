@@ -330,7 +330,7 @@ class Host(models.Model):
             "host_templates": [x.id for x in self.host_templates.all()],
             "linked_contacts": [x.id for x in self.linked_contacts.all()],
             "linked_contact_groups": [x.id for x in self.linked_contact_groups.all()],
-            "scheduling_interval": self.scheduling_interval.interval if self.scheduling_period else "",
+            "scheduling_interval": self.scheduling_interval.interval if self.scheduling_interval else "",
             "scheduling_period": self.scheduling_period_id if self.scheduling_period else "",
             "notification_period": self.notification_period_id if self.notification_period else 2,
             "comment": self.comment if self.comment else "",
