@@ -1,0 +1,54 @@
+{% extends "menus.html" %}
+{% block content %}
+{% load static %}
+
+<div class="dashboardContent">
+    <div class="dashboardList">
+
+    </div>
+    <div class="dashboardList">
+        <table class="dashboardTable">
+            <tr>
+                <th class="smallCell"><label><input type="checkbox"></label></th>
+                <th class="smallCell">State</th>
+                <th class="normalCell">Hostname</th>
+                <th class="normalCell">Address</th>
+                <th class="smallCell">Graphs</th>
+                <th class="normalCell">Last check</th>
+                <th class="smallCell">Duration</th>
+                <th>Output</th>
+            </tr>
+        {% for status in host_status %}
+            <tr>
+                <td><label><input type="checkbox"></label></td>
+                <td>
+                    {{ status.cr.state.state }}
+                </td>
+                <td>
+                    {{ status.host.name }}
+                </td>
+                <td>
+                    {{ status.host.address }}
+                </td>
+                <td>
+                {% if status.datasets %}
+                    <a href="/dashboard/hosts/{{ status.id }}/graphs">
+                        <img class="buttonImg" src="{% static 'img/activity.svg' %}" alt="Graphs">
+                    </a>
+                {% endif %}
+                </td>
+                <td>
+                    {{ status.cr.meta_process_end_time }}
+                </td>
+                <td>
+
+                </td>
+                <td>
+                    {{ status.cr.output }}
+                </td>
+            </tr>
+        {% endfor %}
+        </table>
+    </div>
+</div>
+{% endblock %}

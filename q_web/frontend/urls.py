@@ -11,6 +11,9 @@ urlpatterns = [
     path("logout", Logout.as_view()),
 
     path("", DashboardView.as_view()),
+    path("dashboard/hosts", HostDashboardView.as_view()),
+    path("dashboard/hosts/<str:sid>/graphs", HostGraphView.as_view()),
+    path("dashboard/metrics", MetricDashboardView.as_view()),
 
     path("declaration/proxy/<str:sid>/updateDeclaration", UpdateDeclarationView.as_view()),
     path("declaration/proxy/<str:sid>/generateConfiguration", GenerateConfigurationView.as_view()),
@@ -32,7 +35,6 @@ def generate_url_paths(api_class, model_class, extended_params_callback_list=Non
         path(f"declaration/{name}/update/<str:sid>", DeclarationTemplateUpdate.as_view(), params),
         path(f"declaration/{name}/delete/<str:sid>", DeclarationTemplateDelete.as_view(), params),
     ]]
-
 
 
 def correct_request(params, model_class, sid=""):

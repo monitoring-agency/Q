@@ -1,13 +1,20 @@
 import json
+import logging
+from datetime import datetime, timedelta
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.contenttypes.models import ContentType
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.views import View
 from django.views.generic import TemplateView
 
 from api import views
+from description.models import Host, Metric
+from proxy.models import ScheduledObject, CheckResult
+
+logger = logging.getLogger(__name__)
 
 
 class Login(LoginView):
@@ -24,6 +31,64 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         return render(request, self.template_name)
+
+
+class HostDashboardView(LoginRequiredMixin, TemplateView):
+    template_name = "dashboard/host_dashboard.html"
+
+    def get(self, request, *args, **kwargs):
+        content_type = ContentType.objects.get_for_model(Host)
+        host_status_objects = ScheduledObject.objects.filter(content_type=content_type)
+        host_status = []
+        for x in host_status_objects:
+            last_timestamp = 0
+            cr = None
+            for y in x.linked_check_results.all():
+                if y.meta_process_end_time.timestamp() > last_timestamp:
+                    cr = y
+            x.cr = cr
+            x.host = Host.objects.get(id=x.object_id)
+            x.datasets = True if cr and len(cr.data_sets.all()) > 0 else False
+            host_status.append(x)
+
+        return render(request, self.template_name, {"host_status": host_status})
+
+
+class HostGraphView(LoginRequiredMixin, TemplateView):
+    template_name = "dashboard/host_graph_dashboard.html"
+
+    def get(self, request, sid="", *args, **kwargs):
+        last_6_hours = datetime.utcnow() - timedelta(hours=6)
+        check_results = CheckResult.objects.filter(scheduledobject__in=[sid], meta_process_end_time__gte=last_6_hours)
+        data_sets = {}
+        for x in check_results:
+            if x.data_sets.exists():
+                for y in x.data_sets.all():
+                    if y.name not in data_sets:
+                        data_sets[y.name] = []
+                    data_sets[y.name].append({"label": x.meta_process_end_time, "value": y.value})
+        return render(request, self.template_name, {"datasets": data_sets})
+
+
+class MetricDashboardView(LoginRequiredMixin, TemplateView):
+    template_name = "dashboard/metric_dashboard.html"
+
+    def get(self, request, *args, **kwargs):
+        content_type = ContentType.objects.get_for_model(Metric)
+        metric_status_objects = ScheduledObject.objects.filter(content_type=content_type)
+        metric_status = []
+        for x in metric_status_objects:
+            last_timestamp = 0
+            cr = None
+            for y in x.linked_check_results.all():
+                if y.meta_process_end_time.timestamp() > last_timestamp:
+                    cr = y
+            x.cr = cr
+            x.metric = Metric.objects.get(id=x.object_id)
+            x.datasets = True if cr and len(cr.data_sets.all()) > 0 else False
+            metric_status.append(x)
+
+        return render(request, self.template_name, {"metric_status": metric_status})
 
 
 #
