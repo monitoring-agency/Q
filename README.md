@@ -23,6 +23,25 @@ The name Q originates from the fictional character as well as its species in the
 +-----------+   +-----------+        +-----------+
 ```
 
+## Setting up a development environment
+
+### q_web
+Begin using `q_web/` as cwd:
+
+```bash
+python -m venv venv
+python -m pip install -r requirements.txt
+npm init -y
+npm install babel-cli@6 babel-preset-react-app@3
+```
+
+To start the local dev server:
+`python start_q_web_dev.py`
+
+To start the JSX transpiler:
+`bash start_jsx_transpiler.sh`
+
+
 ## API
 Use the endpoint as salt. The key for the checksum is "checksum".
   
