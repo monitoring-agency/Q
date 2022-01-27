@@ -1,14 +1,12 @@
-import base64
 import secrets
 import string
-from datetime import datetime, timedelta
 import json
 
-import django.contrib.auth
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
 from django.http import JsonResponse, HttpResponse
 from django.utils.decorators import method_decorator
-from django.utils.timezone import make_aware
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
@@ -19,8 +17,8 @@ from description.models import Check, Host, Metric, TimePeriod, SchedulingInterv
 
 
 @method_decorator(csrf_exempt, "dispatch")
-class CheckMixinView(View):
-    """Base View for API requests.
+class CheckMixinView(LoginRequiredMixin, View):
+    """Base View for REST API requests.
 
     To include required parameters in body or urlencoded, call the super().__init__() with the required parameters.
 
@@ -38,27 +36,10 @@ class CheckMixinView(View):
         self.required_delete = required_delete if required_delete else []
 
     def _check_auth(self, request, required_params):
-        timestamp_now = make_aware(datetime.now()).timestamp()
-
-        # Check Authorization Header
-        if "HTTP_AUTHENTICATION" not in request.META:
-            return {"success": False, "message": "No authentication header is given", "status": 401}
-        auth = request.META["HTTP_AUTHENTICATION"]
-        decoded = base64.urlsafe_b64decode(auth).decode("utf-8")
-        username = decoded.split(":")[0]
-        token = decoded.split(":")[1]
         try:
-            account = AccountModel.objects.get(internal_user__username=username)
+            account = AccountModel.objects.get(internal_user__username=request.user.username)
         except AccountModel.DoesNotExist:
             return {"success": False, "message": "Username is incorrect or token expired", "status": 401}
-        account_tokens = account.retrieve_tokens()
-        if token not in [x.token for x in account_tokens]:
-            return {"success": False, "message": "Username is incorrect or token expired", "status": 401}
-        for acc_token in account_tokens:
-            if token == acc_token.token:
-                if not (acc_token.expire - timedelta(
-                        hours=2)).timestamp() < timestamp_now < acc_token.expire.timestamp():
-                    return {"success": False, "message": "Username is incorrect or token expired", "status": 401}
 
         # Check ACLs
         for acl in account.linked_acl_group.linked_acls.all():
@@ -142,7 +123,7 @@ class CheckOptionalMixinView(CheckMixinView):
                 return JsonResponse({"success": True, "data": item.to_dict()})
             except self.api_class.DoesNotExist:
                 return JsonResponse(
-                    {"success": False, "message": f"{self.api_class} with id {kwargs['sid']} does not exist"}
+                    {"success": False, "message": f"{self.api_class.__name__} with id {kwargs['sid']} does not exist"}
                 )
         else:
             if "filter" in params:
@@ -171,11 +152,11 @@ class CheckOptionalMixinView(CheckMixinView):
             obj = self.api_class.objects.get(id=kwargs["sid"])
         except self.api_class.DoesNotExist:
             return JsonResponse(
-                {"success": False, "message": f"{self.api_class} with id {kwargs['sid']} does not exist"},
+                {"success": False, "message": f"{self.api_class.__name__} with id {kwargs['sid']} does not exist"},
                 status=404
             )
         obj.delete()
-        return JsonResponse({"success": True, "message": f"{self.api_class} was deleted"})
+        return JsonResponse({"success": True, "message": f"{self.api_class.__name__} was deleted"})
 
     def save_post(self, params, *args, **kwargs):
         return NotImplemented
@@ -184,7 +165,6 @@ class CheckOptionalMixinView(CheckMixinView):
         return NotImplemented
 
 
-@method_decorator(csrf_exempt, "dispatch")
 class AuthenticateView(View):
     def post(self, request, *args, **kwargs):
         try:
@@ -204,8 +184,7 @@ class AuthenticateView(View):
                 {"success": False, "message": "Parameter password is required, but missing"},
                 status=400
             )
-        # TODO use own method to allow different authentication methods
-        user = django.contrib.auth.authenticate(username=decoded["username"], password=decoded["password"])
+        user = authenticate(username=decoded["username"], password=decoded["password"])
         if not user:
             return JsonResponse(
                 {"success": False, "message": "Username or password is incorrect"},
@@ -226,8 +205,18 @@ class AuthenticateView(View):
         if not acl.allow:
             return JsonResponse({"success": False, "message": "You are not allowed to use this"}, status=403)
 
-        token = account.generate_token()
-        return JsonResponse({"success": True, "message": "Token was added successfully", "data": token})
+        login(request, user)
+        return JsonResponse({"success": True, "message": "Logged in successfully"})
+
+
+class Logout(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        logout(request)
+        return JsonResponse({"success": True})
+
+    def post(self, request, *args, **kwargs):
+        logout(request)
+        return JsonResponse({"success": True})
 
 
 class CheckView(CheckOptionalMixinView):
