@@ -16,8 +16,14 @@ from description.models import Check, Host, Metric, TimePeriod, SchedulingInterv
     Period, DayTimePeriod, GlobalVariable, Contact, ContactGroup, MetricTemplate, HostTemplate, Proxy
 
 
-@method_decorator(csrf_exempt, "dispatch")
-class CheckMixinView(LoginRequiredMixin, View):
+def get_variable_list(parameter):
+    if len(parameter) > 1:
+        return parameter
+    else:
+        return [x for x in parameter.split(",")]
+
+
+class CheckMixinView(View):
     """Base View for REST API requests.
 
     To include required parameters in body or urlencoded, call the super().__init__() with the required parameters.
@@ -36,6 +42,8 @@ class CheckMixinView(LoginRequiredMixin, View):
         self.required_delete = required_delete if required_delete else []
 
     def _check_auth(self, request, required_params):
+        if not request.user.is_authenticated:
+            return {"success": False, "message": "User is not authenticated", "status": 401}
         try:
             account = AccountModel.objects.get(internal_user__username=request.user.username)
         except AccountModel.DoesNotExist:
@@ -133,6 +141,7 @@ class CheckOptionalMixinView(CheckMixinView):
                     items = self.api_class.objects.get(id=str(params["filter"])).to_dict()
             else:
                 items = [x.to_dict() for x in self.api_class.objects.all()]
+
         return JsonResponse({"success": True, "message": "Request was successful", "data": items})
 
     def cleaned_post(self, params, *args, **kwargs):
