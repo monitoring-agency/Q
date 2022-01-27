@@ -32,16 +32,9 @@ class ACLGroupModel(models.Model):
         return self.name
 
 
-class APIToken(models.Model):
-    """Expired tokens should be removed from the database with a cronjob"""
-    expire = DateTimeField()
-    token = CharField(default="", max_length=255)
-
-
 class AccountModel(models.Model):
     internal_user = ForeignKey(User, on_delete=models.CASCADE)
     linked_acl_group = ForeignKey(ACLGroupModel, on_delete=models.DO_NOTHING, default=2)
-    linked_api_tokens = ManyToManyField(APIToken, blank=True)
     notification_period = ForeignKey(
         TimePeriod, on_delete=models.DO_NOTHING,
         blank=True, null=True,
@@ -50,24 +43,6 @@ class AccountModel(models.Model):
 
     def __str__(self):
         return self.internal_user.username
-
-    def generate_token(self):
-        """Generates a token, saves it and add it to account tokens list.
-
-        Returns the generated token
-        """
-        naive = datetime.now() + timedelta(hours=2)
-        ret = APIToken.objects.create(
-            expire=make_aware(naive),
-            token=''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(64))
-        )
-        ret.save()
-        self.linked_api_tokens.add(ret)
-        self.save()
-        return ret.token
-
-    def retrieve_tokens(self):
-        return self.linked_api_tokens.all()
 
     def get_username(self):
         return self.internal_user.get_username()
