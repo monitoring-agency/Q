@@ -129,10 +129,11 @@ class CheckOptionalMixinView(CheckMixinView):
                 data = {}
                 if "values" in params:
                     values = get_variable_list(params.getlist("values"))
+                    tmp = item.to_dict()
+                    data["id"] = item.id
                     for v in values:
                         try:
-                            data[v] = item.__getattribute__(v)
-                            data["id"] = item.id
+                            data[v] = tmp.__getitem__(v)
                         except AttributeError:
                             return JsonResponse(
                                 {"success": False, "message": f"{self.api_class.__name__} has no attribute {v}"},
@@ -153,8 +154,25 @@ class CheckOptionalMixinView(CheckMixinView):
                     items = self.api_class.objects.get(id=str(params["filter"])).to_dict()
             else:
                 items = [x.to_dict() for x in self.api_class.objects.all()]
-
-        return JsonResponse({"success": True, "message": "Request was successful", "data": items})
+            data = []
+            if "values" in params:
+                values = get_variable_list(params.getlist("values"))
+                for x in items:
+                    item = {
+                        "id": x["id"]
+                    }
+                    for v in values:
+                        try:
+                            item[v] = x.__getitem__(v)
+                        except AttributeError:
+                            return JsonResponse(
+                                {"success": False, "message": f"{self.api_class.__name__} has no attribute {v}"},
+                                status=400
+                            )
+                    data.append(item)
+            else:
+                data = items
+        return JsonResponse({"success": True, "message": "Request was successful", "data": data})
 
     def cleaned_post(self, params, *args, **kwargs):
         if "sid" in kwargs:
