@@ -349,10 +349,7 @@ def export(proxy_id_list: list):
     try:
         status = export_to_proxy(declaration)
     except FileNotFoundError:
-        logger.error(
-            "Could not read certificate files in /var/lib/q/certs/q-web-fullchain.pem or / and "
-            "/var/lib/q/certs/q-web-privkey.pem"
-        )
+        logger.error("Could not read certificate files in /var/lib/q/certs/")
         return {
             "elapsed_time": round(time.time() - t, 2),
             "status": "Could not export configuration to due certificate errors. For further information, check logs.."
