@@ -1,5 +1,5 @@
 function preloaderFadeOutInit() {
-    const loader = document.querySelector(".preloader");
+    const loader = document.getElementById("preloader");
     loader.style.opacity = "0";
     loader.style.transition = "opacity ease-in-out 200ms";
     setTimeout(function () {
