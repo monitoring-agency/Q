@@ -66,7 +66,8 @@ def generate_declaration(proxy_id_list):
             metric_template_relations[(x[0], cmetric)].append(x[1])
         else:
             metric_template_relations[(x[0], cmetric)] = [x[1]]
-    for x in MetricTemplate.metric_templates.through.objects.values_list('from_metrictemplate_id', 'to_metrictemplate_id'):
+    for x in MetricTemplate.metric_templates.through.objects.values_list('from_metrictemplate_id',
+                                                                         'to_metrictemplate_id'):
         if (x[0], cmetric_template) in metric_template_relations:
             metric_template_relations[(x[0], cmetric_template)].append(x[1])
         else:
@@ -163,7 +164,8 @@ def generate_declaration(proxy_id_list):
                 host_templates[host_template_id], "linked_check_id", "", chost_template, checks, True
             ),
             "scheduling_interval": retrieve_attr(
-                host_templates[host_template_id], "scheduling_interval_id", "", chost_template, scheduling_intervals, True
+                host_templates[host_template_id], "scheduling_interval_id", "", chost_template, scheduling_intervals,
+                True
             ),
             "scheduling_period": retrieve_attr(
                 host_templates[host_template_id], "scheduling_period_id", "", chost_template, time_periods, True
@@ -258,7 +260,8 @@ def generate_declaration(proxy_id_list):
             export_host["scheduling_period"] = h["scheduling_period"]["id"]
             declaration[host.linked_proxy_id]["hosts"].append(export_host)
             if h["scheduling_period"]["id"] not in declaration[host.linked_proxy_id]["scheduling_periods"]:
-                declaration[host.linked_proxy_id]["scheduling_periods"][h["scheduling_period"]["id"]] = h["scheduling_period"]
+                declaration[host.linked_proxy_id]["scheduling_periods"][h["scheduling_period"]["id"]] = h[
+                    "scheduling_period"]
 
     for metric in metrics:
         m = {"linked_check": ""}
@@ -286,7 +289,8 @@ def generate_declaration(proxy_id_list):
             export_metric["scheduling_period"] = m["scheduling_period"]["id"]
             declaration[metric.linked_proxy_id]["metrics"].append(export_metric)
             if m["scheduling_period"]["id"] not in declaration[metric.linked_proxy_id]["scheduling_periods"]:
-                declaration[metric.linked_proxy_id]["scheduling_periods"][m["scheduling_period"]["id"]] = m["scheduling_period"]
+                declaration[metric.linked_proxy_id]["scheduling_periods"][m["scheduling_period"]["id"]] = m[
+                    "scheduling_period"]
     return declaration
 
 
@@ -342,9 +346,19 @@ def export(proxy_id_list: list):
     t = time.time()
     declaration = generate_declaration(proxy_id_list)
     generate_scheduled_objects(declaration)
-    status = export_to_proxy(declaration)
+    try:
+        status = export_to_proxy(declaration)
+    except FileNotFoundError:
+        logger.error(
+            "Could not read certificate files in /var/lib/q/certs/q-web-fullchain.pem or / and "
+            "/var/lib/q/certs/q-web-privkey.pem"
+        )
+        return {
+            "elapsed_time": round(time.time() - t, 2),
+            "status": "Could not export configuration to due certificate errors. For further information, check logs.."
+        }
 
     return {
-        "elapsed_time": round(time.time()-t, 2),
+        "elapsed_time": round(time.time() - t, 2),
         "status": [{"return_code": x.status_code, "message": x.text} for x in status]
     }
