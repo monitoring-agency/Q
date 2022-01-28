@@ -18,6 +18,8 @@ urlpatterns = [
     path("declaration/proxy/<str:sid>/updateDeclaration", UpdateDeclarationView.as_view()),
     path("declaration/proxy/<str:sid>/generateConfiguration", GenerateConfigurationView.as_view()),
     # Model specific views that can use the API are added with the function below
+
+    path("react/", React.as_view()),
 ]
 
 

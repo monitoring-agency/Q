@@ -6,6 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.contenttypes.models import ContentType
 from django.http import JsonResponse
+from django.middleware import csrf
 from django.shortcuts import render, redirect
 from django.views import View
 from django.views.generic import TemplateView
@@ -194,3 +195,11 @@ class GenerateConfigurationView(LoginRequiredMixin, View):
     def post(self, request, sid="", *args, **kwargs):
         ret = views.GenerateProxyConfigurationView().cleaned_post({"proxy": sid})
         return ret
+
+
+class React(TemplateView):
+    template_name = "newBase.html"
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name)
+

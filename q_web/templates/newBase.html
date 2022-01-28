@@ -1,0 +1,29 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Q</title>
+    <link type="text/css" rel="stylesheet" href="{% static 'css/q_web.css' %}">
+    <link type="text/css" rel="stylesheet" href="{% static 'css/q_web_loading.css' %}">
+    <link type="text/css" rel="stylesheet" href="{% static 'css/q_web_react_select.css' %}">
+    <link type="text/css" rel="stylesheet" href="https://cdn.skypack.dev/react-toastify/dist/ReactToastify.css">
+    <link rel="shortcut icon" href="{% static 'img/favicon.ico' %}"/>
+    <script src="{% static 'js/q_main.js' %}" type="module" defer></script>
+</head>
+<body id="stop-scrolling">
+
+{% include 'loading_animation.html' %}
+{% block loading %}
+{% endblock %}
+
+<div id="root">
+
+</div>
+
+<script>
+    document.static = "{% static '' %}";
+    document.user_is_logged_in = {% if request.user.is_authenticated %}true{% else %}false{% endif %} ;
+</script>
+</body>
+</html>
