@@ -16,7 +16,7 @@ from description.models import Check, Host, Metric, TimePeriod, SchedulingInterv
 
 def get_variable_list(parameter):
     if len(parameter) > 1:
-        return parameter
+        return [x for x in parameter if isinstance(x, str) or isinstance(x, int)]
     else:
         return [x for x in parameter[0].split(",") if x]
 
@@ -55,7 +55,7 @@ class CheckMixinView(View):
                 else:
                     break
 
-        # Only POST and PUT have an body to decode
+        # Only POST and PUT have a body to decode
         if request.META["REQUEST_METHOD"] == "POST" or request.META["REQUEST_METHOD"] == "PUT":
             # Decode json
             try:
@@ -1511,7 +1511,7 @@ class UpdateDeclarationView(CheckMixinView):
             proxies = [x.id for x in Proxy.objects.filter(disabled=False)]
             data = export(proxies)
         else:
-            data = export(params["proxies"] if isinstance(params["proxies"], list) else [params["proxies"]])
+            data = export(get_variable_list(params["proxies"]))
         return JsonResponse({"success": True, "message": "Request was successful.", "data": data})
 
 
