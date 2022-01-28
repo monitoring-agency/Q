@@ -1523,7 +1523,11 @@ class GenerateProxyConfigurationView(CheckMixinView):
 
     def cleaned_post(self, params, *args, **kwargs):
         try:
-            proxy = Proxy.objects.get(id=params["proxy"])
+            proxy_id = int(params["proxy"])
+        except ValueError:
+            return JsonResponse({"success": False, "message": "Parameter proxy must be of type int"}, status=400)
+        try:
+            proxy = Proxy.objects.get(id=proxy_id)
         except Proxy.DoesNotExist:
             return JsonResponse(
                 {"success": False, "message": f"Proxy with id {params['proxy']} does not exist"}, status=404
