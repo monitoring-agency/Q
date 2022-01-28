@@ -5,10 +5,8 @@ import json
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
-from django.http import JsonResponse, HttpResponse
-from django.utils.decorators import method_decorator
+from django.http import JsonResponse, HttpResponse, QueryDict
 from django.views import View
-from django.views.decorators.csrf import csrf_exempt
 
 from api.models import AccountModel, ACLModel
 from description.description import export
@@ -20,7 +18,7 @@ def get_variable_list(parameter):
     if len(parameter) > 1:
         return parameter
     else:
-        return [x for x in parameter.split(",")]
+        return [x for x in parameter[0].split(",") if x]
 
 
 class CheckMixinView(View):
@@ -122,13 +120,27 @@ class CheckOptionalMixinView(CheckMixinView):
         )
         self.api_class = api_class
 
-    def cleaned_get(self, params, *args, **kwargs):
+    def cleaned_get(self, params: QueryDict, *args, **kwargs):
         if "sid" in kwargs:
             if not isinstance(kwargs["sid"], int) and not isinstance(kwargs["sid"], str):
                 return JsonResponse({"success": False, "message": "ID has to be str or int"})
             try:
                 item = self.api_class.objects.get(id=kwargs["sid"])
-                return JsonResponse({"success": True, "data": item.to_dict()})
+                data = {}
+                if "values" in params:
+                    values = get_variable_list(params.getlist("values"))
+                    for v in values:
+                        try:
+                            data[v] = item.__getattribute__(v)
+                            data["id"] = item.id
+                        except AttributeError:
+                            return JsonResponse(
+                                {"success": False, "message": f"{self.api_class.__name__} has no attribute {v}"},
+                                status=400
+                            )
+                else:
+                    data = item.to_dict()
+                return JsonResponse({"success": True, "data": data})
             except self.api_class.DoesNotExist:
                 return JsonResponse(
                     {"success": False, "message": f"{self.api_class.__name__} with id {kwargs['sid']} does not exist"}
