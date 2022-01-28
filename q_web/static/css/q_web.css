@@ -3,15 +3,16 @@ BASE Declaration
  */
 
 :root {
-    --level-0: #121212;
-    --level-1: #191919;
-    --level-2: #1e1e1e;
-    --level-3: #222222;
-    --level-4: #242424;
-    --level-5: #272727;
-    --level-6: #2c2c2c;
-    --level-7: #2e2e2e;
-    --level-8: #333333;
+    --level--1: #121212;
+    --level-0: #1e1e1e;
+    --level-1: #222222;
+    --level-2: #272727;
+    --level-3: #2c2c2c;
+    --level-4: #313131;
+    --level-5: #363636;
+    --level-6: #3b3b3b;
+    --level-7: #414141;
+    --level-8: #464646;
     --prim: #fb5d08;
     --prim-light: #ffab8a;
     --text: #dedede;
@@ -27,7 +28,7 @@ BASE Declaration
 
 .disableSelection {
     user-select:none;
-   -ms-user-selec:none;
+   -ms-user-select:none;
    -moz-user-select:none;
    -webkit-user-select:none;
 }
@@ -55,8 +56,9 @@ body {
 }
 
 .content {
-    margin-left: 20em;
-    margin-top: 5em;
+    font-size: 0.8rem;
+    margin-left: 20rem;
+    margin-top: 5rem;
     min-width: fit-content;
     transition: margin-left ease-in-out 250ms;
 }
@@ -81,10 +83,6 @@ body {
 .button:hover,
 .buttonLink:hover {
     background-color: var(--prim-light);
-}
-
-.error {
-    color: var(--error);
 }
 
 ::-moz-focus-inner {border:0;}
@@ -143,16 +141,16 @@ Login Declaration
     background-color: var(--level-2);
 }
 
-.loginBox div {
-    display: flex;
-    align-items: center;
+.table tr td > input {
+    margin-bottom: 0.2rem;
+    background-color: var(--level-1);
 }
 
 /*
 Preloading Declaration
  */
 
-.preloader {
+#preloader {
     position: absolute;
     top: 0;
     left: 0;
@@ -222,13 +220,21 @@ Modal Declaration
 }
 
 .darkInput {
-    border: 1px solid var(--level-4);
+    border: 1px solid var(--level-6);
     border-radius: 3px;
-    margin: 0.5em 0 0.5em 0;
-    padding: 0.25em 0.5em 0.25em 0.5em;
+    font-family: "Roboto", "Lucida Grande", Verdana, Arial, sans-serif;
+    margin: 0.1rem 0 0.1rem 0;
+    padding: 0.5rem 1rem 0.5rem 1rem;
     color: var(--text);
-    background-color: var(--level-1);
+    background-color: var(--level-0);
     transition: background-color ease-in-out 250ms, border ease-in-out 250ms;
+}
+
+.bigTextArea {
+    font-size: 0.8rem;
+    width: 30rem;
+    height: 10rem;
+    resize: none;
 }
 
 .darkInput:hover,
@@ -251,11 +257,12 @@ Menu Declaration
     align-items: center;
     height: 4em;
     background-color: var(--level-1);
+    box-shadow: 0 0.1rem 0.5rem var(--level--1);
     padding-left: 1em;
     padding-right: 1em;
     margin-left: 20em;
     transition: all ease-in-out 250ms;
-    z-index: 9999;
+    z-index: 99;
 }
 
 .topbar.close {
@@ -269,7 +276,8 @@ Menu Declaration
     transition: filter ease-in-out 250ms;
 }
 
-.topbar a {
+.topbar .logout {
+    cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -278,11 +286,11 @@ Menu Declaration
     transition: background-color ease-in-out 250ms;
 }
 
-.topbar a:hover {
+.topbar .logout:hover {
     background-color: var(--level-3);
 }
 
-.topbar a:hover img {
+.topbar .logout:hover img {
     filter: invert();
 }
 
@@ -301,7 +309,9 @@ Menu Declaration
     background-color: var(--level-2);
     left: 0;
     top: 0;
+    z-index: 100;
     transition: width ease-in-out 250ms;
+    box-shadow: 0.1rem 0 0.5rem var(--level--1);
 }
 
 .sidebar h3 {
@@ -393,6 +403,7 @@ Menu Declaration
     padding-left: 1.5em;
     text-decoration: none;
     transition: background-color ease-in-out 250ms;
+    cursor: pointer;
 }
 
 .sidebarRow:hover {
@@ -400,7 +411,7 @@ Menu Declaration
 }
 
 .sidebarNested .sidebarRow:hover {
-    background-color: var(--level-5);
+    background-color: var(--level-6);
 }
 
 .sidebarRow p {
@@ -552,13 +563,16 @@ Declaration Declaration
  */
 
 .declarationContent {
-    margin: 1em;
+    background-color: var(--level-1);
+    margin: 1rem;
+    box-shadow: 1rem var(--level--1);
+    padding: 1rem;
 }
 
 .declarationHeader {
     display: flex;
     flex-direction: column;
-    padding: 1em;
+    padding: 1rem;
     background-color: var(--level-2);
 }
 
@@ -566,8 +580,11 @@ Declaration Declaration
     display: flex;
     margin-top: 1em;
     padding: 1em;
-    font-size: medium;
     background-color: var(--level-2);
+}
+
+.declarationTable tr td label {
+    margin-right: 1rem;
 }
 
 .declarationList table {
