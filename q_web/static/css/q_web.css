@@ -233,7 +233,7 @@ Modal Declaration
 .bigTextArea {
     font-size: 0.8rem;
     width: 30rem;
-    height: 10rem;
+    height: 8rem;
     resize: none;
 }
 
@@ -721,6 +721,10 @@ Declaration Declaration
 .tableSeparator td {
     height: 1px;
     padding: 0;
+}
+
+.variableContent {
+    display: flex;
 }
 
 /*
