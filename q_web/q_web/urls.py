@@ -15,10 +15,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 import api.urls
 import frontend.urls
 import proxy.urls
+from q_web import settings
 
 urlpatterns = [
     path("", include(frontend.urls)),
@@ -26,3 +28,7 @@ urlpatterns = [
     path('api/v1/', include(api.urls)),
     path('proxy/api/v1/', include(proxy.urls))
 ]
+
+if settings.DEBUG:
+    urlpatterns += staticfiles_urlpatterns()
+
