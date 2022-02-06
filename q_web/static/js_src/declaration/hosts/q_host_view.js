@@ -6,6 +6,8 @@ import TextInput from "../../lib/q_input.js";
 import TextArea from "../../lib/q_textarea.js";
 import MultiSelectSort from "../../lib/q_multiselect.js";
 import Variables from "../../lib/q_variables.js";
+import TableSectionHeading from "../../lib/q_table_section_heading.js";
+import SliderInput from "../../lib/q_slider_input.js";
 
 export default class DeclarationHostView extends React.Component {
     static contextType = ctx;
@@ -24,6 +26,7 @@ export default class DeclarationHostView extends React.Component {
                 "linked_proxy": null,
                 "linked_contacts": [],
                 "linked_contact_groups": [],
+                "disabled": false
             },
             "proxies": [],
             "checks": [],
@@ -41,7 +44,8 @@ export default class DeclarationHostView extends React.Component {
                 "name": "",
                 "address": "",
                 "scheduling_period": "",
-                "comment": ""
+                "comment": "",
+                "disabled": false
             },
         }
 
@@ -87,6 +91,7 @@ export default class DeclarationHostView extends React.Component {
                     "linked_proxy": null,
                     "linked_contacts": [],
                     "linked_contact_groups": [],
+                    "disabled": false
                 }
             };
             if(values.length === 7) {
@@ -146,9 +151,9 @@ export default class DeclarationHostView extends React.Component {
     render() {
         let heading;
         if("host_id" in this.props) {
-            heading = <h3>Update Host</h3>;
+            heading = <h2 className="declarationHeading">Update Host</h2>;
         } else {
-            heading = <h3>Create new Host</h3>;
+            heading = <h2 className="declarationHeading">Create new Host</h2>;
         }
 
         let sortedHostTemplates = [];
@@ -169,10 +174,10 @@ export default class DeclarationHostView extends React.Component {
         return <div className="declarationContent">
             {heading}
                 <table className="declarationTable">
+                    <TableSectionHeading text="Basic host information" />
                     <tr>
-                        <td>
-                            <label htmlFor="name">Name</label>
-                        </td>
+                        <td className="smallCell" />
+                        <td className="largeCell">Name</td>
                         <td>
                             <TextInput className="darkInput"
                                        required
@@ -185,6 +190,7 @@ export default class DeclarationHostView extends React.Component {
                         </td>
                     </tr>
                     <tr>
+                        <td className="smallCell" />
                         <td>
                             <label htmlFor="address">Address</label>
                         </td>
@@ -199,6 +205,7 @@ export default class DeclarationHostView extends React.Component {
                         </td>
                     </tr>
                     <tr>
+                        <td className="smallCell" />
                         <td>
                             <label htmlFor="linked_proxy">Linked proxy</label>
                         </td>
@@ -215,6 +222,25 @@ export default class DeclarationHostView extends React.Component {
                         </td>
                     </tr>
                     <tr>
+                        <td className="smallCell" />
+                        <td>
+                            <label htmlFor="host_templates">Host Templates</label>
+                        </td>
+                        <td>
+                            <MultiSelectSort options={this.state.selected.hostTemplates}
+                                             onChange={(v) => {
+                                                 let a = this.state.host;
+                                                 let host_templates = [];
+                                                 v.forEach(x => host_templates.push(x.value));
+                                                 a["host_templates"] = host_templates;
+                                                 this.setState({"host": a});
+                                             }}
+                                             value={sortedHostTemplates} />
+                        </td>
+                    </tr>
+                    <TableSectionHeading text="Check information" />
+                    <tr>
+                        <td className="smallCell" />
                         <td>
                             <label htmlFor="linked_check">Linked check</label>
                         </td>
@@ -232,22 +258,7 @@ export default class DeclarationHostView extends React.Component {
                         </td>
                     </tr>
                     <tr>
-                        <td>
-                            <label htmlFor="host_templates">Host Templates</label>
-                        </td>
-                        <td>
-                            <MultiSelectSort options={this.state.selected.hostTemplates}
-                                             onChange={(v) => {
-                                                 let a = this.state.host;
-                                                 let host_templates = [];
-                                                 v.forEach(x => host_templates.push(x.value));
-                                                 a["host_templates"] = host_templates;
-                                                 this.setState({"host": a});
-                                             }}
-                                             value={sortedHostTemplates} />
-                        </td>
-                    </tr>
-                    <tr>
+                        <td className="smallCell" />
                         <td>
                             <label htmlFor="variables">Variables</label>
                         </td>
@@ -255,7 +266,9 @@ export default class DeclarationHostView extends React.Component {
                             <Variables />
                         </td>
                     </tr>
+                    <TableSectionHeading text="Notification options" />
                     <tr>
+                        <td className="smallCell" />
                         <td>
                             <label htmlFor="linked_contacts">Contacts</label>
                         </td>
@@ -272,6 +285,7 @@ export default class DeclarationHostView extends React.Component {
                         </td>
                     </tr>
                     <tr>
+                        <td className="smallCell" />
                         <td>
                             <label htmlFor="linked_contact_groups">Contact Groups</label>
                         </td>
@@ -288,37 +302,7 @@ export default class DeclarationHostView extends React.Component {
                         </td>
                     </tr>
                     <tr>
-                        <td>
-                            <label htmlFor="scheduling_interval">Scheduling Interval</label>
-                        </td>
-                        <td>
-                            <TextInput className="darkInput"
-                                       value={this.state.host.scheduling_interval}
-                                       setValue={(v) => {
-                                           let a = this.state.host;
-                                           a["scheduling_interval"] = v;
-                                           this.setState({"host": a});
-                                       }} />
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <label htmlFor="scheduling_period">Scheduling Period</label>
-                        </td>
-                        <td>
-                            <Select className="react-select-container"
-                                    classNamePrefix="react-select"
-                                    isClearable={true}
-                                    options={this.state.selected.timePeriods}
-                                    onChange={(v) => {
-                                        let a = this.state.host;
-                                        a["scheduling_period"] = v === null ? null : v.value;
-                                        this.setState({"host": a});
-                                    }}
-                                    value={this.state.selected.timePeriods.filter((x) => x.value === this.state.host.scheduling_period)} />
-                        </td>
-                    </tr>
-                    <tr>
+                        <td className="smallCell" />
                         <td>
                             <label htmlFor="notification_period">Notification Period</label>
                         </td>
@@ -335,15 +319,57 @@ export default class DeclarationHostView extends React.Component {
                                     value={this.state.selected.timePeriods.filter((x) => x.value === this.state.host.notification_period)} />
                         </td>
                     </tr>
+                    <TableSectionHeading text="Scheduling options" />
                     <tr>
+                        <td className="smallCell" />
+                        <td>
+                            <label htmlFor="scheduling_interval">Scheduling Interval</label>
+                        </td>
+                        <td>
+                            <TextInput className="darkInput"
+                                       value={this.state.host.scheduling_interval}
+                                       setValue={(v) => {
+                                           let a = this.state.host;
+                                           a["scheduling_interval"] = v;
+                                           this.setState({"host": a});
+                                       }} />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td className="smallCell" />
+                        <td>
+                            <label htmlFor="scheduling_period">Scheduling Period</label>
+                        </td>
+                        <td>
+                            <Select className="react-select-container"
+                                    classNamePrefix="react-select"
+                                    isClearable={true}
+                                    options={this.state.selected.timePeriods}
+                                    onChange={(v) => {
+                                        let a = this.state.host;
+                                        a["scheduling_period"] = v === null ? null : v.value;
+                                        this.setState({"host": a});
+                                    }}
+                                    value={this.state.selected.timePeriods.filter((x) => x.value === this.state.host.scheduling_period)} />
+                        </td>
+                    </tr>
+                    <TableSectionHeading text="Miscellaneous options" />
+                    <tr>
+                        <td className="smallCell" />
                         <td>
                             <label htmlFor="disabled">Disabled</label>
                         </td>
                         <td>
-                            <TextInput type="checkbox"/>
+                            <SliderInput value={this.state.host.disabled}
+                                         onChange={(v) => {
+                                             let a = this.state.host;
+                                             a["disabled"] = v;
+                                             this.setState({"host": a});
+                                         }} />
                         </td>
                     </tr>
                     <tr>
+                        <td className="smallCell" />
                         <td>
                             <label htmlFor="comment">Comment</label>
                         </td>
