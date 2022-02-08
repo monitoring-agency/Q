@@ -45,15 +45,15 @@ export default class LoginView extends React.Component {
                             <tr>
                                 <td>Username</td>
                                 <td>
-                                    <TextInput className="darkInput" required="required" value={this.state.username}
-                                        autoFocus="true" setValue={(value) => {this.setState({"username": value})}} />
+                                    <TextInput className="darkInput normalCell" required="required" value={this.state.username}
+                                        autoFocus="true" onChange={(value) => {this.setState({"username": value})}} />
                                 </td>
                             </tr>
                             <tr>
                                 <td>Password</td>
                                 <td>
-                                    <TextInput className="darkInput" required="required" value={this.state.password}
-                                        setValue={(value) => {this.setState({"password": value})}} type="password" />
+                                    <TextInput className="darkInput normalCell" required="required" value={this.state.password}
+                                        onChange={(value) => {this.setState({"password": value})}} type="password" />
                                 </td>
                             </tr>
                             </tbody>

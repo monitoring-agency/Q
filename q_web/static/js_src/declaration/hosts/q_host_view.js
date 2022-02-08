@@ -182,7 +182,7 @@ export default class DeclarationHostView extends React.Component {
                             <TextInput className="darkInput"
                                        required
                                        value={this.state.host.name}
-                                       setValue={(v) => {
+                                       onChange={(v) => {
                                            let a = this.state.host;
                                            a["name"] = v;
                                            this.setState({"host": a});
@@ -197,7 +197,7 @@ export default class DeclarationHostView extends React.Component {
                         <td>
                             <TextInput className="darkInput"
                                        value={this.state.host.address}
-                                       setValue={(v) => {
+                                       onChange={(v) => {
                                            let a = this.state.host;
                                            a["address"] = v;
                                            this.setState({"host": a});
@@ -328,7 +328,7 @@ export default class DeclarationHostView extends React.Component {
                         <td>
                             <TextInput className="darkInput"
                                        value={this.state.host.scheduling_interval}
-                                       setValue={(v) => {
+                                       onChange={(v) => {
                                            let a = this.state.host;
                                            a["scheduling_interval"] = v;
                                            this.setState({"host": a});
@@ -376,7 +376,7 @@ export default class DeclarationHostView extends React.Component {
                         <td>
                             <TextArea className="darkInput bigTextArea"
                                       value={this.state.host.comment}
-                                      setValue={(v) => {
+                                      onChange={(v) => {
                                           let a = this.state.host;
                                           a["comment"] = v;
                                           this.setState({"host": a});
