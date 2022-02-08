@@ -9,12 +9,24 @@ export default class Variables extends React.Component {
         super(props);
     }
 
+    checkKey(value) {
+        let counter = 0;
+        for(let key in this.props.value) {
+            if(this.props.value[key]["key"] === value)
+                counter++;
+        }
+        if (value.includes(" ") || value === "" || counter >= 2)
+            return "darkInput variableInput redBorder"
+        else
+            return "darkInput variableInput"
+    }
+
     render() {
         let variables = [];
         for(let key in this.props.value) {
             variables.push(<tr>
                 <td>
-                    <TextInput className="darkInput variableInput"
+                    <TextInput className={this.checkKey(this.props.value[key]["key"])}
                                value={this.props.value[key]["key"]}
                                required="required"
                                onChange={(v) => {

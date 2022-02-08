@@ -768,6 +768,14 @@ Declaration Declaration
 }
 
 /*
+Border declaration
+ */
+
+.redBorder {
+    border: 1px solid var(--error) !important;
+}
+
+/*
 Slider declaration
  */
 
