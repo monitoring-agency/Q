@@ -112,6 +112,7 @@ body {
 .buttonImg {
     filter: invert(55%) sepia(0%) saturate(31%) hue-rotate(206deg) brightness(111%) contrast(89%);
     transition: filter ease-in-out 250ms;
+    cursor: pointer;
 }
 
 .buttonImg:hover {
@@ -226,8 +227,8 @@ Modal Declaration
     border: 1px solid var(--level-6);
     border-radius: 3px;
     font-family: "Roboto", "Lucida Grande", Verdana, Arial, sans-serif;
-    margin: 0.35rem 0 0.35rem 0;
-    padding: 0.5rem 1rem 0.5rem 1rem;
+    margin: 0.25rem 0 0.25rem 0;
+    padding: 0.65rem 1rem 0.65rem 1rem;
     color: var(--text);
     background-color: var(--level-0);
     transition: background-color ease-in-out 250ms, border ease-in-out 250ms;
@@ -652,12 +653,18 @@ Declaration Declaration
     background-color: var(--level-1-2);
 }
 
+.variableContent {
+    max-width: 25rem;
+    width: 25rem;
+    min-width: 25rem;
+}
+
 .variableTable {
     width: 100%;
 }
 
 .variableInput {
-    width: 8rem !important;
+    width: 9rem !important;
 }
 
 .smallCell {
@@ -665,7 +672,7 @@ Declaration Declaration
 }
 
 .normalCell {
-    width: 10rem;
+    width: 15rem;
 }
 
 .largeCell {
@@ -758,13 +765,6 @@ Declaration Declaration
 .tableSeparator td {
     height: 1px;
     padding: 0;
-}
-
-.variableContent {
-    max-width: 25rem;
-    width: 25rem;
-    min-width: 25rem;
-    display: flex;
 }
 
 /*

@@ -26,6 +26,7 @@ export default class DeclarationHostView extends React.Component {
                 "linked_proxy": null,
                 "linked_contacts": [],
                 "linked_contact_groups": [],
+                "variables": {},
                 "disabled": false
             },
             "proxies": [],
@@ -43,6 +44,7 @@ export default class DeclarationHostView extends React.Component {
                 "checks": [],
                 "name": "",
                 "address": "",
+                "variables": {},
                 "scheduling_period": "",
                 "comment": "",
                 "disabled": false
@@ -91,6 +93,7 @@ export default class DeclarationHostView extends React.Component {
                     "linked_proxy": null,
                     "linked_contacts": [],
                     "linked_contact_groups": [],
+                    "variables": {},
                     "disabled": false
                 }
             };
@@ -99,6 +102,16 @@ export default class DeclarationHostView extends React.Component {
                     host = {
                         "host": values[6].data
                     };
+                    let variables = {};
+                    let counter = 1;
+                    for(let k in host.variables) {
+                        variables[counter] = {
+                           "key": k,
+                           "value": host.variables[k]
+                        };
+                        counter++;
+                    }
+                    host["host"]["variables"] = variables;
                 } else {
                     console.error(values[6]);
                 }
@@ -263,7 +276,12 @@ export default class DeclarationHostView extends React.Component {
                             <label htmlFor="variables">Variables</label>
                         </td>
                         <td>
-                            <Variables />
+                            <Variables value={this.state.host.variables}
+                                       onChange={(v) => {
+                                           let a = this.state.host;
+                                           a["variables"] = v;
+                                           this.setState({"host": a});
+                                       }} />
                         </td>
                     </tr>
                     <TableSectionHeading text="Notification options" />
