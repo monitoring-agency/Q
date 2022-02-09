@@ -33,88 +33,95 @@ class SDK {
         });
     }
 
-    async getHost(hostID) {
-        return await this._makeRESTGetRequest("hosts/" + hostID);
+    async getHost(hostID, values) {
+        return await this._makeRESTGetRequest("hosts/" + hostID, values);
     }
 
-    async getHosts() {
-        return await this._makeRESTGetRequest("hosts");
+    async getHosts(values) {
+        return await this._makeRESTGetRequest("hosts", values);
     }
 
-    async getProxies() {
-        return await this._makeRESTGetRequest("proxies");
+    async getProxies(values) {
+        return await this._makeRESTGetRequest("proxies", values);
     }
 
-    async getProxy(proxyID) {
-        return await this._makeRESTGetRequest("proxies/" + proxyID);
+    async getProxy(proxyID, values) {
+        return await this._makeRESTGetRequest("proxies/" + proxyID, values);
     }
 
-    async getMetrics() {
-        return await this._makeRESTGetRequest("metrics");
+    async getMetrics(values) {
+        return await this._makeRESTGetRequest("metrics", values);
     }
 
-    async getMetric(metricID) {
-        return await this._makeRESTGetRequest("metrics/" + metricID);
+    async getMetric(metricID, values) {
+        return await this._makeRESTGetRequest("metrics/" + metricID, values);
     }
 
-    async getChecks() {
-        return await this._makeRESTGetRequest("checks");
+    async getChecks(values) {
+        return await this._makeRESTGetRequest("checks", values);
     }
 
-    async getCheck(checkID) {
-        return await this._makeRESTGetRequest("checks/" + checkID);
+    async getCheck(checkID, values) {
+        return await this._makeRESTGetRequest("checks/" + checkID, values);
     }
 
-    async getHostTemplates() {
-        return await this._makeRESTGetRequest("hosttemplates");
+    async getHostTemplates(values) {
+        return await this._makeRESTGetRequest("hosttemplates", values);
     }
 
-    async getHostTemplate(hostTemplateID) {
-        return await this._makeRESTGetRequest("hosttemplates/" + hostTemplateID);
+    async getHostTemplate(hostTemplateID, values) {
+        return await this._makeRESTGetRequest("hosttemplates/" + hostTemplateID, values);
     }
 
-    async getMetricTemplates() {
-        return await this._makeRESTGetRequest("metrictemplates");
+    async getMetricTemplates(values) {
+        return await this._makeRESTGetRequest("metrictemplates", values);
     }
 
-    async getMetricTemplate(metricTemplateID) {
-        return await this._makeRESTGetRequest("metrictemplates/" + metricTemplateID);
+    async getMetricTemplate(metricTemplateID, values) {
+        return await this._makeRESTGetRequest("metrictemplates/" + metricTemplateID, values);
     }
 
-    async getTimePeriods() {
-        return await this._makeRESTGetRequest("timeperiods");
+    async getTimePeriods(values) {
+        return await this._makeRESTGetRequest("timeperiods", values);
     }
 
-    async getTimePeriod(timePeriodID) {
-        return await this._makeRESTGetRequest("timeperiods/" + timePeriodID);
+    async getTimePeriod(timePeriodID, values) {
+        return await this._makeRESTGetRequest("timeperiods/" + timePeriodID, values);
     }
 
-    async getContacts() {
-        return await this._makeRESTGetRequest("contacts");
+    async getContacts(values) {
+        return await this._makeRESTGetRequest("contacts", values);
     }
 
-    async getContact(contactID) {
-        return await this._makeRESTGetRequest("contacts/" + contactID);
+    async getContact(contactID, values) {
+        return await this._makeRESTGetRequest("contacts/" + contactID, values);
     }
 
-    async getContactGroups() {
-        return await this._makeRESTGetRequest("contactgroups");
+    async getContactGroups(values) {
+        return await this._makeRESTGetRequest("contactgroups", values);
     }
 
-    async getContactGroup(contactGroupID) {
-        return await this._makeRESTGetRequest("contactgroups/" + contactGroupID);
+    async getContactGroup(contactGroupID, values) {
+        return await this._makeRESTGetRequest("contactgroups/" + contactGroupID, values);
     }
 
-    async getGlobalVariables() {
-        return await this._makeRESTGetRequest("globalvariables");
+    async getGlobalVariables(values) {
+        return await this._makeRESTGetRequest("globalvariables", values);
     }
 
-    async getGlobalVariable(globalVariableID) {
-        return await this._makeRESTGetRequest("globalvariables/" + globalVariableID);
+    async getGlobalVariable(globalVariableID, values) {
+        return await this._makeRESTGetRequest("globalvariables/" + globalVariableID, values);
     }
 
-    async _makeRESTGetRequest(path) {
-        let response = await fetch(this.baseURL + path, {
+    async _makeRESTGetRequest(path, values) {
+        let url = new URL(this.baseURL + path);
+        if (values !== undefined) {
+            for (let v of values) {
+                url.searchParams.append("values", v);
+            }
+        }
+
+        let response = await fetch(url, {
             method: "GET",
         });
         try {
