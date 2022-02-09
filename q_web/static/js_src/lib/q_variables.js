@@ -61,10 +61,10 @@ export default class Variables extends React.Component {
             <table className="variableTable">
                 <tr>
                     <td>
-                        <div className="variableInput">Key</div>
+                        <div className="variableInput">{variables.length > 0 ? "Key" : ""}</div>
                     </td>
                     <td>
-                        <div className="variableInput">Value</div>
+                        <div className="variableInput">{variables.length > 0 ? "Value" : ""}</div>
                     </td>
                     <td>
                         <img className="buttonImg"
