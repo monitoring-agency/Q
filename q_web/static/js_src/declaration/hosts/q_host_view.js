@@ -273,7 +273,7 @@ export default class DeclarationHostView extends React.Component {
                     <tr>
                         <td className="smallCell" />
                         <td>
-                            <label htmlFor="variables">Variables</label>
+                            <div className="declarationEntry">Variables</div>
                         </td>
                         <td>
                             <Variables value={this.state.host.variables}

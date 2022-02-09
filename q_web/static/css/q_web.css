@@ -641,16 +641,17 @@ Declaration Declaration
     border-collapse: collapse;
 }
 
-.declarationTable tr td {
-    white-space: nowrap;
-}
-
 .declarationTable tr:nth-child(odd):not(:first-child) {
     background-color: var(--level-1-1);
 }
 
 .declarationTable tr:nth-child(even) {
     background-color: var(--level-1-2);
+}
+
+.declarationEntry {
+    margin-top: 0.75rem;
+    margin-bottom: 0.75rem;
 }
 
 .variableContent {
@@ -676,7 +677,7 @@ Declaration Declaration
 }
 
 .largeCell {
-    width: 20rem;
+    width: 25rem;
 }
 
 .declarationBox {
