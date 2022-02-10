@@ -4,9 +4,9 @@ import {React, toast} from "../../react.js";
 import ctx from "../../lib/q_ctx.js";
 import TextInput from "../../lib/q_input.js";
 import TextArea from "../../lib/q_textarea.js";
+import TableSectionHeading from "../../lib/q_table_section_heading.js";
 import MultiSelectSort from "../../lib/q_multiselect.js";
 import Variables from "../../lib/q_variables.js";
-import TableSectionHeading from "../../lib/q_table_section_heading.js";
 import SliderInput from "../../lib/q_slider_input.js";
 
 export default class DeclarationHostView extends React.Component {
@@ -28,6 +28,11 @@ export default class DeclarationHostView extends React.Component {
                 "linked_contact_groups": [],
                 "variables": {},
                 "disabled": false
+            },
+            "faulty": {
+                "name": false,
+                "variables": false,
+                "scheduling_interval": false,
             },
             "proxies": [],
             "checks": [],
@@ -55,7 +60,12 @@ export default class DeclarationHostView extends React.Component {
     }
 
     createHost() {
-        toast.error("Submit!");
+        let succeeded = Object.keys(this.state.faulty).filter((key) => this.state.faulty[key]).length === 0;
+        if (!succeeded) {
+            toast.error("Faulty configuration");
+            return;
+        }
+
         if("host_id" in this.props) {
 
         } else {
@@ -65,12 +75,12 @@ export default class DeclarationHostView extends React.Component {
 
     componentWillMount() {
         let promises = [];
-        promises.push(this.context.sdk.getProxies());
-        promises.push(this.context.sdk.getChecks());
-        promises.push(this.context.sdk.getHostTemplates());
-        promises.push(this.context.sdk.getContacts());
-        promises.push(this.context.sdk.getContactGroups());
-        promises.push(this.context.sdk.getTimePeriods());
+        promises.push(this.context.sdk.getProxies(["name"]));
+        promises.push(this.context.sdk.getChecks(["name"]));
+        promises.push(this.context.sdk.getHostTemplates(["name"]));
+        promises.push(this.context.sdk.getContacts(["name"]));
+        promises.push(this.context.sdk.getContactGroups(["name"]));
+        promises.push(this.context.sdk.getTimePeriods(["name"]));
         if("host_id" in this.props) {
             promises.push(this.context.sdk.getHost(this.props.host_id));
         }
@@ -106,8 +116,9 @@ export default class DeclarationHostView extends React.Component {
                     let counter = 1;
                     for(let k in host.variables) {
                         variables[counter] = {
-                           "key": k,
-                           "value": host.variables[k]
+                            "faulty": false,
+                            "key": k,
+                            "value": host.variables[k]
                         };
                         counter++;
                     }
@@ -192,13 +203,16 @@ export default class DeclarationHostView extends React.Component {
                         <td className="smallCell" />
                         <td className="largeCell">Name</td>
                         <td>
-                            <TextInput className="darkInput"
+                            <TextInput className={this.state.faulty.name ? "darkInput redBorder" : "darkInput"}
                                        required
                                        value={this.state.host.name}
                                        onChange={(v) => {
                                            let a = this.state.host;
                                            a["name"] = v;
-                                           this.setState({"host": a});
+                                           let faultyState = this.state.faulty;
+                                           let regexp = new RegExp("^[a-zA-Z0-9.#+_\-]+$");
+                                           faultyState["name"] = v.match(regexp) === null;
+                                           this.setState({"host": a, "faulty": faultyState});
                                        }} />
                         </td>
                     </tr>
@@ -231,7 +245,9 @@ export default class DeclarationHostView extends React.Component {
                                         a["linked_proxy"] = v === null ? null : v.value;
                                         this.setState({"host": a});
                                     }}
-                                    value={this.state.selected.proxies.filter((x) => x.value === this.state.host.linked_proxy)} />
+                                    value={this.state.selected.proxies.filter(
+                                        (x) => x.value === this.state.host.linked_proxy)
+                                    } />
                         </td>
                     </tr>
                     <tr>
@@ -267,7 +283,9 @@ export default class DeclarationHostView extends React.Component {
                                         a["linked_check"] = v === null ? null : v.value;
                                         this.setState({"host": a});
                                     }}
-                                    value={this.state.selected.checks.filter((x) => x.value === this.state.host.linked_check)} />
+                                    value={this.state.selected.checks.filter(
+                                        (x) => x.value === this.state.host.linked_check)
+                                    } />
                         </td>
                     </tr>
                     <tr>
@@ -280,7 +298,11 @@ export default class DeclarationHostView extends React.Component {
                                        onChange={(v) => {
                                            let a = this.state.host;
                                            a["variables"] = v;
-                                           this.setState({"host": a});
+                                           let faultyStates = this.state.faulty;
+                                           faultyStates.variables = Object.values(this.state.host.variables)
+                                               .filter((v) => v["faulty"]).length !== 0;
+                                           console.log(faultyStates.variables);
+                                           this.setState({"host": a, "faulty": faultyStates});
                                        }} />
                         </td>
                     </tr>
@@ -344,12 +366,15 @@ export default class DeclarationHostView extends React.Component {
                             <label htmlFor="scheduling_interval">Scheduling Interval</label>
                         </td>
                         <td>
-                            <TextInput className="darkInput"
+                            <TextInput className={this.state.faulty.scheduling_interval ? "darkInput redBorder" : "darkInput"}
                                        value={this.state.host.scheduling_interval}
                                        onChange={(v) => {
                                            let a = this.state.host;
                                            a["scheduling_interval"] = v;
-                                           this.setState({"host": a});
+                                           let faultyStates = this.state.faulty;
+                                           let regexp = new RegExp("^[0-9]+$")
+                                           faultyStates.scheduling_interval = !((v.match(regexp) && parseInt(v) > 0) || v === "");
+                                           this.setState({"host": a, "faulty": faultyStates});
                                        }} />
                         </td>
                     </tr>
