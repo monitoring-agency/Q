@@ -41,12 +41,20 @@ class SDK {
         return await this._makeRESTGetRequest("hosts", values);
     }
 
+    async updateHost(hostID, changes) {
+        return await this._changeObject("hosts/" + hostID, changes);
+    }
+
     async getProxies(values) {
         return await this._makeRESTGetRequest("proxies", values);
     }
 
     async getProxy(proxyID, values) {
         return await this._makeRESTGetRequest("proxies/" + proxyID, values);
+    }
+
+    async updateProxy(proxyID, changes) {
+        return await this._changeObject("proxies/" + proxyID, changes);
     }
 
     async getMetrics(values) {
@@ -57,12 +65,20 @@ class SDK {
         return await this._makeRESTGetRequest("metrics/" + metricID, values);
     }
 
+    async updateMetric(metricID, changes) {
+        return await this._changeObject("metrics/" + metricID, changes);
+    }
+
     async getChecks(values) {
         return await this._makeRESTGetRequest("checks", values);
     }
 
     async getCheck(checkID, values) {
         return await this._makeRESTGetRequest("checks/" + checkID, values);
+    }
+
+    async updateCheck(checkID, changes) {
+        return await this._changeObject("checks/" + checkID, changes);
     }
 
     async getHostTemplates(values) {
@@ -73,12 +89,20 @@ class SDK {
         return await this._makeRESTGetRequest("hosttemplates/" + hostTemplateID, values);
     }
 
+    async updateHostTemplate(hostTemplateID, changes) {
+        return await this._changeObject("hosttemplates/" + hostTemplateID, changes);
+    }
+
     async getMetricTemplates(values) {
         return await this._makeRESTGetRequest("metrictemplates", values);
     }
 
     async getMetricTemplate(metricTemplateID, values) {
         return await this._makeRESTGetRequest("metrictemplates/" + metricTemplateID, values);
+    }
+
+    async updateMetricTemplate(metricTemplateID, changes) {
+        return await this._changeObject("metrictemplates/" + metricTemplateID, changes);
     }
 
     async getTimePeriods(values) {
@@ -89,12 +113,20 @@ class SDK {
         return await this._makeRESTGetRequest("timeperiods/" + timePeriodID, values);
     }
 
+    async updateTimePeriod(timePeriodID, changes) {
+        return await this._changeObject("timeperiods/" + timePeriodID, changes);
+    }
+
     async getContacts(values) {
         return await this._makeRESTGetRequest("contacts", values);
     }
 
     async getContact(contactID, values) {
         return await this._makeRESTGetRequest("contacts/" + contactID, values);
+    }
+
+    async updateContact(contactID, changes) {
+        return await this._changeObject("contacts/" + contactID, changes);
     }
 
     async getContactGroups(values) {
@@ -105,12 +137,20 @@ class SDK {
         return await this._makeRESTGetRequest("contactgroups/" + contactGroupID, values);
     }
 
+    async updateContactGroup(contactGroupID, changes) {
+        return await this._changeObject("contactgroups/" + contactGroupID, changes);
+    }
+
     async getGlobalVariables(values) {
         return await this._makeRESTGetRequest("globalvariables", values);
     }
 
     async getGlobalVariable(globalVariableID, values) {
         return await this._makeRESTGetRequest("globalvariables/" + globalVariableID, values);
+    }
+
+    async updateGlobalVariable(globalVariableID, changes) {
+        return await this._changeObject("globalvariables/" + globalVariableID, changes);
     }
 
     async _makeRESTGetRequest(path, values) {
@@ -123,6 +163,27 @@ class SDK {
 
         let response = await fetch(url, {
             method: "GET",
+        });
+        try {
+            let ret = await response.json();
+            if (response.status === 403)
+                this.loggedOutCallback(ret);
+
+            if (ret.success === true)
+                return {...ret, "status": response.status};
+            else
+                return({...ret, "status": response.status});
+
+        } catch (SyntaxError) {
+            return({"status": response.status, "text": response.text()});
+        }
+    }
+
+    async _changeObject(path, changes) {
+        let url = new URL(this.baseURL + path);
+        let response = await fetch(url, {
+            method: "PUT",
+            body: JSON.stringify(changes)
         });
         try {
             let ret = await response.json();
