@@ -67,7 +67,18 @@ export default class DeclarationHostView extends React.Component {
         }
 
         if("host_id" in this.props) {
-
+            let changes = this.state.host;
+            let variables = {};
+            for(let v of Object.values(this.state.host.variables)) {
+                variables[v["key"]] = v["value"];
+            }
+            changes["variables"] = variables;
+            this.context.sdk.updateHost(this.props["host_id"], changes).then((result) => {
+                if (result.success) {
+                    toast.success("Changes were successful");
+                    this.context.setPath({"path": ["declaration", "hosts", "index"]})
+                }
+            });
         } else {
 
         }
@@ -114,11 +125,11 @@ export default class DeclarationHostView extends React.Component {
                     };
                     let variables = {};
                     let counter = 1;
-                    for(let k in host.variables) {
+                    for(let k of Object.keys(host.host.variables)) {
                         variables[counter] = {
                             "faulty": false,
                             "key": k,
-                            "value": host.variables[k]
+                            "value": host.host.variables[k]
                         };
                         counter++;
                     }
@@ -301,7 +312,6 @@ export default class DeclarationHostView extends React.Component {
                                            let faultyStates = this.state.faulty;
                                            faultyStates.variables = Object.values(this.state.host.variables)
                                                .filter((v) => v["faulty"]).length !== 0;
-                                           console.log(faultyStates.variables);
                                            this.setState({"host": a, "faulty": faultyStates});
                                        }} />
                         </td>
