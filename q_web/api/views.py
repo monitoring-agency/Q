@@ -332,8 +332,10 @@ class MetricView(CheckOptionalMixinView):
                 if isinstance(params["metric_templates"], list):
                     for mt_id in params["metric_templates"]:
                         mt = MetricTemplate.objects.get(id=mt_id)
+                        max_index = 1 if metric.host_templates.count() == 0 else \
+                            metric.host_templates.all().aggregate(Max("index"))["index__max"] + 1
                         ordered_item = OrderedListItem.objects.create(
-                            index=metric.metric_templates.all().aggregate(Max("index"))["index__max"] + 1,
+                            index=max_index,
                             object_id=mt.id,
                             content_type=ContentType.objects.get_for_model(MetricTemplate)
                         )
@@ -341,15 +343,18 @@ class MetricView(CheckOptionalMixinView):
                 else:
                     try:
                         mt = MetricTemplate.objects.get(id=params["metric_templates"])
+                        max_index = 1 if metric.host_templates.count() == 0 else \
+                            metric.host_templates.all().aggregate(Max("index"))["index__max"] + 1
                         ordered_item = OrderedListItem.objects.create(
-                            index=metric.metric_templates.all().aggregate(Max("index"))["index__max"] + 1,
+                            index=max_index,
                             object_id=mt.id,
                             content_type=ContentType.objects.get_for_model(MetricTemplate)
                         )
                         metric.metric_templates.add(ordered_item)
                     except MetricTemplate.DoesNotExist:
                         return JsonResponse(
-                            {"success": False, "message": f"MetricTemplate with the id {params['metric_template']} does not exist"},
+                            {"success": False,
+                             "message": f"MetricTemplate with the id {params['metric_template']} does not exist"},
                             status=404
                         )
             else:
@@ -414,7 +419,8 @@ class MetricView(CheckOptionalMixinView):
                 metric.linked_contact_groups.clear()
         if "scheduling_interval" in params:
             if params["scheduling_interval"]:
-                scheduling_interval, _ = SchedulingInterval.objects.get_or_create(interval=params["scheduling_interval"])
+                scheduling_interval, _ = SchedulingInterval.objects.get_or_create(
+                    interval=params["scheduling_interval"])
                 metric.scheduling_interval = scheduling_interval
             else:
                 metric.scheduling_interval = None
@@ -425,7 +431,8 @@ class MetricView(CheckOptionalMixinView):
                     metric.scheduling_period = scheduling_period
                 except TimePeriod.DoesNotExist:
                     return JsonResponse(
-                        {"success": False, "message": f"TimePeriod with id {params['scheduling_period']} does not exist"},
+                        {"success": False,
+                         "message": f"TimePeriod with id {params['scheduling_period']} does not exist"},
                         status=404
                     )
             else:
@@ -440,7 +447,8 @@ class MetricView(CheckOptionalMixinView):
                     metric.notification_period = notification_period
                 except TimePeriod.DoesNotExist:
                     return JsonResponse(
-                        {"success": False, "message": f"TimePeriod with id {params['notification_period']} does not exist"},
+                        {"success": False,
+                         "message": f"TimePeriod with id {params['notification_period']} does not exist"},
                         status=404
                     )
             else:
@@ -558,16 +566,20 @@ class MetricTemplateView(CheckOptionalMixinView):
                 if isinstance(params["metric_templates"], list):
                     for mt_id in params["metric_templates"]:
                         mt = MetricTemplate.objects.get(id=mt_id)
+                        max_index = 1 if metric_template.host_templates.count() == 0 else \
+                            metric_template.host_templates.all().aggregate(Max("index"))["index__max"] + 1
                         ordered_item = OrderedListItem.objects.create(
-                            index=metric_template.metric_templates.all().aggregate(Max("index"))["index__max"] + 1,
+                            index=max_index,
                             object_id=mt.id,
                             content_type=ContentType.objects.get_for_model(MetricTemplate)
                         )
                         metric_template.metric_templates.add(ordered_item)
                 else:
                     mt = MetricTemplate.objects.get(id=params["metric_templates"])
+                    max_index = 1 if metric_template.host_templates.count() == 0 else \
+                        metric_template.host_templates.all().aggregate(Max("index"))["index__max"] + 1
                     ordered_item = OrderedListItem.objects.create(
-                        index=metric_template.metric_templates.all().aggregate(Max("index"))["index__max"] + 1,
+                        index=max_index,
                         object_id=mt.id,
                         content_type=ContentType.objects.get_for_model(MetricTemplate)
                     )
@@ -634,7 +646,8 @@ class MetricTemplateView(CheckOptionalMixinView):
                 metric_template.linked_contact_groups.clear()
         if "scheduling_interval" in params:
             if params["scheduling_interval"]:
-                scheduling_interval, _ = SchedulingInterval.objects.get_or_create(interval=params["scheduling_interval"])
+                scheduling_interval, _ = SchedulingInterval.objects.get_or_create(
+                    interval=params["scheduling_interval"])
                 metric_template.scheduling_interval = scheduling_interval
             else:
                 metric_template.scheduling_interval = None
@@ -645,7 +658,8 @@ class MetricTemplateView(CheckOptionalMixinView):
                     metric_template.scheduling_period = scheduling_period
                 except TimePeriod.DoesNotExist:
                     return JsonResponse(
-                        {"success": False, "message": f"TimePeriod with id {params['scheduling_period']} does not exist"},
+                        {"success": False,
+                         "message": f"TimePeriod with id {params['scheduling_period']} does not exist"},
                         status=404
                     )
             else:
@@ -657,7 +671,8 @@ class MetricTemplateView(CheckOptionalMixinView):
                     metric_template.notification_period = notification_period
                 except TimePeriod.DoesNotExist:
                     return JsonResponse(
-                        {"success": False, "message": f"TimePeriod with id {params['notification_period']} does not exist"},
+                        {"success": False,
+                         "message": f"TimePeriod with id {params['notification_period']} does not exist"},
                         status=404
                     )
             else:
@@ -735,7 +750,8 @@ class HostView(CheckOptionalMixinView):
                     host.linked_check = check
                 except Check.DoesNotExist:
                     return JsonResponse(
-                        {"success": False, "message": f"Check with id {params['linked_check']} does not exist"}, status=404
+                        {"success": False, "message": f"Check with id {params['linked_check']} does not exist"},
+                        status=404
                     )
             else:
                 host.linked_check = None
@@ -749,21 +765,26 @@ class HostView(CheckOptionalMixinView):
                     for ht_id in params["host_templates"]:
                         try:
                             ht = HostTemplate.objects.get(id=ht_id)
+                            max_index = 1 if host.host_templates.count() == 0 else \
+                                host.host_templates.all().aggregate(Max("index"))["index__max"] + 1
                             ordered_item = OrderedListItem.objects.create(
-                                index=host.host_templates.all().aggregate(Max("index"))["index__max"] + 1,
+                                index=max_index,
                                 object_id=ht.id,
                                 content_type=ContentType.objects.get_for_model(HostTemplate)
                             )
                             host.host_templates.add(ordered_item)
                         except HostTemplate.DoesNotExist:
                             return JsonResponse(
-                                {"success": False, "message": f"HostTemplate with id {ht_id} does not exist"}, status=404
+                                {"success": False, "message": f"HostTemplate with id {ht_id} does not exist"},
+                                status=404
                             )
                 else:
                     try:
                         ht = HostTemplate.objects.get(id=params["host_templates"])
+                        max_index = 1 if host.host_templates.count() == 0 else \
+                            host.host_templates.all().aggregate(Max("index"))["index__max"] + 1
                         ordered_item = OrderedListItem.objects.create(
-                            index=host.host_templates.all().aggregate(Max("index"))["index__max"] + 1,
+                            index=max_index,
                             object_id=ht.id,
                             content_type=ContentType.objects.get_for_model(HostTemplate)
                         )
@@ -837,7 +858,8 @@ class HostView(CheckOptionalMixinView):
                 host.linked_contact_groups.clear()
         if "scheduling_interval" in params:
             if params["scheduling_interval"]:
-                scheduling_interval, _ = SchedulingInterval.objects.get_or_create(interval=params["scheduling_interval"])
+                scheduling_interval, _ = SchedulingInterval.objects.get_or_create(
+                    interval=params["scheduling_interval"])
                 host.scheduling_interval = scheduling_interval
             else:
                 host.scheduling_interval = None
@@ -848,7 +870,8 @@ class HostView(CheckOptionalMixinView):
                     host.scheduling_period = scheduling_period
                 except TimePeriod.DoesNotExist:
                     return JsonResponse(
-                        {"success": False, "message": f"TimePeriod with id {params['scheduling_period']} does not exist"},
+                        {"success": False,
+                         "message": f"TimePeriod with id {params['scheduling_period']} does not exist"},
                         status=404
                     )
             else:
@@ -860,7 +883,8 @@ class HostView(CheckOptionalMixinView):
                     host.notification_period = notification_period
                 except TimePeriod.DoesNotExist:
                     return JsonResponse(
-                        {"success": False, "message": f"TimePeriod with id {params['notification_period']} does not exist"},
+                        {"success": False,
+                         "message": f"TimePeriod with id {params['notification_period']} does not exist"},
                         status=404
                     )
             else:
@@ -956,7 +980,8 @@ class HostTemplateView(CheckOptionalMixinView):
                     host_template.linked_check = check
                 except Check.DoesNotExist:
                     return JsonResponse(
-                        {"success": False, "message": f"Check with id {params['linked_check']} does not exist"}, status=404
+                        {"success": False, "message": f"Check with id {params['linked_check']} does not exist"},
+                        status=404
                     )
             else:
                 host_template.linked_check = None
@@ -968,21 +993,26 @@ class HostTemplateView(CheckOptionalMixinView):
                     for ht_id in params["host_templates"]:
                         try:
                             ht = HostTemplate.objects.get(id=ht_id)
+                            max_index = 1 if host_template.host_templates.count() == 0 else \
+                                host_template.host_templates.all().aggregate(Max("index"))["index__max"] + 1
                             ordered_item = OrderedListItem.objects.create(
-                                index=host_template.objects.all().aggregate(Max("index"))["index__max"] + 1,
+                                index=max_index,
                                 object_id=ht.id,
                                 content_type=ContentType.objects.get_for_model(HostTemplate)
                             )
                             host_template.host_templates.add(ordered_item)
                         except HostTemplate.DoesNotExist:
                             return JsonResponse(
-                                {"success": False, "message": f"HostTemplate with id {ht_id} does not exist"}, status=404
+                                {"success": False, "message": f"HostTemplate with id {ht_id} does not exist"},
+                                status=404
                             )
                 else:
                     try:
                         ht = HostTemplate.objects.get(id=params["host_templates"])
+                        max_index = 1 if host_template.host_templates.count() == 0 else \
+                            host_template.host_templates.all().aggregate(Max("index"))["index__max"] + 1
                         ordered_item = OrderedListItem.objects.create(
-                            index=host_template.host_templates.all().aggregate(Max("index"))["index__max"] + 1,
+                            index=max_index,
                             object_id=ht.id,
                             content_type=ContentType.objects.get_for_model(HostTemplate)
                         )
@@ -1056,7 +1086,8 @@ class HostTemplateView(CheckOptionalMixinView):
                 host_template.linked_contact_groups.clear()
         if "scheduling_interval" in params:
             if params["scheduling_interval"]:
-                scheduling_interval, _ = SchedulingInterval.objects.get_or_create(interval=params["scheduling_interval"])
+                scheduling_interval, _ = SchedulingInterval.objects.get_or_create(
+                    interval=params["scheduling_interval"])
                 host_template.scheduling_interval = scheduling_interval
             else:
                 host_template.scheduling_interval = None
@@ -1067,7 +1098,8 @@ class HostTemplateView(CheckOptionalMixinView):
                     host_template.scheduling_period = scheduling_period
                 except TimePeriod.DoesNotExist:
                     return JsonResponse(
-                        {"success": False, "message": f"TimePeriod with id {params['scheduling_period']} does not exist"},
+                        {"success": False,
+                         "message": f"TimePeriod with id {params['scheduling_period']} does not exist"},
                         status=404
                     )
             else:
@@ -1079,7 +1111,8 @@ class HostTemplateView(CheckOptionalMixinView):
                     host_template.notification_period = notification_period
                 except TimePeriod.DoesNotExist:
                     return JsonResponse(
-                        {"success": False, "message": f"TimePeriod with id {params['notification_period']} does not exist"},
+                        {"success": False,
+                         "message": f"TimePeriod with id {params['notification_period']} does not exist"},
                         status=404
                     )
             else:
@@ -1129,7 +1162,8 @@ class HostTemplateView(CheckOptionalMixinView):
             if HostTemplate.objects.filter(name=params["name"]).exists():
                 if params["name"] != host_template.name:
                     return JsonResponse(
-                        {"success": False, "message": f"HostTemplate with name {params['name']} already exists"}, status=409
+                        {"success": False, "message": f"HostTemplate with name {params['name']} already exists"},
+                        status=409
                     )
             host_template.name = params["name"]
 
@@ -1434,7 +1468,8 @@ class ContactGroupView(CheckOptionalMixinView):
                         contact_group.linked_contacts.add(contact)
                     except Contact.DoesNotExist:
                         return JsonResponse(
-                            {"success": False, "message": f"Contact with id {params['linked_contacts']} does not exist"},
+                            {"success": False,
+                             "message": f"Contact with id {params['linked_contacts']} does not exist"},
                             status=404
                         )
             else:
