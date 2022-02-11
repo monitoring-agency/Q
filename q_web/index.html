@@ -1,4 +1,17 @@
-{% block loading %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Q</title>
+    <link type="text/css" rel="stylesheet" href="/static/css/q_web.css">
+    <link type="text/css" rel="stylesheet" href="/static/css/q_web_loading.css">
+    <link type="text/css" rel="stylesheet" href="/static/css/q_web_react_select.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.skypack.dev/react-toastify/dist/ReactToastify.css">
+    <link rel="shortcut icon" href="/static/img/favicon.ico"/>
+    <script src="/static/js/q_main.js" type="module" defer></script>
+</head>
+<body id="stop-scrolling">
+
 <div id="preloader">
     <div class="socket">
         <div class="gel center-gel">
@@ -190,4 +203,8 @@
         </div>
     </div>
 </div>
-{% endblock %}
+
+<div id="root"></div>
+
+</body>
+</html>
