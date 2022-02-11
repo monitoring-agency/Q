@@ -5,13 +5,14 @@ import json
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
+from django.db.models import Max
 from django.http import JsonResponse, HttpResponse, QueryDict
 from django.views import View
 
 from api.models import AccountModel, ACLModel
 from description.description import export
 from description.models import Check, Host, Metric, TimePeriod, SchedulingInterval, GenericKVP, Label, Day, \
-    Period, DayTimePeriod, GlobalVariable, Contact, ContactGroup, MetricTemplate, HostTemplate, Proxy
+    Period, DayTimePeriod, GlobalVariable, Contact, ContactGroup, MetricTemplate, HostTemplate, Proxy, OrderedListItem
 
 
 def get_variable_list(parameter):
@@ -329,18 +330,28 @@ class MetricView(CheckOptionalMixinView):
                 if overwrite:
                     metric.metric_templates.clear()
                 if isinstance(params["metric_templates"], list):
-                    metric_templates = MetricTemplate.objects.filter(id__in=params["metric_templates"])
-                    for x in metric_templates:
-                        metric.metric_templates.add(x)
+                    for mt_id in params["metric_templates"]:
+                        mt = MetricTemplate.objects.get(id=mt_id)
+                        ordered_item = OrderedListItem.objects.create(
+                            index=metric.metric_templates.all().aggregate(Max("index"))["index__max"] + 1,
+                            object_id=mt.id,
+                            content_type=ContentType.objects.get_for_model(MetricTemplate)
+                        )
+                        metric.metric_templates.add(ordered_item)
                 else:
                     try:
-                        metric_template = MetricTemplate.objects.get(id=params["metric_templates"])
+                        mt = MetricTemplate.objects.get(id=params["metric_templates"])
+                        ordered_item = OrderedListItem.objects.create(
+                            index=metric.metric_templates.all().aggregate(Max("index"))["index__max"] + 1,
+                            object_id=mt.id,
+                            content_type=ContentType.objects.get_for_model(MetricTemplate)
+                        )
+                        metric.metric_templates.add(ordered_item)
                     except MetricTemplate.DoesNotExist:
                         return JsonResponse(
                             {"success": False, "message": f"MetricTemplate with the id {params['metric_template']} does not exist"},
                             status=404
                         )
-                    metric.metric_templates.add(metric_template)
             else:
                 metric.metric_templates.clear()
         if "linked_contacts" in params:
@@ -545,12 +556,22 @@ class MetricTemplateView(CheckOptionalMixinView):
                 metric_template.metric_templates.clear()
             if params["metric_templates"]:
                 if isinstance(params["metric_templates"], list):
-                    metric_templates = MetricTemplate.objects.filter(id__in=params["metric_templates"])
-                    metric_template.metric_templates.add(metric_templates)
+                    for mt_id in params["metric_templates"]:
+                        mt = MetricTemplate.objects.get(id=mt_id)
+                        ordered_item = OrderedListItem.objects.create(
+                            index=metric_template.metric_templates.all().aggregate(Max("index"))["index__max"] + 1,
+                            object_id=mt.id,
+                            content_type=ContentType.objects.get_for_model(MetricTemplate)
+                        )
+                        metric_template.metric_templates.add(ordered_item)
                 else:
-                    metric_templates = [MetricTemplate.objects.get(id=params["metric_templates"])]
-                    for x in metric_templates:
-                        metric_template.metric_templates.add(x)
+                    mt = MetricTemplate.objects.get(id=params["metric_templates"])
+                    ordered_item = OrderedListItem.objects.create(
+                        index=metric_template.metric_templates.all().aggregate(Max("index"))["index__max"] + 1,
+                        object_id=mt.id,
+                        content_type=ContentType.objects.get_for_model(MetricTemplate)
+                    )
+                    metric_template.metric_templates.add(ordered_item)
             else:
                 metric_template.metric_templates.clear()
         if "linked_contacts" in params:
@@ -728,7 +749,12 @@ class HostView(CheckOptionalMixinView):
                     for ht_id in params["host_templates"]:
                         try:
                             ht = HostTemplate.objects.get(id=ht_id)
-                            host.host_templates.add(ht)
+                            ordered_item = OrderedListItem.objects.create(
+                                index=host.host_templates.all().aggregate(Max("index"))["index__max"] + 1,
+                                object_id=ht.id,
+                                content_type=ContentType.objects.get_for_model(HostTemplate)
+                            )
+                            host.host_templates.add(ordered_item)
                         except HostTemplate.DoesNotExist:
                             return JsonResponse(
                                 {"success": False, "message": f"HostTemplate with id {ht_id} does not exist"}, status=404
@@ -736,7 +762,12 @@ class HostView(CheckOptionalMixinView):
                 else:
                     try:
                         ht = HostTemplate.objects.get(id=params["host_templates"])
-                        host.host_templates.add(ht)
+                        ordered_item = OrderedListItem.objects.create(
+                            index=host.host_templates.all().aggregate(Max("index"))["index__max"] + 1,
+                            object_id=ht.id,
+                            content_type=ContentType.objects.get_for_model(HostTemplate)
+                        )
+                        host.host_templates.add(ordered_item)
                     except HostTemplate.DoesNotExist:
                         return JsonResponse(
                             {
@@ -937,7 +968,12 @@ class HostTemplateView(CheckOptionalMixinView):
                     for ht_id in params["host_templates"]:
                         try:
                             ht = HostTemplate.objects.get(id=ht_id)
-                            host_template.host_templates.add(ht)
+                            ordered_item = OrderedListItem.objects.create(
+                                index=host_template.objects.all().aggregate(Max("index"))["index__max"] + 1,
+                                object_id=ht.id,
+                                content_type=ContentType.objects.get_for_model(HostTemplate)
+                            )
+                            host_template.host_templates.add(ordered_item)
                         except HostTemplate.DoesNotExist:
                             return JsonResponse(
                                 {"success": False, "message": f"HostTemplate with id {ht_id} does not exist"}, status=404
@@ -945,7 +981,12 @@ class HostTemplateView(CheckOptionalMixinView):
                 else:
                     try:
                         ht = HostTemplate.objects.get(id=params["host_templates"])
-                        host_template.host_templates.add(ht)
+                        ordered_item = OrderedListItem.objects.create(
+                            index=host_template.host_templates.all().aggregate(Max("index"))["index__max"] + 1,
+                            object_id=ht.id,
+                            content_type=ContentType.objects.get_for_model(HostTemplate)
+                        )
+                        host_template.host_templates.add(ordered_item)
                     except HostTemplate.DoesNotExist:
                         return JsonResponse(
                             {

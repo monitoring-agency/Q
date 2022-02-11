@@ -242,12 +242,20 @@ class Proxy(models.Model):
         return base64.b64encode(json.dumps(self.to_dict()).encode("utf-8")).decode("utf-8")
 
 
+class OrderedListItem(models.Model):
+    """Representation of an item of an ordered list of something"""
+    index = PositiveIntegerField(default=1)
+    referent = GenericForeignKey('content_type', 'object_id')
+    content_type = ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = PositiveIntegerField()
+
+
 class HostTemplate(models.Model):
     """Template of a host"""
     name = CharField(default="", max_length=255, unique=True)
     address = CharField(default="", max_length=255, blank=True, null=True)
     linked_check = ForeignKey(Check, on_delete=models.DO_NOTHING, blank=True, null=True)
-    host_templates = ManyToManyField("self", blank=True, symmetrical=False)
+    host_templates = ManyToManyField(OrderedListItem, blank=True)
     linked_contacts = ManyToManyField(Contact, blank=True)
     linked_contact_groups = ManyToManyField(ContactGroup, blank=True)
     scheduling_interval = ForeignKey(SchedulingInterval, on_delete=models.DO_NOTHING, blank=True, null=True)
@@ -268,12 +276,14 @@ class HostTemplate(models.Model):
         return self.name
 
     def to_dict(self):
+        hts = [(x.object_id, x.index) for x in self.host_templates.all()]
+        hts.sort(key=lambda x: x[1])
         return {
             "id": self.id,
             "name": self.name,
             "address": self.address if self.address else "",
             "linked_check": self.linked_check_id if self.linked_check else "",
-            "host_templates": [x.id for x in self.host_templates.all()],
+            "host_templates": [x[0] for x in hts],
             "linked_contacts": [x.id for x in self.linked_contacts.all()],
             "linked_contact_groups": [x.id for x in self.linked_contact_groups.all()],
             "scheduling_interval": self.scheduling_interval.interval if self.scheduling_interval else "",
@@ -299,7 +309,7 @@ class Host(models.Model):
     linked_proxy = ForeignKey(Proxy, on_delete=models.CASCADE)
     linked_check = ForeignKey(Check, on_delete=models.DO_NOTHING, blank=True, null=True)
     disabled = BooleanField(default=False, blank=True, null=True)
-    host_templates = ManyToManyField(HostTemplate, blank=True)
+    host_templates = ManyToManyField(OrderedListItem, blank=True)
     linked_contacts = ManyToManyField(Contact, blank=True)
     linked_contact_groups = ManyToManyField(ContactGroup, blank=True)
     scheduling_interval = ForeignKey(SchedulingInterval, on_delete=models.DO_NOTHING, blank=True, null=True)
@@ -320,6 +330,8 @@ class Host(models.Model):
         return self.name
 
     def to_dict(self):
+        hts = [(x.object_id, x.index) for x in self.host_templates.all()]
+        hts.sort(key=lambda x: x[1])
         return {
             "id": self.id,
             "name": self.name,
@@ -327,12 +339,12 @@ class Host(models.Model):
             "linked_proxy": self.linked_proxy_id,
             "linked_check": self.linked_check_id if self.linked_check else "",
             "disabled": self.disabled,
-            "host_templates": [x.id for x in self.host_templates.all()],
+            "host_templates": [x[0] for x in hts],
             "linked_contacts": [x.id for x in self.linked_contacts.all()],
             "linked_contact_groups": [x.id for x in self.linked_contact_groups.all()],
             "scheduling_interval": self.scheduling_interval.interval if self.scheduling_interval else "",
             "scheduling_period": self.scheduling_period_id if self.scheduling_period else "",
-            "notification_period": self.notification_period_id if self.notification_period else 2,
+            "notification_period": self.notification_period_id if self.notification_period else "",
             "comment": self.comment if self.comment else "",
             "variables": dict(ChainMap(*[x.to_dict() for x in self.variables.all()][::-1]))
         }
@@ -349,7 +361,7 @@ class MetricTemplate(models.Model):
     """This class represents a template for a metric"""
     name = CharField(default="", max_length=255, unique=True)
     linked_check = ForeignKey(Check, on_delete=models.DO_NOTHING, blank=True, null=True)
-    metric_templates = ManyToManyField("self", blank=True, symmetrical=False)
+    metric_templates = ManyToManyField(OrderedListItem, blank=True)
     linked_contacts = ManyToManyField(Contact, blank=True)
     linked_contact_groups = ManyToManyField(ContactGroup, blank=True)
     scheduling_interval = ForeignKey(SchedulingInterval, on_delete=models.DO_NOTHING, blank=True, null=True)
@@ -370,11 +382,13 @@ class MetricTemplate(models.Model):
         return self.name
 
     def to_dict(self):
+        mts = [(x.object_id, x.index) for x in self.metric_templates.all()]
+        mts.sort(key=lambda x: x[1])
         return {
             "id": self.id,
             "name": self.name,
             "linked_check": self.linked_check_id if self.linked_check else "",
-            "metric_templates": [x.id for x in self.metric_templates.all()],
+            "metric_templates": [x[0] for x in mts],
             "linked_contacts": [x.id for x in self.linked_contacts.all()],
             "linked_contact_groups": [x.id for x in self.linked_contact_groups.all()],
             "scheduling_interval": self.scheduling_interval.interval if self.scheduling_interval else "",
@@ -399,7 +413,7 @@ class Metric(models.Model):
     linked_check = ForeignKey(Check, on_delete=models.DO_NOTHING, blank=True, null=True)
     linked_host = ForeignKey(Host, on_delete=models.CASCADE)
     disabled = BooleanField(default=False, blank=True, null=True)
-    metric_templates = ManyToManyField(MetricTemplate, blank=True)
+    metric_templates = ManyToManyField(OrderedListItem, blank=True)
     linked_contacts = ManyToManyField(Contact, blank=True)
     linked_contact_groups = ManyToManyField(ContactGroup, blank=True)
     scheduling_interval = ForeignKey(SchedulingInterval, on_delete=models.DO_NOTHING, blank=True, null=True)
@@ -420,6 +434,8 @@ class Metric(models.Model):
         return self.name
 
     def to_dict(self):
+        mts = [(x.object_id, x.index) for x in self.metric_templates.all()]
+        mts.sort(key=lambda x: x[1])
         return {
             "id": self.id,
             "name": self.name,
@@ -427,7 +443,7 @@ class Metric(models.Model):
             "linked_check": self.linked_check_id if self.linked_check else "",
             "linked_host": self.linked_host_id if self.linked_host else "",
             "disabled": self.disabled,
-            "metric_templates": [x.id for x in self.metric_templates.all()],
+            "metric_templates": [x[0] for x in mts],
             "linked_contacts": [x.id for x in self.linked_contacts.all()],
             "linked_contact_groups": [x.id for x in self.linked_contact_groups.all()],
             "scheduling_interval": self.scheduling_interval.interval if self.scheduling_interval else "",
