@@ -34,6 +34,7 @@ export default class DeclarationHostView extends React.Component {
                 "variables": false,
                 "scheduling_interval": false,
             },
+            "original": {},
             "proxies": [],
             "checks": [],
             "hostTemplates": [],
@@ -77,6 +78,8 @@ export default class DeclarationHostView extends React.Component {
                 if (result.success) {
                     toast.success("Changes were successful");
                     this.context.setPath({"path": ["declaration", "hosts", "index"]})
+                } else {
+                    toast.error(result.text);
                 }
             });
         } else {

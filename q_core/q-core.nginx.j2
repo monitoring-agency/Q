@@ -13,7 +13,7 @@ server {
     }
 
     location / {
-        proxy_pass http://unix:/run/q-web.sock;
+        proxy_pass http://unix:/run/q-core.sock;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -44,7 +44,7 @@ server {
     }
 
     location / {
-        proxy_pass http://unix:/run/q-web.sock;
+        proxy_pass http://unix:/run/q-core.sock;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -58,15 +58,15 @@ server {
     listen 4443 ssl;
     listen [::]:4443 ssl;
 
-    ssl_certificate /var/lib/q/certs/q-web-fullchain.pem;
-    ssl_certificate_key /var/lib/q/certs/q-web-privkey.pem;
+    ssl_certificate /var/lib/q/certs/q-core-fullchain.pem;
+    ssl_certificate_key /var/lib/q/certs/q-core-privkey.pem;
     ssl_client_certificate /var/lib/q/certs/q-ca.pem;
     ssl_verify_client on;
 
     server_name {{ server_name }};
 
     location /proxy/api/v1/ {
-        proxy_pass http://unix:/run/q-web.sock;
+        proxy_pass http://unix:/run/q-core.sock;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;

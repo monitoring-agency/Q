@@ -12,7 +12,7 @@ import os
 from channels.routing import ProtocolTypeRouter
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'q_web.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'q_core.settings')
 
 #application = get_asgi_application()
 application = ProtocolTypeRouter({

@@ -1,19 +1,19 @@
 [Unit]
-Description=Q Web
-Requires=q-web.socket
+Description=Q Core
+Requires=q-core.socket
 After=network.target
 
 [Service]
 Type=notify
 # the specific user that our service will run as
-User=q-web
-Group=q-web
+User=q-core
+Group=q-core
 # another option for an even more restricted service is
 # DynamicUser=yes
 # see http://0pointer.net/blog/dynamic-users-with-systemd.html
 RuntimeDirectory=gunicorn
-WorkingDirectory=/usr/sbin/q-web/
-ExecStart=/usr/sbin/q-web/venv/bin/gunicorn -c /etc/q-web/gunicorn.conf.py q_web.asgi
+WorkingDirectory=/usr/sbin/q-core/
+ExecStart=/usr/sbin/q-core/venv/bin/gunicorn -c /etc/q-core/gunicorn.conf.py q_core.asgi
 ExecReload=/bin/kill -s HUP $MAINPID
 KillMode=mixed
 TimeoutStopSec=5

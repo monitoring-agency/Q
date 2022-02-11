@@ -1,7 +1,5 @@
 import base64
-import json
 import logging
-import os
 import time
 from collections import ChainMap
 from typing import Union
@@ -12,7 +10,6 @@ from django.contrib.contenttypes.models import ContentType
 from description.models import Host, Metric, Check, GlobalVariable, GenericKVP, Label, TimePeriod, SchedulingInterval, \
     HostTemplate, MetricTemplate, Proxy
 from proxy.models import ScheduledObject
-from q_web import settings
 
 logger = logging.getLogger("export")
 
@@ -323,7 +320,7 @@ def generate_scheduled_objects(declaration):
 
 
 def export_to_proxy(declaration: dict):
-    client = httpx.Client(cert=("/var/lib/q/certs/q-web-fullchain.pem", "/var/lib/q/certs/q-web-privkey.pem"))
+    client = httpx.Client(cert=("/var/lib/q/certs/q-core-fullchain.pem", "/var/lib/q/certs/q-core-privkey.pem"))
     status_list = []
     for x in declaration:
         proxy = declaration[x]
