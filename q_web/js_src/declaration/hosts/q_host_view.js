@@ -65,7 +65,7 @@ export default class DeclarationHostView extends React.Component {
         let faultyStates = this.state.faulty;
         faultyStates.name = this.state.host.name.match(new RegExp("^[a-zA-Z0-9.#+_\-]+$")) === null;
         faultyStates.scheduling_interval = !(
-            (this.state.host.scheduling_interval.match(new RegExp("^[0-9]+$")) && parseInt(this.state.host.scheduling_interval) > 0)
+            (String(this.state.host.scheduling_interval).match(new RegExp("^[0-9]+$")) && parseInt(this.state.host.scheduling_interval) > 0)
             || this.state.host.scheduling_interval === ""
         );
         faultyStates.variables = Object.values(this.state.host.variables).filter((v) => v["faulty"]).length !== 0;
