@@ -1,3 +1,7 @@
+.react-select-redBorder .react-select__control {
+    border-color: var(--error) !important;
+}
+
 .react-select-container .react-select__control {
     background-color: var(--level-3);
     border-color: var(--level-6);

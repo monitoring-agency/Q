@@ -22,7 +22,7 @@ export default class DeclarationHostView extends React.Component {
                 "host_templates": [],
                 "notification_period": null,
                 "scheduling_period": null,
-                "scheduling_interval": null,
+                "scheduling_interval": "",
                 "linked_proxy": null,
                 "linked_contacts": [],
                 "linked_contact_groups": [],
@@ -31,8 +31,9 @@ export default class DeclarationHostView extends React.Component {
             },
             "faulty": {
                 "name": false,
+                "linked_proxy": false,
                 "variables": false,
-                "scheduling_interval": false,
+                "scheduling_interval": false
             },
             "original": {},
             "proxies": [],
@@ -61,29 +62,49 @@ export default class DeclarationHostView extends React.Component {
     }
 
     createHost() {
-        let succeeded = Object.keys(this.state.faulty).filter((key) => this.state.faulty[key]).length === 0;
+        let faultyStates = this.state.faulty;
+        faultyStates.name = this.state.host.name.match(new RegExp("^[a-zA-Z0-9.#+_\-]+$")) === null;
+        faultyStates.scheduling_interval = !(
+            (this.state.host.scheduling_interval.match(new RegExp("^[0-9]+$")) && parseInt(this.state.host.scheduling_interval) > 0)
+            || this.state.host.scheduling_interval === ""
+        );
+        faultyStates.variables = Object.values(this.state.host.variables).filter((v) => v["faulty"]).length !== 0;
+        faultyStates.linked_proxy = this.state.host.linked_proxy === null || this.state.host.linked_proxy === "";
+
+        let succeeded = Object.keys(faultyStates).filter((key) => faultyStates[key]).length === 0;
         if (!succeeded) {
             toast.error("Faulty configuration");
+            this.setState({"faulty": faultyStates})
             return;
+        }
+
+        let variables = {};
+        for(let v of Object.values(this.state.host.variables)) {
+            variables[v["key"]] = v["value"];
         }
 
         if("host_id" in this.props) {
             let changes = this.state.host;
-            let variables = {};
-            for(let v of Object.values(this.state.host.variables)) {
-                variables[v["key"]] = v["value"];
-            }
             changes["variables"] = variables;
             this.context.sdk.updateHost(this.props["host_id"], changes).then((result) => {
                 if (result.success) {
                     toast.success("Changes were successful");
-                    this.context.setPath({"path": ["declaration", "hosts", "index"]})
+                    this.context.setPath({"path": ["declaration", "hosts", "index"]});
                 } else {
-                    toast.error(result.text);
+                    toast.error(result.message);
                 }
             });
         } else {
-
+            let obj = this.state.host;
+            obj["variables"] = variables;
+            this.context.sdk.createHost(obj).then((result) => {
+                if(result.success) {
+                    toast.success("Host was created successfully");
+                    this.context.setPath({"path": ["declaration", "hosts", "index"]});
+                } else {
+                    toast.error(result.message);
+                }
+            });
         }
     }
 
@@ -113,7 +134,7 @@ export default class DeclarationHostView extends React.Component {
                     "host_templates": [],
                     "notification_period": null,
                     "scheduling_period": null,
-                    "scheduling_interval": null,
+                    "scheduling_interval": "",
                     "linked_proxy": null,
                     "linked_contacts": [],
                     "linked_contact_groups": [],
@@ -251,13 +272,15 @@ export default class DeclarationHostView extends React.Component {
                             <label htmlFor="linked_proxy">Linked proxy</label>
                         </td>
                         <td>
-                            <Select className="react-select-container"
+                            <Select className={this.state.faulty.linked_proxy ? "react-select-container react-select-redBorder" : "react-select-container"}
                                     classNamePrefix="react-select"
                                     options={this.state.selected.proxies}
                                     onChange={(v) => {
                                         let a = this.state.host;
                                         a["linked_proxy"] = v === null ? null : v.value;
-                                        this.setState({"host": a});
+                                        let faultyStates = this.state.faulty;
+                                        faultyStates.linked_proxy = v === null;
+                                        this.setState({"host": a, "faulty": faultyStates});
                                     }}
                                     value={this.state.selected.proxies.filter(
                                         (x) => x.value === this.state.host.linked_proxy)

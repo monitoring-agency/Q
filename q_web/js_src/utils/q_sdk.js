@@ -45,6 +45,10 @@ class SDK {
         return await this._changeObject("hosts/" + hostID, changes);
     }
 
+    async createHost(obj) {
+        return await this._createObject("hosts", obj);
+    }
+
     async getProxies(values) {
         return await this._makeRESTGetRequest("proxies", values);
     }
@@ -163,6 +167,27 @@ class SDK {
 
         let response = await fetch(url, {
             method: "GET",
+        });
+        try {
+            let ret = await response.json();
+            if (response.status === 403)
+                this.loggedOutCallback(ret);
+
+            if (ret.success === true)
+                return {...ret, "status": response.status};
+            else
+                return({...ret, "status": response.status});
+
+        } catch (SyntaxError) {
+            return({"status": response.status, "text": response.text()});
+        }
+    }
+
+    async _createObject(path, object) {
+        let url = new URL(this.baseURL + path);
+        let response = await fetch(url, {
+            method: "POST",
+            body: JSON.stringify(object)
         });
         try {
             let ret = await response.json();
