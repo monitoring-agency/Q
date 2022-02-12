@@ -14,7 +14,6 @@ export default class DeclarationHostIndexView extends React.Component {
     componentDidMount() {
         let hostsPromise = this.context.sdk.getHosts();
         hostsPromise.then((ret) => {
-            console.log(ret.data);
             this.setState({"hosts": ret.data});
         });
     }
