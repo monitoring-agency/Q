@@ -44,7 +44,7 @@ class Main extends React.Component {
         document.body.id = "";
         let preloader = document.getElementById("preloader");
         preloader.remove();
-        this.setState({"logged_in": false});
+        this.setState({"logged_in": this.context.sdk.test()});
 
         this.context.sdk.setLoggedOutCallback((ret) => {
             this.setPath({"path": ["login"], "logged_in": false});
