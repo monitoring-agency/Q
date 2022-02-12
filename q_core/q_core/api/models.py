@@ -1,11 +1,6 @@
-import random
-import string
-from datetime import datetime, timedelta
-
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models import ForeignKey, CharField, BooleanField, ManyToManyField, DateTimeField
-from django.utils.timezone import make_aware
+from django.db.models import ForeignKey, CharField, BooleanField, ManyToManyField
 
 from description.models import TimePeriod
 

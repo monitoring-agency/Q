@@ -1,6 +1,7 @@
 Django~=4.0.1
 httpx~=0.21.3
 channels~=3.0.4
+gunicorn
 uvicorn[standard]~=0.17.0
 
 # apt install python3-dev default-libmysqlclient-dev build-essential

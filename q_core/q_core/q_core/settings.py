@@ -139,7 +139,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 DESCRIPTION_DIRECTORY = "/etc/q-scheduler/"
 
 logging.basicConfig(
-#    filename="/var/log/q/q-core-django.log",
+    filename="/var/log/q-core/q-core.log",
     format='%(asctime)s :: %(levelname)s: %(message)s',
     datefmt='%d-%m-%Y %H:%M:%S',
     level=logging.DEBUG

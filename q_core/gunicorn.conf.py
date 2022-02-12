@@ -30,8 +30,8 @@ threads = 1
 # [ LOGGING ]
 loglevel = "info"
 # "-" is stdout
-accesslog = "/var/log/q/q-core-gunicorn-access.log"
-errorlog = "/var/log/q/q-core-gunicorn-error.log"
+accesslog = "/var/log/q-core/gunicorn-access.log"
+errorlog = "/var/log/q-core/gunicorn-error.log"
 
 # [ DEPLOYMENT ]
 # X-Forwarded-For trusted sources, comma seperated
