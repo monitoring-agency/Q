@@ -53,6 +53,10 @@ class SDK {
         return await this._changeObject("hosts/" + hostID, changes);
     }
 
+    async deleteHost(hostID) {
+        return await this._deleteObject("hosts/" + hostID);
+    }
+
     async createHost(obj) {
         return await this._createObject("hosts", obj);
     }
@@ -69,6 +73,10 @@ class SDK {
         return await this._changeObject("proxies/" + proxyID, changes);
     }
 
+    async deleteProxy(proxyID) {
+        return await this._deleteObject("proxies/" + proxyID)
+    }
+
     async getMetrics(values) {
         return await this._makeRESTGetRequest("metrics", values);
     }
@@ -79,6 +87,10 @@ class SDK {
 
     async updateMetric(metricID, changes) {
         return await this._changeObject("metrics/" + metricID, changes);
+    }
+
+    async deleteMetric(metricID) {
+        return await this._deleteObject("metrics/" + metricID);
     }
 
     async getChecks(values) {
@@ -93,6 +105,10 @@ class SDK {
         return await this._changeObject("checks/" + checkID, changes);
     }
 
+    async deleteCheck(checkID) {
+        return await this._deleteObject("checks/" + checkID);
+    }
+
     async getHostTemplates(values) {
         return await this._makeRESTGetRequest("hosttemplates", values);
     }
@@ -103,6 +119,10 @@ class SDK {
 
     async updateHostTemplate(hostTemplateID, changes) {
         return await this._changeObject("hosttemplates/" + hostTemplateID, changes);
+    }
+
+    async deleteHostTemplate(hostTemplateID) {
+        return await this._deleteObject("hosttemplates/" + hostTemplateID);
     }
 
     async getMetricTemplates(values) {
@@ -117,6 +137,10 @@ class SDK {
         return await this._changeObject("metrictemplates/" + metricTemplateID, changes);
     }
 
+    async deleteMetricTemplate(metricTemplateID) {
+        return await this._deleteObject("metrictemplates/" + metricTemplateID);
+    }
+
     async getTimePeriods(values) {
         return await this._makeRESTGetRequest("timeperiods", values);
     }
@@ -127,6 +151,10 @@ class SDK {
 
     async updateTimePeriod(timePeriodID, changes) {
         return await this._changeObject("timeperiods/" + timePeriodID, changes);
+    }
+
+    async deleteTimePeriod(timePeriodID) {
+        return await this._deleteObject("timeperiods/" + timePeriodID);
     }
 
     async getContacts(values) {
@@ -141,6 +169,10 @@ class SDK {
         return await this._changeObject("contacts/" + contactID, changes);
     }
 
+    async deleteContact(contactID) {
+        return await this._deleteObject("contacts/" + contactID);
+    }
+
     async getContactGroups(values) {
         return await this._makeRESTGetRequest("contactgroups", values);
     }
@@ -153,6 +185,10 @@ class SDK {
         return await this._changeObject("contactgroups/" + contactGroupID, changes);
     }
 
+    async deleteContactGroup(contactGroupID) {
+        return await this._deleteObject("contactgroups/" + contactGroupID);
+    }
+
     async getGlobalVariables(values) {
         return await this._makeRESTGetRequest("globalvariables", values);
     }
@@ -163,6 +199,10 @@ class SDK {
 
     async updateGlobalVariable(globalVariableID, changes) {
         return await this._changeObject("globalvariables/" + globalVariableID, changes);
+    }
+
+    async deleteGlobalVariable(globalVariableID) {
+        return await this._deleteObject("globalvariables/" + globalVariableID);
     }
 
     async _makeRESTGetRequest(path, values) {
@@ -217,6 +257,26 @@ class SDK {
         let response = await fetch(url, {
             method: "PUT",
             body: JSON.stringify(changes)
+        });
+        try {
+            let ret = await response.json();
+            if (response.status === 403)
+                this.loggedOutCallback(ret);
+
+            if (ret.success === true)
+                return {...ret, "status": response.status};
+            else
+                return({...ret, "status": response.status});
+
+        } catch (SyntaxError) {
+            return({"status": response.status, "text": response.text()});
+        }
+    }
+
+    async _deleteObject(path) {
+        let url = new URL(this.baseURL + path);
+        let response = await fetch(url, {
+            method: "DELETE"
         });
         try {
             let ret = await response.json();
