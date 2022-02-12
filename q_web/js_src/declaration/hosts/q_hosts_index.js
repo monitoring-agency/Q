@@ -1,4 +1,4 @@
-import {React} from "../../react.js";
+import {React, toast} from "../../react.js";
 import ctx from "../../lib/q_ctx.js";
 
 export default class DeclarationHostIndexView extends React.Component {
@@ -11,11 +11,15 @@ export default class DeclarationHostIndexView extends React.Component {
         }
     }
 
-    componentDidMount() {
+    updateHosts() {
         let hostsPromise = this.context.sdk.getHosts();
         hostsPromise.then((ret) => {
             this.setState({"hosts": ret.data});
         });
+    }
+
+    componentDidMount() {
+        this.updateHosts();
     }
 
     render() {
@@ -29,7 +33,20 @@ export default class DeclarationHostIndexView extends React.Component {
                     <td className="normalCell">{host.address}</td>
                     <td>{host.comment}</td>
                     <td className="normalCell">
-                        <button className="colorless button"><img src={this.context.static + "img/delete.svg"} alt="Delete" /></button>
+                        <button className="colorless button"
+                                onClick={(v) => {
+                                    this.context.sdk.deleteHost(host.id).then((res) => {
+                                        if(res.status === 200) {
+                                            toast.success("Host deleted")
+                                            this.updateHosts();
+                                        } else {
+                                            toast.error(res.message);
+                                        }
+                                    });
+                                    v.stopPropagation();
+                                }} >
+                            <img src={this.context.static + "img/delete.svg"} alt="Delete" />
+                        </button>
                     </td>
                 </tr>
             );
