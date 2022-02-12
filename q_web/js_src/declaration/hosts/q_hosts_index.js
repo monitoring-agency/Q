@@ -26,7 +26,10 @@ export default class DeclarationHostIndexView extends React.Component {
         let rows = [];
         for (let host of this.state.hosts) {
             rows.push(
-                <tr className="clickable" onClick={this.context.setPath.bind(null, {"path": ["declaration", "hosts", host.id]})}>
+                <tr className="clickable"
+                    onClick={
+                        this.context.setPath.bind(null, {"path": ["declaration", "hosts", host.id]})
+                    } >
                     <td className="smallCell"><label><input type="checkbox" /></label></td>
                     <td className="smallCell">{host.id}</td>
                     <td className="normalCell">{host.name}</td>
@@ -62,7 +65,11 @@ export default class DeclarationHostIndexView extends React.Component {
             table = <table>
                         <tbody>
                             <tr>
-                                <th><label><input type="checkbox" id="check_all" /></label></th>
+                                <th>
+                                    <label>
+                                        <input type="checkbox" />
+                                    </label>
+                                </th>
                                 <th>ID</th>
                                 <th>Name</th>
                                 <th>Address</th>
@@ -78,7 +85,12 @@ export default class DeclarationHostIndexView extends React.Component {
             <div className="declarationContent">
                 <div className="declarationHeader">
                     <div className="flexRow">
-                        <button className="buttonLink" onClick={this.context.setPath.bind(null, {"path": ["declaration", "hosts", "create"]})}>Add Host</button>
+                        <button className="buttonLink"
+                                onClick={
+                                    this.context.setPath.bind(null, {"path": ["declaration", "hosts", "create"]})
+                                } >
+                            Add Host
+                        </button>
                     </div>
                 </div>
                 <div className="declarationList">

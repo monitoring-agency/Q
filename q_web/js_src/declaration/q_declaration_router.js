@@ -1,16 +1,23 @@
 import {React} from "../react.js";
 import DeclarationHostsRouter from "./hosts/q_hosts_router.js";
+import DeclarationGlobalVariablesRouter from "./globalVariables/q_globalvariables_router.js";
 
-let e = React.createElement;
 
 export default class DeclarationRouter extends React.Component {
     render() {
         let path = this.props.path[0];
+        let slice = this.props.path.slice(1);
 
-         // Host declaration router
+        // Host declaration router
         if (path === "hosts") {
-            return e(DeclarationHostsRouter, {"path": this.props.path.slice(1)});
+            return <DeclarationHostsRouter path={slice} />
         }
+
+        // GlobalVariables router
+        if(path === "globalvariables") {
+            return <DeclarationGlobalVariablesRouter path={slice} />
+        }
+
         return null;
     }
 }
