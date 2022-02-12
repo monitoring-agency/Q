@@ -23,6 +23,12 @@ class SDK {
         }
     }
 
+    test() {
+        return fetch(this.baseURL + "test", {
+            method: "GET"
+        }).then((res) => res.json()["success"]);
+    }
+
     logout(success_callback) {
         fetch(this.baseURL + "logout", {
             method: "GET"
