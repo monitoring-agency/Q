@@ -7,6 +7,7 @@ urlpatterns = [
     # Various API
     path("authenticate", AuthenticateView.as_view()),
     path("logout", Logout.as_view()),
+    path("test", TestView.as_view()),
 
     # Model API
     path("checks", CheckView.as_view()),

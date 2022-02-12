@@ -5,6 +5,7 @@ import json
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
+from django.core.handlers.wsgi import WSGIRequest
 from django.db.models import Max
 from django.http import JsonResponse, HttpResponse, QueryDict
 from django.views import View
@@ -247,6 +248,11 @@ class AuthenticateView(View):
 
         login(request, user)
         return JsonResponse({"success": True, "message": "Logged in successfully"})
+
+
+class TestView(View):
+    def get(self, request, *args, **kwargs):
+        return JsonResponse({"success": request.user.is_authenticated})
 
 
 class Logout(LoginRequiredMixin, View):
