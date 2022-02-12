@@ -23,10 +23,12 @@ class SDK {
         }
     }
 
-    test() {
-        return fetch(this.baseURL + "test", {
+    async test() {
+        let req = await fetch(this.baseURL + "test", {
             method: "GET"
-        }).then((res) => res.json()["success"]);
+        });
+        let res = await req.json();
+        return await res.success;
     }
 
     logout(success_callback) {
