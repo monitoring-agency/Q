@@ -89,7 +89,7 @@ export default class MenuView extends React.PureComponent {
                                 </div>
                             </li>
                             <li>
-                                <div className="sidebarRow" onClick={this.props.menu_global_variables_action}>
+                                <div className="sidebarRow" onClick={this.context.setPath.bind(null, {"path": ["declaration", "globalvariables", "index"]})}>
                                     <img src={this.context.static + "img/variable.svg"} alt="Global variables" />
                                     <p>Global Variables</p>
                                 </div>
