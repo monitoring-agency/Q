@@ -40,7 +40,7 @@ export default class DeclarationHostIndexView extends React.Component {
                                 onClick={(v) => {
                                     this.context.sdk.deleteHost(host.id).then((res) => {
                                         if(res.status === 200) {
-                                            toast.success("Host deleted")
+                                            toast.success("Host deleted", {autoClose: 1000})
                                             this.updateHosts();
                                         } else {
                                             toast.error(res.message);

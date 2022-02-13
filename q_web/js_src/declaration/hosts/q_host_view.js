@@ -88,7 +88,7 @@ export default class DeclarationHostView extends React.Component {
             changes["variables"] = variables;
             this.context.sdk.updateHost(this.props["host_id"], changes).then((result) => {
                 if (result.success) {
-                    toast.success("Changes were successful");
+                    toast.success("Changes were successful", {autoClose: 1000});
                     this.context.setPath({"path": ["declaration", "hosts", "index"]});
                 } else {
                     toast.error(result.message);
@@ -99,7 +99,7 @@ export default class DeclarationHostView extends React.Component {
             obj["variables"] = variables;
             this.context.sdk.createHost(obj).then((result) => {
                 if(result.success) {
-                    toast.success("Host was created successfully");
+                    toast.success("Host was created successfully", {autoClose: 1000});
                     this.context.setPath({"path": ["declaration", "hosts", "index"]});
                 } else {
                     toast.error(result.message);
