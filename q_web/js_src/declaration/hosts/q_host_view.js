@@ -88,7 +88,7 @@ export default class DeclarationHostView extends React.Component {
             changes["variables"] = variables;
             this.context.sdk.updateHost(this.props["host_id"], changes).then((result) => {
                 if (result.success) {
-                    toast.success("Changes were successful", {autoClose: 1000});
+                    toast.success("Changes were successful", {autoClose: 1500});
                     this.context.setPath({"path": ["declaration", "hosts", "index"]});
                 } else {
                     toast.error(result.message);
@@ -99,7 +99,7 @@ export default class DeclarationHostView extends React.Component {
             obj["variables"] = variables;
             this.context.sdk.createHost(obj).then((result) => {
                 if(result.success) {
-                    toast.success("Host was created successfully", {autoClose: 1000});
+                    toast.success("Host was created successfully", {autoClose: 1500});
                     this.context.setPath({"path": ["declaration", "hosts", "index"]});
                 } else {
                     toast.error(result.message);
@@ -109,24 +109,28 @@ export default class DeclarationHostView extends React.Component {
     }
 
     componentWillMount() {
-        let promises = [];
-        promises.push(this.context.sdk.getProxies(["name"]));
-        promises.push(this.context.sdk.getChecks(["name"]));
-        promises.push(this.context.sdk.getHostTemplates(["name"]));
-        promises.push(this.context.sdk.getContacts(["name"]));
-        promises.push(this.context.sdk.getContactGroups(["name"]));
-        promises.push(this.context.sdk.getTimePeriods(["name"]));
         if("host_id" in this.props) {
-            promises.push(this.context.sdk.getHost(this.props.host_id));
-        }
-        Promise.all(promises).then((values) => {
-            let proxiesData = values[0].data;
-            let checksData = values[1].data;
-            let hostTemplatesData = values[2].data;
-            let contactsData = values[3].data;
-            let contactGroupsData = values[4].data;
-            let timePeriodsData = values[5].data;
-            let host = {
+            this.context.sdk.getHost(this.props.host_id).then((v) => {
+                if(v.status === 200) {
+                    let host = v.data;
+                    let variables = {};
+                    let counter = 1;
+                    for(let k of Object.keys(host.variables)) {
+                        variables[counter] = {
+                            "faulty": false,
+                            "key": k,
+                            "value": host.variables[k]
+                        };
+                        counter++;
+                    }
+                    host["variables"] = variables;
+                    this.setState({"host": host})
+                } else {
+                    console.error(v);
+                }
+            });
+        } else {
+            this.setState({
                 "host": {
                     "name": "",
                     "address": "",
@@ -141,69 +145,68 @@ export default class DeclarationHostView extends React.Component {
                     "variables": {},
                     "disabled": false
                 }
-            };
-            if(values.length === 7) {
-                if(values[6].status === 200) {
-                    host = {
-                        "host": values[6].data
-                    };
-                    let variables = {};
-                    let counter = 1;
-                    for(let k of Object.keys(host.host.variables)) {
-                        variables[counter] = {
-                            "faulty": false,
-                            "key": k,
-                            "value": host.host.variables[k]
-                        };
-                        counter++;
-                    }
-                    host["host"]["variables"] = variables;
-                } else {
-                    console.error(values[6]);
-                }
-            }
-            let proxies = [];
-            let checks = [];
-            let timePeriods = [];
-            let contacts = [];
-            let contactGroups = [];
-            let hostTemplates = [];
+            });
+        }
 
+        this.context.sdk.getProxies(["name"]).then((v) => {
+            let proxiesData = v.data;
+            let proxies = [];
+            let selected = this.state.selected;
             for(let proxy of proxiesData) {
                 proxies.push({value: proxy.id, label: proxy.name});
             }
+            selected.proxies = proxies;
+            this.setState({"selected": selected, "proxies": proxiesData});
+        });
+        this.context.sdk.getChecks(["name"]).then((v) => {
+            let checksData = v.data;
+            let checks = [];
+            let selected = this.state.selected;
             for(let check of checksData) {
                 checks.push({value: check.id, label: check.name});
             }
-            for(let timePeriod of timePeriodsData) {
-                timePeriods.push({value: timePeriod.id, label: timePeriod.name});
-            }
-            for(let contact of contactsData) {
-                contacts.push({value: contact.id, label: contact.name});
-            }
-            for(let contactGroup of contactGroupsData) {
-                contactGroups.push({value: contactGroup.id, label: contactGroup.name});
-            }
+            selected.checks = checks;
+            this.setState({"selected": selected, "checks": checksData});
+        });
+        this.context.sdk.getHostTemplates(["name"]).then((v) => {
+            let hostTemplatesData = v.data;
+            let hostTemplates = [];
+            let selected = this.state.selected;
             for(let hostTemplate of hostTemplatesData) {
                 hostTemplates.push({value: hostTemplate.id, label: hostTemplate.name});
             }
-
-            this.setState({
-                "hostTemplates": hostTemplatesData,
-                "checks": checksData,
-                "timePeriods": timePeriodsData,
-                "contacts": contactsData,
-                "contactGroups": contactGroupsData,
-                "selected": {
-                    "proxies": proxies,
-                    "checks": checks,
-                    "hostTemplates": hostTemplates,
-                    "contacts": contacts,
-                    "contactGroups": contactGroups,
-                    "timePeriods": timePeriods
-                },
-                ...host
-            });
+            selected.hostTemplates = hostTemplates;
+            this.setState({"selected": selected, "hostTemplates": hostTemplatesData});
+        });
+        this.context.sdk.getContacts(["name"]).then((v) => {
+            let contactsData = v.data;
+            let contacts = [];
+            let selected = this.state.selected;
+            for(let contact of contactsData) {
+                contacts.push({value: contact.id, label: contact.name});
+            }
+            selected.contacts = contacts;
+            this.setState({"selected": selected, "contacts": contactsData});
+        });
+        this.context.sdk.getContactGroups(["name"]).then((v) => {
+            let contactGroupsData = v.data;
+            let contactGroups = [];
+            let selected = this.state.selected;
+            for(let contactGroup of contactGroupsData) {
+                contactGroups.push({value: contactGroup.id, label: contactGroup.name});
+            }
+            selected.contactGroups = contactGroups;
+            this.setState({"selected": selected, "contactGroups": contactGroupsData});
+        });
+        this.context.sdk.getTimePeriods(["name"]).then((v) => {
+            let timePeriodsData = v.data;
+            let timePeriods = [];
+            let selected = this.state.selected;
+            for(let timePeriod of timePeriodsData) {
+                timePeriods.push({value: timePeriod.id, label: timePeriod.name});
+            }
+            selected.timePeriods = timePeriods;
+            this.setState({"selected": selected, "timePeriods": timePeriodsData});
         });
     }
 
