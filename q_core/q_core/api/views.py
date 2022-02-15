@@ -5,15 +5,14 @@ import json
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
-from django.core.handlers.wsgi import WSGIRequest
 from django.db.models import Max
 from django.http import JsonResponse, HttpResponse, QueryDict
 from django.views import View
 
-from api.models import AccountModel, ACLModel
-from description.description import export
-from description.models import Check, Host, Metric, TimePeriod, SchedulingInterval, GenericKVP, Label, Day, \
-    Period, DayTimePeriod, GlobalVariable, Contact, ContactGroup, MetricTemplate, HostTemplate, Proxy, OrderedListItem
+from api.models import AccountModel, ACLModel, Check, Host, Metric, TimePeriod, SchedulingInterval, GenericKVP, Label, \
+    Day, Period, DayTimePeriod, GlobalVariable, Contact, ContactGroup, MetricTemplate, HostTemplate, Proxy, \
+    OrderedListItem
+from api.description import export
 
 
 def get_variable_list(parameter):

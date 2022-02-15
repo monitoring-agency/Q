@@ -7,8 +7,8 @@ from typing import Union
 import httpx
 from django.contrib.contenttypes.models import ContentType
 
-from description.models import Host, Metric, Check, GlobalVariable, GenericKVP, Label, TimePeriod, SchedulingInterval, \
-    HostTemplate, MetricTemplate, Proxy
+from api.models import Host, HostTemplate, MetricTemplate, Metric, Proxy, Label, TimePeriod, SchedulingInterval, \
+    GlobalVariable, Check, GenericKVP
 from proxy.models import ScheduledObject
 
 logger = logging.getLogger("export")

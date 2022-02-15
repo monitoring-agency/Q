@@ -9,7 +9,7 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
-from description.models import Proxy, Host, Metric
+from api.models import Proxy, Host, Metric
 from proxy.models import CheckResult, CheckState, DataSet, ScheduledObject
 
 logger = logging.getLogger(__name__)
