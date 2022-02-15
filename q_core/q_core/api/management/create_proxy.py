@@ -1,7 +1,7 @@
 import secrets
 import string
 
-from description.models import Proxy
+from api.models import Proxy
 
 
 def create_proxy():

@@ -1,4 +1,4 @@
-from description.models import Day, Period, DayTimePeriod, TimePeriod
+from api.models import Day, Period, DayTimePeriod, TimePeriod
 
 days = [
         "Monday",
