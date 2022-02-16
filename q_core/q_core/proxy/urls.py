@@ -4,5 +4,5 @@ from proxy.views import *
 
 
 urlpatterns = [
-    path("submit", SubmitView.as_view()),
+    #path("submit", SubmitView.as_view()),
 ]

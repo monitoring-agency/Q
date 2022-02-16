@@ -23,8 +23,8 @@ class CheckAdmin(admin.ModelAdmin):
     list_display = ("__str__", "name")
 
 
-@admin.register(Metric)
-class MetricAdmin(admin.ModelAdmin):
+@admin.register(Observable)
+class ObservableAdmin(admin.ModelAdmin):
     list_display = ("linked_host", "__str__",)
 
 
@@ -48,8 +48,8 @@ class HostAdmin(admin.ModelAdmin):
     list_display = ("__str__",)
 
 
-@admin.register(MetricTemplate)
-class MetricTemplateAdmin(admin.ModelAdmin):
+@admin.register(ObservableTemplate)
+class ObservableTemplateAdmin(admin.ModelAdmin):
     list_display = ("__str__",)
 
 

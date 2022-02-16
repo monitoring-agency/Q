@@ -7,9 +7,8 @@ from typing import Union
 import httpx
 from django.contrib.contenttypes.models import ContentType
 
-from api.models import Host, HostTemplate, MetricTemplate, Metric, Proxy, Label, TimePeriod, SchedulingInterval, \
-    GlobalVariable, Check, GenericKVP
-from proxy.models import ScheduledObject
+from api.models import Host, HostTemplate, ObservableTemplate, Observable, Proxy, Label, TimePeriod, \
+    SchedulingInterval, GlobalVariable, Check, GenericKVP
 
 logger = logging.getLogger("export")
 
@@ -18,9 +17,9 @@ def generate_declaration(proxy_id_list):
     """This function generates the description to be forwarded to the specific proxies"""
     # ContentTypes
     chost = ContentType.objects.get_for_model(Host).id
-    cmetric = ContentType.objects.get_for_model(Metric).id
+    cobservable = ContentType.objects.get_for_model(Observable).id
     chost_template = ContentType.objects.get_for_model(HostTemplate).id
-    cmetric_template = ContentType.objects.get_for_model(MetricTemplate).id
+    coberservable_template = ContentType.objects.get_for_model(ObservableTemplate).id
 
     # Prefetched data
     proxies = [x for x in Proxy.objects.filter(id__in=proxy_id_list, disabled=False)]
@@ -28,12 +27,12 @@ def generate_declaration(proxy_id_list):
     host_templates = {x.id: x for x in HostTemplate.objects.all()}
     host_template_relations = {}
     host_template_recursions = {}
-    metrics = [x for x in Metric.objects.filter(
+    observables = [x for x in Observable.objects.filter(
         disabled=False, linked_host__disabled=False, linked_proxy_id__in=proxy_id_list
     )]
-    metric_templates = {x.id: x for x in MetricTemplate.objects.all()}
-    metric_template_relations = {}
-    metric_template_recursions = {}
+    observable_templates = {x.id: x for x in ObservableTemplate.objects.all()}
+    observable_template_relations = {}
+    observable_template_recursions = {}
     label = {x.id: x.label for x in Label.objects.all()}
     kvp = {}
     time_periods = {x.id: x.to_dict() for x in TimePeriod.objects.all()}
@@ -43,7 +42,7 @@ def generate_declaration(proxy_id_list):
     } for x in GlobalVariable.objects.all()] if len(GlobalVariable.objects.all()) > 0 else [{}]
     checks = {
         x.id: x for x in Check.objects.filter(id__in=[
-            y.linked_check_id for y in [*metrics, *hosts, *metric_templates.values(), *host_templates.values()]
+            y.linked_check_id for y in [*observables, *hosts, *observable_templates.values(), *host_templates.values()]
         ])
     }
 
@@ -58,19 +57,19 @@ def generate_declaration(proxy_id_list):
             host_template_relations[(x[0], chost_template)].append(x[1])
         else:
             host_template_relations[(x[0], chost_template)] = [x[1]]
-    for x in Metric.metric_templates.through.objects.values_list('metric_id', 'metrictemplate_id'):
-        if (x[0], cmetric) in metric_template_relations:
-            metric_template_relations[(x[0], cmetric)].append(x[1])
+    for x in Observable.observable_templates.through.objects.values_list('metric_id', 'metrictemplate_id'):
+        if (x[0], cobservable) in observable_template_relations:
+            observable_template_relations[(x[0], cobservable)].append(x[1])
         else:
-            metric_template_relations[(x[0], cmetric)] = [x[1]]
-    for x in MetricTemplate.metric_templates.through.objects.values_list('from_metrictemplate_id',
-                                                                         'to_metrictemplate_id'):
-        if (x[0], cmetric_template) in metric_template_relations:
-            metric_template_relations[(x[0], cmetric_template)].append(x[1])
+            observable_template_relations[(x[0], cobservable)] = [x[1]]
+    for x in ObservableTemplate.observable_templates.through.objects.values_list('from_observabletemplate_id',
+                                                                                 'to_observabletemplate_id'):
+        if (x[0], coberservable_template) in observable_template_relations:
+            observable_template_relations[(x[0], coberservable_template)].append(x[1])
         else:
-            metric_template_relations[(x[0], cmetric_template)] = [x[1]]
+            observable_template_relations[(x[0], coberservable_template)] = [x[1]]
 
-    for x in GenericKVP.objects.filter(object_id__in=[x.id for x in [*metrics, *hosts]]):
+    for x in GenericKVP.objects.filter(object_id__in=[x.id for x in [*observables, *hosts]]):
         if (x.object_id, x.content_type_id) in kvp:
             kvp[(x.object_id, x.content_type_id)].update({label[x.key_id]: label[x.value_id]})
         else:
@@ -90,14 +89,14 @@ def generate_declaration(proxy_id_list):
             if (obj.id, content_type_id) in host_template_relations:
                 for x in host_template_relations[(obj.id, content_type_id)]:
                     return retrieve_variables(host_templates[x], content_type_id, var_list)
-        if cmetric == content_type_id:
-            if (obj.id, content_type_id) in metric_template_relations:
-                for x in metric_template_relations[(obj.id, content_type_id)]:
-                    return retrieve_variables(metric_templates[x], cmetric_template, var_list)
-        if cmetric_template == content_type_id:
-            if (obj.id, content_type_id) in metric_template_relations:
-                for x in metric_template_relations[(obj.id, content_type_id)]:
-                    return retrieve_variables(metric_templates[x], content_type_id, var_list)
+        if cobservable == content_type_id:
+            if (obj.id, content_type_id) in observable_template_relations:
+                for x in observable_template_relations[(obj.id, content_type_id)]:
+                    return retrieve_variables(observable_templates[x], coberservable_template, var_list)
+        if coberservable_template == content_type_id:
+            if (obj.id, content_type_id) in observable_template_relations:
+                for x in observable_template_relations[(obj.id, content_type_id)]:
+                    return retrieve_variables(observable_templates[x], content_type_id, var_list)
         return dict(ChainMap(*var_list[::-1]))
 
     def retrieve_check(obj, content_type_id, var_list):
@@ -111,7 +110,7 @@ def generate_declaration(proxy_id_list):
                 return ""
 
     def retrieve_attr(
-            obj: Union[Host, HostTemplate, Metric, MetricTemplate], attr_name, attr_default, content_type_id,
+            obj: Union[Host, HostTemplate, ObservableTemplate, Observable], attr_name, attr_default, content_type_id,
             attr_dict=None, attr_is_id=False
     ):
         if obj.__getattribute__(attr_name):
@@ -135,19 +134,19 @@ def generate_declaration(proxy_id_list):
                     )
             else:
                 return attr_default
-        if content_type_id == cmetric:
-            if (obj.id, cmetric) in metric_template_relations:
-                for mt in metric_template_relations[(obj.id, cmetric)]:
+        if content_type_id == cobservable:
+            if (obj.id, cobservable) in observable_template_relations:
+                for mt in observable_template_relations[(obj.id, cobservable)]:
                     return retrieve_attr(
-                        metric_templates[mt], attr_name, attr_default, cmetric_template, attr_dict, attr_is_id
+                        observable_templates[mt], attr_name, attr_default, coberservable_template, attr_dict, attr_is_id
                     )
             else:
                 return attr_default
-        elif content_type_id == cmetric_template:
-            if (obj.id, cmetric_template) in metric_template_relations:
-                for mt in metric_template_relations[(obj.id, cmetric_template)]:
+        elif content_type_id == coberservable_template:
+            if (obj.id, coberservable_template) in observable_template_relations:
+                for mt in observable_template_relations[(obj.id, coberservable_template)]:
                     return retrieve_attr(
-                        metric_templates[mt], attr_name, attr_default, content_type_id, attr_dict, attr_is_id
+                        observable_templates[mt], attr_name, attr_default, content_type_id, attr_dict, attr_is_id
                     )
             else:
                 return attr_default
@@ -169,17 +168,31 @@ def generate_declaration(proxy_id_list):
             )
         }
 
-    def retrieve_metrictemplate(metric_template_id) -> dict:
+    def retrieve_observable_template(observable_template_id) -> dict:
         return {
             "linked_check": retrieve_attr(
-                metric_templates[metric_template_id], "linked_check_id", "", cmetric_template, checks, True
+                observable_templates[observable_template_id],
+                "linked_check_id",
+                "",
+                coberservable_template,
+                checks,
+                True
             ),
             "scheduling_interval": retrieve_attr(
-                metric_templates[metric_template_id], "scheduling_interval_id", "", cmetric_template,
-                scheduling_intervals, True
+                observable_templates[observable_template_id],
+                "scheduling_interval_id",
+                "",
+                coberservable_template,
+                scheduling_intervals,
+                True
             ),
             "scheduling_period": retrieve_attr(
-                metric_templates[metric_template_id], "scheduling_period_id", "", cmetric_template, time_periods, True
+                observable_templates[observable_template_id],
+                "scheduling_period_id",
+                "",
+                coberservable_template,
+                time_periods,
+                True
             )
         }
 
@@ -187,8 +200,8 @@ def generate_declaration(proxy_id_list):
     for x in host_templates:
         host_template_recursions[x] = retrieve_hosttemplate(host_templates[x].id)
     # Generate metrictemplate recursions
-    for x in metric_templates:
-        metric_template_recursions[x] = retrieve_metrictemplate(metric_templates[x].id)
+    for x in observable_templates:
+        observable_template_recursions[x] = retrieve_observable_template(observable_templates[x].id)
 
     # Has to have the following structure:
     """
@@ -202,7 +215,7 @@ def generate_declaration(proxy_id_list):
             [
             
             ],
-            metrics:
+            observables:
             [
             
             ],
@@ -220,7 +233,7 @@ def generate_declaration(proxy_id_list):
             "port": proxy.port,
             "proxy_secret": proxy.secret,
             "hosts": [],
-            "metrics": [],
+            "observables": [],
             "scheduling_periods": {}
         }
 
@@ -260,13 +273,13 @@ def generate_declaration(proxy_id_list):
                 declaration[host.linked_proxy_id]["scheduling_periods"][h["scheduling_period"]["id"]] = h[
                     "scheduling_period"]
 
-    for metric in metrics:
+    for metric in observables:
         m = {"linked_check": ""}
         export_metric = {"id": metric.id, "linked_check": "", "scheduling_period": "", "scheduling_interval": ""}
         # Get reverse attributes
-        if (metric.id, cmetric) in metric_template_relations:
-            for x in metric_template_relations[(metric.id, cmetric)]:
-                m.update(retrieve_metrictemplate(x))
+        if (metric.id, cobservable) in observable_template_relations:
+            for x in observable_template_relations[(metric.id, cobservable)]:
+                m.update(retrieve_observable_template(x))
 
         # Check metric attributes
         if metric.scheduling_interval_id:
@@ -277,7 +290,7 @@ def generate_declaration(proxy_id_list):
             m["linked_check"] = checks[metric.linked_check_id]
 
         # Set metric vars
-        metric_vars = dict(ChainMap(host_vars[metric.linked_host_id], retrieve_variables(metric, cmetric, [])))
+        metric_vars = dict(ChainMap(host_vars[metric.linked_host_id], retrieve_variables(metric, cobservable, [])))
 
         # Fill export dict
         if m["linked_check"] and m["scheduling_period"] and m["scheduling_interval"]:
@@ -290,12 +303,12 @@ def generate_declaration(proxy_id_list):
                     "scheduling_period"]
     return declaration
 
-
+'''
 def generate_scheduled_objects(declaration):
     """This method is used to create instances of scheduled objects if not existent yet"""
     creation = []
     host_content_type = ContentType.objects.get_for_model(Host)
-    metric_content_type = ContentType.objects.get_for_model(Metric)
+    metric_content_type = ContentType.objects.get_for_model(Observable)
     existing_hosts = [x.object_id for x in ScheduledObject.objects.filter(content_type=host_content_type)]
     existing_metrics = [x.object_id for x in ScheduledObject.objects.filter(content_type=metric_content_type)]
     intermediate = []
@@ -317,6 +330,7 @@ def generate_scheduled_objects(declaration):
         for x in intermediate if x["id"] not in existing_metrics
     ]
     ScheduledObject.objects.bulk_create(creation)
+'''
 
 
 def export_to_proxy(declaration: dict):
@@ -342,7 +356,7 @@ def export_to_proxy(declaration: dict):
 def export(proxy_id_list: list):
     t = time.time()
     declaration = generate_declaration(proxy_id_list)
-    generate_scheduled_objects(declaration)
+    #generate_scheduled_objects(declaration)
     try:
         status = export_to_proxy(declaration)
     except FileNotFoundError:

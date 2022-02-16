@@ -1,3 +1,5 @@
+from typing import List
+
 from django.contrib.auth.models import User
 import base64
 import json
@@ -15,11 +17,13 @@ class GlobalVariable(models.Model):
     variable = GenericRelation("GenericKVP")
     comment = CharField(default="", max_length=1024, null=True, blank=True)
 
-    def to_dict(self):
+    def to_dict(self, values: List = None):
+        values = values if values is not None else ["comment"]
         kvp = {
             "id": self.id,
-            "comment": self.comment if self.comment else ""
         }
+        if "comment" in values:
+            kvp["comment"] = self.comment if self.comment else ""
         for x, y in self.variable.first().to_dict().items():
             kvp.update({
                 "key": x,
@@ -88,18 +92,23 @@ class TimePeriod(models.Model):
     def __str__(self):
         return self.name
 
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "comment": self.comment if self.comment else "",
-            "time_periods": {
+    def to_dict(self, values: List = None):
+        values = values if values is not None else ["name", "comment", "time_periods"]
+        ret = {
+            "id": self.id
+        }
+        if "name" in values:
+            ret["name"] = self.name
+        if "comment" in values:
+            ret["comment"] = self.comment
+        if "time_periods" in values:
+            ret["time_periods"] = {
                 x.day.name: [
                     {"start_time": y.start_time, "stop_time": y.stop_time}
                     for y in x.periods.all()
                 ] for x in self.time_periods.all()
             }
-        }
+        return ret
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -117,13 +126,18 @@ class Check(models.Model):
     def __str__(self):
         return self.name
 
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "cmd": self.cmd if self.cmd else "",
-            "comment": self.comment if self.comment else "",
+    def to_dict(self, values: List = None):
+        values = values if values is not None else ["name", "cmd", "comment"]
+        ret = {
+            "id": self.id
         }
+        if "name" in values:
+            ret["name"] = self.name
+        if "cmd" in values:
+            ret["cmd"] = self.cmd
+        if "comment" in values:
+            ret["comment"] = self.comment
+        return ret
 
     def to_export(self, kvp: dict):
         if self.cmd:
@@ -164,18 +178,35 @@ class Contact(models.Model):
     def __str__(self):
         return self.name
 
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "mail": self.mail if self.mail else "",
-            "linked_host_notifications": [x.id for x in self.linked_host_notifications.all()] if self.linked_metric_notifications else "",
-            "linked_host_notification_period": self.linked_host_notification_period_id if self.linked_host_notification_period else "",
-            "linked_metric_notifications": [x.id for x in self.linked_metric_notifications.all()] if self.linked_metric_notifications else "",
-            "linked_metric_notification_period": self.linked_metric_notification_period_id if self.linked_metric_notification_period else "",
-            "comment": self.comment if self.comment else "",
-            "variables": dict(ChainMap(*[x.to_dict() for x in self.variables.all()][::-1]))
+    def to_dict(self, values: List = None):
+        values = values if values is not None else [
+            "name", "mail", "linked_host_notifications", "linked_host_notification_period",
+            "linked_metric_notifications", "linked_metric_notification_period", "comment", "variables"
+        ]
+        ret = {
+            "id": self.id
         }
+        if "name" in values:
+            ret["name"] = self.name
+        if "mail" in values:
+            ret["mail"] = self.mail if self.mail else ""
+        if "linked_host_notifications" in values:
+            ret["linked_host_notifications"] = [
+               x.id for x in self.linked_host_notifications.all().only("id")
+            ] if self.linked_host_notifications else ""
+        if "linked_host_notification_period" in values:
+            ret["linked_host_notification_period"] = self.linked_host_notification_period_id if self.linked_host_notifications else ""
+        if "linked_metric_notifications" in values:
+            ret["linked_metric_notifications"] = [
+                x.id for x in self.linked_metric_notifications.all().only("id")
+            ] if self.linked_metric_notifications else ""
+        if "linked_metric_notification_period" in values:
+            ret["linked_metric_notification_period"] = self.linked_metric_notification_period_id if self.linked_metric_notification_period else ""
+        if "comment" in values:
+            ret["comment"] = self.comment if self.comment else ""
+        if "variables" in values:
+            ret["variables"] = dict(ChainMap(*[x.to_dict() for x in self.variables.all()][::-1]))
+        return ret
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -194,13 +225,18 @@ class ContactGroup(models.Model):
     def __str__(self):
         return self.name
 
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "comment": self.comment if self.comment else "",
-            "linked_contacts": [x.id for x in self.linked_contacts.all()]
+    def to_dict(self, values: List = None):
+        values = values if values is not None else ["name", "comment", "linked_contacts"]
+        ret = {
+            "id": self.id
         }
+        if "name" in values:
+            ret["name"] = self.name
+        if "comment" in values:
+            ret["comment"] = self.comment if self.comment else ""
+        if "linked_contacts" in values:
+            ret["linked_contacts"] = [x.id for x in self.linked_contacts.all().only("id")]
+        return ret
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -225,22 +261,36 @@ class Proxy(models.Model):
     def __str__(self):
         return self.name
 
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "address": self.address,
-            "port": self.port,
-            "secret": self.secret,
-            "web_secret": self.web_secret,
-            "web_address": self.web_address,
-            "web_port": self.web_port,
-            "disabled": self.disabled,
-            "comment": self.comment if self.comment else ""
+    def to_dict(self, values: List = None):
+        values = values if values is not None else [
+            "name", "address", "port", "web_address", "web_port", "disabled", "comment"
+        ]
+        ret = {
+            "id": self.id
         }
+        if "name" in values:
+            ret["name"] = self.name
+        if "address" in values:
+            ret["address"] = self.address
+        if "port" in values:
+            ret["port"] = self.port
+        if "web_address" in values:
+            ret["web_address"] = self.web_address
+        if "web_port" in values:
+            ret["web_port"] = self.web_port
+        if "disabled" in values:
+            ret["disabled"] = self.disabled
+        if "comment" in values:
+            ret["comment"] = self.comment if self.comment else ""
+        return ret
 
     def to_base64(self):
-        return base64.b64encode(json.dumps(self.to_dict()).encode("utf-8")).decode("utf-8")
+        return base64.b64encode(json.dumps({
+            "web_address": self.web_address,
+            "web_port": self.web_port,
+            "secret": self.secret,
+            "web_secret": self.web_secret
+        }).encode("utf-8")).decode("utf-8")
 
 
 class OrderedListItem(models.Model):
@@ -276,23 +326,39 @@ class HostTemplate(models.Model):
     def __str__(self):
         return self.name
 
-    def to_dict(self):
-        hts = [(x.object_id, x.index) for x in self.host_templates.all()]
-        hts.sort(key=lambda x: x[1])
-        return {
-            "id": self.id,
-            "name": self.name,
-            "address": self.address if self.address else "",
-            "linked_check": self.linked_check_id if self.linked_check else "",
-            "host_templates": [x[0] for x in hts],
-            "linked_contacts": [x.id for x in self.linked_contacts.all()],
-            "linked_contact_groups": [x.id for x in self.linked_contact_groups.all()],
-            "scheduling_interval": self.scheduling_interval.interval if self.scheduling_interval else "",
-            "scheduling_period": self.scheduling_period_id if self.scheduling_period else "",
-            "notification_period": self.notification_period_id if self.notification_period else "",
-            "comment": self.comment if self.comment else "",
-            "variables": dict(ChainMap(*[x.to_dict() for x in self.variables.all()][::-1]))
+    def to_dict(self, values: List = None):
+        values = values if values is not None else [
+            "name", "address", "linked_check", "host_templates", "linked_contacts", "linked_contact_groups",
+            "scheduling_interval", "scheduling_period", "notification_period", "comment", "variables"
+        ]
+        ret = {
+            "id": self.id
         }
+        if "name" in values:
+            ret["name"] = self.name
+        if "address" in values:
+            ret["address"] = self.address if self.address else ""
+        if "linked_check" in values:
+            ret["linked_check"] = self.linked_check_id if self.linked_check else ""
+        if "host_templates" in values:
+            hts = [(x.object_id, x.index) for x in self.host_templates.all()]
+            hts.sort(key=lambda x: x[1])
+            ret["host_templates"] = [x[0] for x in hts]
+        if "linked_contacts" in values:
+            ret["linked_contacts"] = [x.id for x in self.linked_contacts.all().only("id")]
+        if "linked_contact_groups" in values:
+            ret["linked_contact_groups"] = [x.id for x in self.linked_contact_groups.all().only("id")]
+        if "scheduling_interval" in values:
+            ret["scheduling_interval"] = self.scheduling_interval.interval if self.scheduling_interval else ""
+        if "scheduling_period" in values:
+            ret["scheduling_period"] = self.scheduling_period_id if self.scheduling_period else ""
+        if "notification_period" in values:
+            ret["notification_period"] = self.notification_period_id if self.notification_period else ""
+        if "comment" in values:
+            ret["comment"] = self.comment if self.comment else ""
+        if "variables" in values:
+            ret["variables"] = dict(ChainMap(*[x.to_dict() for x in self.variables.all()][::-1]))
+        return ret
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -306,7 +372,6 @@ class Host(models.Model):
     """This class represents a host"""
     name = CharField(max_length=255, unique=True)
     address = CharField(default="", max_length=255, blank=True, null=True)
-    "Variable: $host_address$"
     linked_proxy = ForeignKey(Proxy, on_delete=models.CASCADE)
     linked_check = ForeignKey(Check, on_delete=models.DO_NOTHING, blank=True, null=True)
     disabled = BooleanField(default=False, blank=True, null=True)
@@ -330,25 +395,44 @@ class Host(models.Model):
     def __str__(self):
         return self.name
 
-    def to_dict(self):
-        hts = [(x.object_id, x.index) for x in self.host_templates.all()]
-        hts.sort(key=lambda x: x[1])
-        return {
-            "id": self.id,
-            "name": self.name,
-            "address": self.address if self.address else "",
-            "linked_proxy": self.linked_proxy_id,
-            "linked_check": self.linked_check_id if self.linked_check else "",
-            "disabled": self.disabled,
-            "host_templates": [x[0] for x in hts],
-            "linked_contacts": [x.id for x in self.linked_contacts.all()],
-            "linked_contact_groups": [x.id for x in self.linked_contact_groups.all()],
-            "scheduling_interval": self.scheduling_interval.interval if self.scheduling_interval else "",
-            "scheduling_period": self.scheduling_period_id if self.scheduling_period else "",
-            "notification_period": self.notification_period_id if self.notification_period else "",
-            "comment": self.comment if self.comment else "",
-            "variables": dict(ChainMap(*[x.to_dict() for x in self.variables.all()][::-1]))
+    def to_dict(self, values: List = None):
+        values = values if values is not None else [
+            "name", "address", "linked_proxy", "linked_check", "disabled", "host_templates", "linked_contacts",
+            "linked_contact_groups", "scheduling_interval", "scheduling_period", "notification_period", "comment",
+            "variables"
+        ]
+        ret = {
+            "id": self.id
         }
+        if "name" in values:
+            ret["name"] = self.name
+        if "address" in values:
+            ret["address"] = self.address if self.address else ""
+        if "linked_proxy" in values:
+            ret["linked_proxy"] = self.linked_proxy_id
+        if "linked_check" in values:
+            ret["linked_check"] = self.linked_check_id if self.linked_check else ""
+        if "disabled" in values:
+            ret["disabled"] = self.disabled
+        if "host_templates" in values:
+            hts = [(x.object_id, x.index) for x in self.host_templates.all()]
+            hts.sort(key=lambda x: x[1])
+            ret["host_templates"] = [x[0] for x in hts]
+        if "linked_contacts" in values:
+            ret["linked_contacts"] = [x.id for x in self.linked_contacts.all().only("id")]
+        if "linked_contact_groups" in values:
+            ret["linked_contact_groups"] = [x.id for x in self.linked_contact_groups.all().only("id")]
+        if "scheduling_interval" in values:
+            ret["scheduling_interval"] = self.scheduling_interval.interval if self.scheduling_interval else ""
+        if "scheduling_period" in values:
+            ret["scheduling_period"] = self.scheduling_period_id if self.scheduling_period else ""
+        if "notification_period" in values:
+            ret["notification_period"] = self.notification_period_id if self.notification_period else ""
+        if "comment" in values:
+            ret["comment"] = self.comment if self.comment else ""
+        if "variables" in values:
+            ret["variables"] = dict(ChainMap(*[x.to_dict() for x in self.variables.all()][::-1]))
+        return ret
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -358,23 +442,23 @@ class Host(models.Model):
                                update_fields=update_fields)
 
 
-class MetricTemplate(models.Model):
-    """This class represents a template for a metric"""
+class ObservableTemplate(models.Model):
+    """This class represents a template for an observable"""
     name = CharField(default="", max_length=255, unique=True)
     linked_check = ForeignKey(Check, on_delete=models.DO_NOTHING, blank=True, null=True)
-    metric_templates = ManyToManyField(OrderedListItem, blank=True)
+    observable_templates = ManyToManyField(OrderedListItem, blank=True)
     linked_contacts = ManyToManyField(Contact, blank=True)
     linked_contact_groups = ManyToManyField(ContactGroup, blank=True)
     scheduling_interval = ForeignKey(SchedulingInterval, on_delete=models.DO_NOTHING, blank=True, null=True)
     scheduling_period = ForeignKey(
         TimePeriod, on_delete=models.DO_NOTHING,
         blank=True, null=True,
-        related_name="scheduling_mt"
+        related_name="scheduling_ot"
     )
     notification_period = ForeignKey(
         TimePeriod, on_delete=models.DO_NOTHING,
         blank=True, null=True,
-        related_name="notification_mt"
+        related_name="notification_ot"
     )
     comment = CharField(default="", max_length=1024, blank=True, null=True)
     variables = GenericRelation("GenericKVP")
@@ -382,39 +466,54 @@ class MetricTemplate(models.Model):
     def __str__(self):
         return self.name
 
-    def to_dict(self):
-        mts = [(x.object_id, x.index) for x in self.metric_templates.all()]
-        mts.sort(key=lambda x: x[1])
-        return {
-            "id": self.id,
-            "name": self.name,
-            "linked_check": self.linked_check_id if self.linked_check else "",
-            "metric_templates": [x[0] for x in mts],
-            "linked_contacts": [x.id for x in self.linked_contacts.all()],
-            "linked_contact_groups": [x.id for x in self.linked_contact_groups.all()],
-            "scheduling_interval": self.scheduling_interval.interval if self.scheduling_interval else "",
-            "scheduling_period": self.scheduling_period_id if self.scheduling_period else "",
-            "notification_period": self.notification_period_id if self.notification_period else "",
-            "comment": self.comment if self.comment else "",
-            "variables": dict(ChainMap(*[x.to_dict() for x in self.variables.all()][::-1]))
+    def to_dict(self, values: List = None):
+        values = values if values is not None else [
+            "name", "linked_check", "observable_templates", "linked_contacts", "linked_contact_groups",
+            "scheduling_interval", "scheduling_period", "notification_period", "comment", "variables"
+        ]
+        ret = {
+            "id": self.id
         }
+        if "name" in values:
+            ret["name"] = self.name
+        if "linked_check" in values:
+            ret["linked_check"] = self.linked_check_id if self.linked_check else ""
+        if "observable_templates" in values:
+            ots = [(x.object_id, x.index) for x in self.observable_templates.all()]
+            ots.sort(key=lambda x: x[1])
+            ret["observable_templates"] = [x[0] for x in ots]
+        if "linked_contacts" in values:
+            ret["linked_contacts"] = [x.id for x in self.linked_contacts.all().only("id")]
+        if "linked_contact_groups" in values:
+            ret["linked_contact_groups"] = [x.id for x in self.linked_contact_groups.all().only("id")]
+        if "scheduling_interval" in values:
+            ret["scheduling_interval"] = self.scheduling_interval.interval if self.scheduling_interval else ""
+        if "scheduling_period" in values:
+            ret["scheduling_period"] = self.scheduling_period_id if self.scheduling_period else ""
+        if "notification_period" in values:
+            ret["notification_period"] = self.notification_period_id if self.notification_period else ""
+        if "comment" in values:
+            ret["comment"] = self.comment if self.comment else ""
+        if "variables" in values:
+            ret["variables"] = dict(ChainMap(*[x.to_dict() for x in self.variables.all()][::-1]))
+        return ret
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
         if self.name == "":
-            raise ValueError("Name of a MetricTemplate can not be \"\"")
-        super(MetricTemplate, self).save(force_insert=force_insert, force_update=force_update, using=using,
-                                         update_fields=update_fields)
+            raise ValueError("Name of a ObservableTemplate can not be \"\"")
+        super(ObservableTemplate, self).save(force_insert=force_insert, force_update=force_update, using=using,
+                                             update_fields=update_fields)
 
 
-class Metric(models.Model):
-    """This class represents a Metric"""
+class Observable(models.Model):
+    """This class represents an Observable"""
     name = CharField(default="", max_length=255)
     linked_proxy = ForeignKey(Proxy, on_delete=models.CASCADE)
     linked_check = ForeignKey(Check, on_delete=models.DO_NOTHING, blank=True, null=True)
     linked_host = ForeignKey(Host, on_delete=models.CASCADE)
     disabled = BooleanField(default=False, blank=True, null=True)
-    metric_templates = ManyToManyField(OrderedListItem, blank=True)
+    observable_templates = ManyToManyField(OrderedListItem, blank=True)
     linked_contacts = ManyToManyField(Contact, blank=True)
     linked_contact_groups = ManyToManyField(ContactGroup, blank=True)
     scheduling_interval = ForeignKey(SchedulingInterval, on_delete=models.DO_NOTHING, blank=True, null=True)
@@ -434,25 +533,44 @@ class Metric(models.Model):
     def __str__(self):
         return self.name
 
-    def to_dict(self):
-        mts = [(x.object_id, x.index) for x in self.metric_templates.all()]
-        mts.sort(key=lambda x: x[1])
-        return {
-            "id": self.id,
-            "name": self.name,
-            "linked_proxy": self.linked_proxy_id,
-            "linked_check": self.linked_check_id if self.linked_check else "",
-            "linked_host": self.linked_host_id if self.linked_host else "",
-            "disabled": self.disabled,
-            "metric_templates": [x[0] for x in mts],
-            "linked_contacts": [x.id for x in self.linked_contacts.all()],
-            "linked_contact_groups": [x.id for x in self.linked_contact_groups.all()],
-            "scheduling_interval": self.scheduling_interval.interval if self.scheduling_interval else "",
-            "scheduling_period": self.scheduling_period_id if self.scheduling_period else "",
-            "notification_period": self.notification_period_id if self.notification_period else "",
-            "comment": self.comment if self.comment else "",
-            "variables": dict(ChainMap(*[x.to_dict() for x in self.variables.all()][::-1]))
+    def to_dict(self, values: List = None):
+        values = values if values is not None else [
+            "name", "linked_proxy", "linked_check", "linked_host", "disabled", "observable_templates",
+            "linked_contacts", "linked_contact_groups", "scheduling_interval", "scheduling_period",
+            "notification_period", "comment", "variables"
+        ]
+        ret = {
+            "id": self.id
         }
+        if "name" in values:
+            ret["name"] = self.name
+        if "linked_proxy" in values:
+            ret["linked_proxy"] = self.linked_proxy_id
+        if "linked_check" in values:
+            ret["linked_check"] = self.linked_check_id if self.linked_check else ""
+        if "linked_host" in values:
+            ret["linked_host"] = self.linked_host_id
+        if "disabled" in values:
+            ret["disabled"] = self.disabled
+        if "observable_templates" in values:
+            ots = [(x.object_id, x.index) for x in self.observable_templates.all()]
+            ots.sort(key=lambda x: x[1])
+            ret["observable_templates"] = [x[0] for x in ots]
+        if "linked_contacts" in values:
+            ret["linked_contacts"] = [x.id for x in self.linked_contacts.all().only("id")]
+        if "linked_contact_groups" in values:
+            ret["linked_contact_groups"] = [x.id for x in self.linked_contact_groups.all().only("id")]
+        if "scheduling_interval" in values:
+            ret["scheduling_interval"] = self.scheduling_interval.interval if self.scheduling_interval else ""
+        if "scheduling_period" in values:
+            ret["scheduling_period"] = self.scheduling_period_id if self.scheduling_interval else ""
+        if "notification_period" in values:
+            ret["notification_period"] = self.notification_period_id if self.notification_period else ""
+        if "comment" in values:
+            ret["comment"] = self.comment if self.comment else ""
+        if "variables" in values:
+            ret["variables"] = dict(ChainMap(*[x.to_dict() for x in self.variables.all()][::-1]))
+        return ret
 
 
 class Label(models.Model):
@@ -504,6 +622,7 @@ class ACLGroupModel(models.Model):
 
 
 class AccountModel(models.Model):
+    """This model represents a user in Q"""
     internal_user = ForeignKey(User, on_delete=models.CASCADE)
     linked_acl_group = ForeignKey(ACLGroupModel, on_delete=models.DO_NOTHING, default=2)
     notification_period = ForeignKey(

@@ -9,8 +9,8 @@ from django.db.models import Max
 from django.http import JsonResponse, HttpResponse, QueryDict
 from django.views import View
 
-from api.models import AccountModel, ACLModel, Check, Host, Metric, TimePeriod, SchedulingInterval, GenericKVP, Label, \
-    Day, Period, DayTimePeriod, GlobalVariable, Contact, ContactGroup, MetricTemplate, HostTemplate, Proxy, \
+from api.models import AccountModel, ACLModel, Check, Host, Observable, TimePeriod, SchedulingInterval, GenericKVP, \
+    Label, Day, Period, DayTimePeriod, GlobalVariable, Contact, ContactGroup, ObservableTemplate, HostTemplate, Proxy, \
     OrderedListItem
 from api.description import export
 
@@ -307,72 +307,72 @@ class CheckView(CheckOptionalMixinView):
         return JsonResponse({"success": True, "message": "Changes were successful"})
 
 
-class MetricView(CheckOptionalMixinView):
+class ObservableView(CheckOptionalMixinView):
     def __init__(self, **kwargs):
-        super(MetricView, self).__init__(
-            api_class=Metric,
+        super(ObservableView, self).__init__(
+            api_class=Observable,
             required_post=["name", "linked_host", "linked_proxy"],
             **kwargs
         )
 
-    def optional(self, metric, params, overwrite=False):
+    def optional(self, observable, params, overwrite=False):
         if "comment" in params:
-            metric.comment = params["comment"]
+            observable.comment = params["comment"]
         if "linked_check" in params:
             if params["linked_check"]:
                 try:
                     linked_check = Check.objects.get(id=params["linked_check"])
-                    metric.linked_check = linked_check
+                    observable.linked_check = linked_check
                 except Check.DoesNotExist:
                     return JsonResponse(
                         {"success": False, "message": f"Check with id {params['linked_check']} does not exist"},
                         status=404
                     )
             else:
-                metric.linked_check = None
-        if "metric_templates" in params:
-            if params["metric_templates"]:
+                observable.linked_check = None
+        if "observable_templates" in params:
+            if params["observable_templates"]:
                 if overwrite:
-                    metric.metric_templates.clear()
-                if isinstance(params["metric_templates"], list):
-                    for mt_id in params["metric_templates"]:
-                        mt = MetricTemplate.objects.get(id=mt_id)
-                        max_index = 1 if metric.host_templates.count() == 0 else \
-                            metric.host_templates.all().aggregate(Max("index"))["index__max"] + 1
+                    observable.observable_templates.clear()
+                if isinstance(params["observable_templates"], list):
+                    for mt_id in params["observable_templates"]:
+                        mt = ObservableTemplate.objects.get(id=mt_id)
+                        max_index = 1 if observable.observable_templates.count() == 0 else \
+                            observable.observable_templates.all().aggregate(Max("index"))["index__max"] + 1
                         ordered_item = OrderedListItem.objects.create(
                             index=max_index,
                             object_id=mt.id,
-                            content_type=ContentType.objects.get_for_model(MetricTemplate)
+                            content_type=ContentType.objects.get_for_model(ObservableTemplate)
                         )
-                        metric.metric_templates.add(ordered_item)
+                        observable.observable_templates.add(ordered_item)
                 else:
                     try:
-                        mt = MetricTemplate.objects.get(id=params["metric_templates"])
-                        max_index = 1 if metric.host_templates.count() == 0 else \
-                            metric.host_templates.all().aggregate(Max("index"))["index__max"] + 1
+                        mt = ObservableTemplate.objects.get(id=params["observable_templates"])
+                        max_index = 1 if observable.observable_templates.count() == 0 else \
+                            observable.observable_templates.all().aggregate(Max("index"))["index__max"] + 1
                         ordered_item = OrderedListItem.objects.create(
                             index=max_index,
                             object_id=mt.id,
-                            content_type=ContentType.objects.get_for_model(MetricTemplate)
+                            content_type=ContentType.objects.get_for_model(ObservableTemplate)
                         )
-                        metric.metric_templates.add(ordered_item)
-                    except MetricTemplate.DoesNotExist:
+                        observable.observable_templates.add(ordered_item)
+                    except ObservableTemplate.DoesNotExist:
                         return JsonResponse(
                             {"success": False,
-                             "message": f"MetricTemplate with the id {params['metric_template']} does not exist"},
+                             "message": f"Observable Template with the id {params['observable_templates']} does not exist"},
                             status=404
                         )
             else:
-                metric.metric_templates.clear()
+                observable.observable_templates.clear()
         if "linked_contacts" in params:
             if params["linked_contacts"]:
                 if overwrite:
-                    metric.linked_contacts.clear()
+                    observable.linked_contacts.clear()
                 if isinstance(params["linked_contacts"], list):
                     for contact_id in params['linked_contacts']:
                         try:
                             contact = Contact.objects.get(id=contact_id)
-                            metric.linked_contacts.add(contact)
+                            observable.linked_contacts.add(contact)
                         except Contact.DoesNotExist:
                             return JsonResponse(
                                 {
@@ -383,7 +383,7 @@ class MetricView(CheckOptionalMixinView):
                 else:
                     try:
                         contact = Contact.objects.get(id=params["linked_contacts"])
-                        metric.linked_contacts.add(contact)
+                        observable.linked_contacts.add(contact)
                     except Contact.DoesNotExist:
                         return JsonResponse(
                             {
@@ -392,16 +392,16 @@ class MetricView(CheckOptionalMixinView):
                             }, status=404
                         )
             else:
-                metric.linked_contacts.clear()
+                observable.linked_contacts.clear()
         if "linked_contact_groups" in params:
             if params["linked_contact_groups"]:
                 if overwrite:
-                    metric.linked_contact_groups.clear()
+                    observable.linked_contact_groups.clear()
                 if isinstance(params["linked_contact_groups"], list):
                     for contact_group_id in params['linked_contact_groups']:
                         try:
                             contact_group = ContactGroup.objects.get(id=contact_group_id)
-                            metric.linked_contact_groups.add(contact_group)
+                            observable.linked_contact_groups.add(contact_group)
                         except ContactGroup.DoesNotExist:
                             return JsonResponse(
                                 {
@@ -412,7 +412,7 @@ class MetricView(CheckOptionalMixinView):
                 else:
                     try:
                         contact_group = ContactGroup.objects.get(id=params["linked_contact_groups"])
-                        metric.linked_contact_groups.add(contact_group)
+                        observable.linked_contact_groups.add(contact_group)
                     except ContactGroup.DoesNotExist:
                         return JsonResponse(
                             {
@@ -421,19 +421,19 @@ class MetricView(CheckOptionalMixinView):
                             }, status=404
                         )
             else:
-                metric.linked_contact_groups.clear()
+                observable.linked_contact_groups.clear()
         if "scheduling_interval" in params:
             if params["scheduling_interval"]:
                 scheduling_interval, _ = SchedulingInterval.objects.get_or_create(
                     interval=params["scheduling_interval"])
-                metric.scheduling_interval = scheduling_interval
+                observable.scheduling_interval = scheduling_interval
             else:
-                metric.scheduling_interval = None
+                observable.scheduling_interval = None
         if "scheduling_period" in params:
             if params["scheduling_period"]:
                 try:
                     scheduling_period = TimePeriod.objects.get(id=params["scheduling_period"])
-                    metric.scheduling_period = scheduling_period
+                    observable.scheduling_period = scheduling_period
                 except TimePeriod.DoesNotExist:
                     return JsonResponse(
                         {"success": False,
@@ -441,15 +441,15 @@ class MetricView(CheckOptionalMixinView):
                         status=404
                     )
             else:
-                metric.scheduling_period = None
+                observable.scheduling_period = None
         if "disabled" in params:
             disabled = params["disabled"]
-            metric.disabled = disabled
+            observable.disabled = disabled
         if "notification_period" in params:
             if params["notification_period"]:
                 try:
                     notification_period = TimePeriod.objects.get(id=params["notification_period"])
-                    metric.notification_period = notification_period
+                    observable.notification_period = notification_period
                 except TimePeriod.DoesNotExist:
                     return JsonResponse(
                         {"success": False,
@@ -457,22 +457,22 @@ class MetricView(CheckOptionalMixinView):
                         status=404
                     )
             else:
-                metric.notification_period = None
+                observable.notification_period = None
         if "variables" in params:
             if not isinstance(params["variables"], dict) and not isinstance(params["variables"], str):
                 return JsonResponse({"success": False, "message": "Parameter variables has to be a dict"}, status=400)
             if params["variables"]:
                 if overwrite:
-                    metric.variable.clear()
+                    observable.variable.clear()
                 for key, value in params["variables"].items():
                     key_label, _ = Label.objects.get_or_create(label=key)
                     value_label, _ = Label.objects.get_or_create(label=value)
                     GenericKVP.objects.get_or_create(
-                        key=key_label, value=value_label, object_id=metric.id,
-                        content_type=ContentType.objects.get_for_model(Metric)
+                        key=key_label, value=value_label, object_id=observable.id,
+                        content_type=ContentType.objects.get_for_model(Observable)
                     )
             else:
-                metric.variables.clear()
+                observable.variables.clear()
 
     def save_post(self, params, *args, **kwargs):
         # Required params
@@ -492,11 +492,11 @@ class MetricView(CheckOptionalMixinView):
             )
 
         # Create check
-        if Metric.objects.filter(name=params["name"], linked_host=linked_host).exists():
+        if Observable.objects.filter(name=params["name"], linked_host=linked_host).exists():
             return JsonResponse(
                 {"success": False, "message": "Metric with this name already exists"}, status=409
             )
-        metric = Metric.objects.create(name=params["name"], linked_host=linked_host, linked_proxy=linked_proxy)
+        metric = Observable.objects.create(name=params["name"], linked_host=linked_host, linked_proxy=linked_proxy)
         # Optional params
         ret = self.optional(metric, params)
         if isinstance(ret, JsonResponse):
@@ -509,8 +509,8 @@ class MetricView(CheckOptionalMixinView):
 
     def save_put(self, params, *args, **kwargs):
         try:
-            metric = Metric.objects.get(id=kwargs["sid"])
-        except Metric.DoesNotExist:
+            metric = Observable.objects.get(id=kwargs["sid"])
+        except Observable.DoesNotExist:
             return JsonResponse(
                 {"success": False, "message": f"Metric with id {kwargs['sid']} not exist"}
             )
@@ -542,64 +542,64 @@ class MetricView(CheckOptionalMixinView):
         return JsonResponse({"success": True, "message": "Changes were successful"})
 
 
-class MetricTemplateView(CheckOptionalMixinView):
+class ObservableTemplateView(CheckOptionalMixinView):
     def __init__(self):
-        super(MetricTemplateView, self).__init__(
-            api_class=MetricTemplate,
+        super(ObservableTemplateView, self).__init__(
+            api_class=ObservableTemplate,
             required_post=["name"],
         )
 
-    def optional(self, metric_template, params, overwrite=False):
+    def optional(self, observable_template, params, overwrite=False):
         if "comment" in params:
-            metric_template.comment = params["comment"]
+            observable_template.comment = params["comment"]
         if "linked_check" in params:
             if params["linked_check"]:
                 try:
                     linked_check = Check.objects.get(id=params["linked_check"])
-                    metric_template.linked_check = linked_check
+                    observable_template.linked_check = linked_check
                 except Check.DoesNotExist:
                     return JsonResponse(
                         {"success": False, "message": f"Check with id {params['linked_check']} does not exist"},
                         status=404
                     )
             else:
-                metric_template.linked_check = None
-        if "metric_templates" in params:
+                observable_template.linked_check = None
+        if "observable_templates" in params:
             if overwrite:
-                metric_template.metric_templates.clear()
-            if params["metric_templates"]:
-                if isinstance(params["metric_templates"], list):
-                    for mt_id in params["metric_templates"]:
-                        mt = MetricTemplate.objects.get(id=mt_id)
-                        max_index = 1 if metric_template.host_templates.count() == 0 else \
-                            metric_template.host_templates.all().aggregate(Max("index"))["index__max"] + 1
+                observable_template.observable_templates.clear()
+            if params["observable_templates"]:
+                if isinstance(params["observable_templates"], list):
+                    for mt_id in params["observable_templates"]:
+                        mt = ObservableTemplate.objects.get(id=mt_id)
+                        max_index = 1 if observable_template.observable_templates.count() == 0 else \
+                            observable_template.observable_templates.all().aggregate(Max("index"))["index__max"] + 1
                         ordered_item = OrderedListItem.objects.create(
                             index=max_index,
                             object_id=mt.id,
-                            content_type=ContentType.objects.get_for_model(MetricTemplate)
+                            content_type=ContentType.objects.get_for_model(ObservableTemplate)
                         )
-                        metric_template.metric_templates.add(ordered_item)
+                        observable_template.observable_templates.add(ordered_item)
                 else:
-                    mt = MetricTemplate.objects.get(id=params["metric_templates"])
-                    max_index = 1 if metric_template.host_templates.count() == 0 else \
-                        metric_template.host_templates.all().aggregate(Max("index"))["index__max"] + 1
+                    mt = ObservableTemplate.objects.get(id=params["observable_templates"])
+                    max_index = 1 if observable_template.observable_templates.count() == 0 else \
+                        observable_template.observable_templates.all().aggregate(Max("index"))["index__max"] + 1
                     ordered_item = OrderedListItem.objects.create(
                         index=max_index,
                         object_id=mt.id,
-                        content_type=ContentType.objects.get_for_model(MetricTemplate)
+                        content_type=ContentType.objects.get_for_model(ObservableTemplate)
                     )
-                    metric_template.metric_templates.add(ordered_item)
+                    observable_template.observable_templates.add(ordered_item)
             else:
-                metric_template.metric_templates.clear()
+                observable_template.observable_templates.clear()
         if "linked_contacts" in params:
             if params["linked_contacts"]:
                 if overwrite:
-                    metric_template.linked_contacts.clear()
+                    observable_template.linked_contacts.clear()
                 if isinstance(params["linked_contacts"], list):
                     for contact_id in params['linked_contacts']:
                         try:
                             contact = Contact.objects.get(id=contact_id)
-                            metric_template.linked_contacts.add(contact)
+                            observable_template.linked_contacts.add(contact)
                         except Contact.DoesNotExist:
                             return JsonResponse(
                                 {
@@ -610,7 +610,7 @@ class MetricTemplateView(CheckOptionalMixinView):
                 else:
                     try:
                         contact = Contact.objects.get(id=params["linked_contacts"])
-                        metric_template.linked_contacts.add(contact)
+                        observable_template.linked_contacts.add(contact)
                     except Contact.DoesNotExist:
                         return JsonResponse(
                             {
@@ -619,16 +619,16 @@ class MetricTemplateView(CheckOptionalMixinView):
                             }, status=404
                         )
             else:
-                metric_template.linked_contacts.clear()
+                observable_template.linked_contacts.clear()
         if "linked_contact_groups" in params:
             if params["linked_contact_groups"]:
                 if overwrite:
-                    metric_template.linked_contact_groups.clear()
+                    observable_template.linked_contact_groups.clear()
                 if isinstance(params["linked_contact_groups"], list):
                     for contact_group_id in params['linked_contact_groups']:
                         try:
                             contact_group = ContactGroup.objects.get(id=contact_group_id)
-                            metric_template.linked_contact_groups.add(contact_group)
+                            observable_template.linked_contact_groups.add(contact_group)
                         except ContactGroup.DoesNotExist:
                             return JsonResponse(
                                 {
@@ -639,7 +639,7 @@ class MetricTemplateView(CheckOptionalMixinView):
                 else:
                     try:
                         contact_group = ContactGroup.objects.get(id=params["linked_contact_groups"])
-                        metric_template.linked_contact_groups.add(contact_group)
+                        observable_template.linked_contact_groups.add(contact_group)
                     except ContactGroup.DoesNotExist:
                         return JsonResponse(
                             {
@@ -648,19 +648,19 @@ class MetricTemplateView(CheckOptionalMixinView):
                             }, status=404
                         )
             else:
-                metric_template.linked_contact_groups.clear()
+                observable_template.linked_contact_groups.clear()
         if "scheduling_interval" in params:
             if params["scheduling_interval"]:
                 scheduling_interval, _ = SchedulingInterval.objects.get_or_create(
                     interval=params["scheduling_interval"])
-                metric_template.scheduling_interval = scheduling_interval
+                observable_template.scheduling_interval = scheduling_interval
             else:
-                metric_template.scheduling_interval = None
+                observable_template.scheduling_interval = None
         if "scheduling_period" in params:
             if params["scheduling_period"]:
                 try:
                     scheduling_period = TimePeriod.objects.get(id=params["scheduling_period"])
-                    metric_template.scheduling_period = scheduling_period
+                    observable_template.scheduling_period = scheduling_period
                 except TimePeriod.DoesNotExist:
                     return JsonResponse(
                         {"success": False,
@@ -668,12 +668,12 @@ class MetricTemplateView(CheckOptionalMixinView):
                         status=404
                     )
             else:
-                metric_template.scheduling_period = None
+                observable_template.scheduling_period = None
         if "notification_period" in params:
             if params["notification_period"]:
                 try:
                     notification_period = TimePeriod.objects.get(id=params["notification_period"])
-                    metric_template.notification_period = notification_period
+                    observable_template.notification_period = notification_period
                 except TimePeriod.DoesNotExist:
                     return JsonResponse(
                         {"success": False,
@@ -681,58 +681,58 @@ class MetricTemplateView(CheckOptionalMixinView):
                         status=404
                     )
             else:
-                metric_template.notification_period = None
+                observable_template.notification_period = None
         if "variables" in params:
             if not isinstance(params["variables"], dict) and not isinstance(params["variables"], str):
                 return JsonResponse({"success": False, "message": "Parameter variables has to be a dict"}, status=400)
             if not params["variables"]:
-                metric_template.variables.clear()
+                observable_template.variables.clear()
             else:
                 if overwrite:
-                    metric_template.variables.clear()
+                    observable_template.variables.clear()
                 for key, value in params["variables"].items():
                     key_label, _ = Label.objects.get_or_create(label=key)
                     value_label, _ = Label.objects.get_or_create(label=value)
                     GenericKVP.objects.get_or_create(
-                        key=key_label, value=value_label, object_id=metric_template.id,
-                        content_type=ContentType.objects.get_for_model(MetricTemplate)
+                        key=key_label, value=value_label, object_id=observable_template.id,
+                        content_type=ContentType.objects.get_for_model(ObservableTemplate)
                     )
 
     def save_post(self, params, *args, **kwargs):
         # Create check
-        if MetricTemplate.objects.filter(name=params["name"]).exists():
+        if ObservableTemplate.objects.filter(name=params["name"]).exists():
             return JsonResponse(
                 {"success": False, "message": "MetricTemplate with this name already exists"},
                 status=409
             )
-        metric_template = MetricTemplate.objects.create(name=params["name"])
+        observable_template = ObservableTemplate.objects.create(name=params["name"])
         # Optional params
-        ret = self.optional(metric_template, params)
+        ret = self.optional(observable_template, params)
         if isinstance(ret, JsonResponse):
-            metric_template.delete()
+            observable_template.delete()
             return ret
 
         # Save and return
-        metric_template.save()
+        observable_template.save()
         return JsonResponse(
-            {"success": True, "message": "Created MetricTemplate successfully", "data": metric_template.id}
+            {"success": True, "message": "Created Observable Template successfully", "data": observable_template.id}
         )
 
     def save_put(self, params, *args, **kwargs):
         try:
-            metric_template = MetricTemplate.objects.get(id=kwargs["sid"])
-        except MetricTemplate.DoesNotExist:
+            observable_template = ObservableTemplate.objects.get(id=kwargs["sid"])
+        except ObservableTemplate.DoesNotExist:
             return JsonResponse(
-                {"success": False, "message": f"MetricTemplate with id {kwargs['sid']} not exist"}
+                {"success": False, "message": f"Observable Template with id {kwargs['sid']} not exist"}
             )
         if "name" in params:
-            metric_template.name = params["name"]
+            observable_template.name = params["name"]
 
-        ret = self.optional(metric_template, params, overwrite=True)
+        ret = self.optional(observable_template, params, overwrite=True)
         if isinstance(ret, JsonResponse):
             return ret
 
-        metric_template.save()
+        observable_template.save()
         return JsonResponse({"success": True, "message": "Changes were successful"})
 
 
