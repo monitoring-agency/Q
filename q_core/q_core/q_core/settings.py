@@ -83,7 +83,12 @@ ASGI_APPLICATION = 'q_core.asgi.application'
 
 DATABASES = {
     'default': {
-
+    },
+    'influxdb': {
+        'URI': '',
+        'ORG': '',
+        'TOKEN': '',
+        'BUCKET': ''
     }
 }
 
