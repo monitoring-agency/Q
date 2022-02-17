@@ -113,7 +113,7 @@ export default class MenuView extends React.PureComponent {
                                 </div>
                             </li>
                             <li>
-                                <div className="sidebarRow" onClick={this.props.menu_proxies_action}>
+                                <div className="sidebarRow" onClick={this.context.setPath.bind(null, {"path": ["declaration", "proxies", "index"]})}>
                                     <img src={this.context.static + "img/structure.svg"} alt="Proxies" />
                                     <p>Proxies</p>
                                 </div>
