@@ -1,8 +1,11 @@
-Django~=4.0.1
-httpx~=0.21.3
+Django~=4.0.2
+httpx~=0.22.0
 channels~=3.0.4
-gunicorn
-uvicorn[standard]~=0.17.0
+gunicorn~=20.1.0
+uvicorn[standard]~=0.17.5
+rc-protocol~=0.1.0
 
 # apt install python3-dev default-libmysqlclient-dev build-essential
 mysqlclient~=2.1.0
+
+influxdb-client~=1.25.0
