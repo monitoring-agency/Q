@@ -8,7 +8,7 @@ import httpx
 from django.contrib.contenttypes.models import ContentType
 
 from api.models import Host, HostTemplate, ObservableTemplate, Observable, Proxy, Label, TimePeriod, \
-    SchedulingInterval, GlobalVariable, Check, GenericKVP
+    SchedulingInterval, GlobalVariable, Check, GenericKVP, ScheduledObject
 
 logger = logging.getLogger("export")
 
@@ -57,7 +57,7 @@ def generate_declaration(proxy_id_list):
             host_template_relations[(x[0], chost_template)].append(x[1])
         else:
             host_template_relations[(x[0], chost_template)] = [x[1]]
-    for x in Observable.observable_templates.through.objects.values_list('metric_id', 'metrictemplate_id'):
+    for x in Observable.observable_templates.through.objects.values_list('observable_id', 'observabletemplate_id'):
         if (x[0], cobservable) in observable_template_relations:
             observable_template_relations[(x[0], cobservable)].append(x[1])
         else:
@@ -199,7 +199,7 @@ def generate_declaration(proxy_id_list):
     # Generate hosttemplate recursions
     for x in host_templates:
         host_template_recursions[x] = retrieve_hosttemplate(host_templates[x].id)
-    # Generate metrictemplate recursions
+    # Generate observabletemplate recursions
     for x in observable_templates:
         observable_template_recursions[x] = retrieve_observable_template(observable_templates[x].id)
 
@@ -273,64 +273,65 @@ def generate_declaration(proxy_id_list):
                 declaration[host.linked_proxy_id]["scheduling_periods"][h["scheduling_period"]["id"]] = h[
                     "scheduling_period"]
 
-    for metric in observables:
+    for observable in observables:
         m = {"linked_check": ""}
-        export_metric = {"id": metric.id, "linked_check": "", "scheduling_period": "", "scheduling_interval": ""}
+        export_observable = {"id": observable.id, "linked_check": "", "scheduling_period": "", "scheduling_interval": ""}
         # Get reverse attributes
-        if (metric.id, cobservable) in observable_template_relations:
-            for x in observable_template_relations[(metric.id, cobservable)]:
+        if (observable.id, cobservable) in observable_template_relations:
+            for x in observable_template_relations[(observable.id, cobservable)]:
                 m.update(retrieve_observable_template(x))
 
-        # Check metric attributes
-        if metric.scheduling_interval_id:
-            m["scheduling_interval"] = scheduling_intervals[metric.scheduling_interval_id]
-        if metric.scheduling_period_id:
-            m["scheduling_period"] = time_periods[metric.scheduling_period_id]
-        if metric.linked_check_id:
-            m["linked_check"] = checks[metric.linked_check_id]
+        # Check observable attributes
+        if observable.scheduling_interval_id:
+            m["scheduling_interval"] = scheduling_intervals[observable.scheduling_interval_id]
+        if observable.scheduling_period_id:
+            m["scheduling_period"] = time_periods[observable.scheduling_period_id]
+        if observable.linked_check_id:
+            m["linked_check"] = checks[observable.linked_check_id]
 
-        # Set metric vars
-        metric_vars = dict(ChainMap(host_vars[metric.linked_host_id], retrieve_variables(metric, cobservable, [])))
+        # Set observable vars
+        observable_vars = dict(ChainMap(host_vars[observable.linked_host_id], retrieve_variables(observable, cobservable, [])))
 
         # Fill export dict
         if m["linked_check"] and m["scheduling_period"] and m["scheduling_interval"]:
-            export_metric["linked_check"] = m["linked_check"].to_export(metric_vars)
-            export_metric["scheduling_interval"] = m["scheduling_interval"]
-            export_metric["scheduling_period"] = m["scheduling_period"]["id"]
-            declaration[metric.linked_proxy_id]["metrics"].append(export_metric)
-            if m["scheduling_period"]["id"] not in declaration[metric.linked_proxy_id]["scheduling_periods"]:
-                declaration[metric.linked_proxy_id]["scheduling_periods"][m["scheduling_period"]["id"]] = m[
+            export_observable["linked_check"] = m["linked_check"].to_export(observable_vars)
+            export_observable["scheduling_interval"] = m["scheduling_interval"]
+            export_observable["scheduling_period"] = m["scheduling_period"]["id"]
+            declaration[observable.linked_proxy_id]["observables"].append(export_observable)
+            if m["scheduling_period"]["id"] not in declaration[observable.linked_proxy_id]["scheduling_periods"]:
+                declaration[observable.linked_proxy_id]["scheduling_periods"][m["scheduling_period"]["id"]] = m[
                     "scheduling_period"]
     return declaration
 
-'''
+
 def generate_scheduled_objects(declaration):
     """This method is used to create instances of scheduled objects if not existent yet"""
     creation = []
     host_content_type = ContentType.objects.get_for_model(Host)
-    metric_content_type = ContentType.objects.get_for_model(Observable)
-    existing_hosts = [x.object_id for x in ScheduledObject.objects.filter(content_type=host_content_type)]
-    existing_metrics = [x.object_id for x in ScheduledObject.objects.filter(content_type=metric_content_type)]
+    observable_content_type = ContentType.objects.get_for_model(Observable)
+    existing_hosts = [x.object_id for x in ScheduledObject.objects.filter(content_type=host_content_type).only("object_id")]
+    existing_observables = [x.object_id for x in ScheduledObject.objects.filter(content_type=observable_content_type).only("object_id")]
     intermediate = []
     [intermediate.extend(declaration[x]["hosts"]) for x in declaration]
     [
         creation.append(ScheduledObject(
             content_type=host_content_type,
-            object_id=x["id"]
+            object_id=x["id"],
+            measurement=f"h_{x['id']}"
         ))
         for x in intermediate if x["id"] not in existing_hosts
     ]
     intermediate.clear()
-    [intermediate.extend(declaration[x]["metrics"]) for x in declaration]
+    [intermediate.extend(declaration[x]["observables"]) for x in declaration]
     [
         creation.append(ScheduledObject(
-            content_type=metric_content_type,
-            object_id=x["id"]
+            content_type=observable_content_type,
+            object_id=x["id"],
+            measurement=f"o_{x['id']}"
         ))
-        for x in intermediate if x["id"] not in existing_metrics
+        for x in intermediate if x["id"] not in existing_observables
     ]
     ScheduledObject.objects.bulk_create(creation)
-'''
 
 
 def export_to_proxy(declaration: dict):
@@ -342,7 +343,7 @@ def export_to_proxy(declaration: dict):
             f"https://{proxy['address']}:{proxy['port']}/api/v1/updateDeclaration",
             json={
                 "hosts": proxy["hosts"],
-                "metrics": proxy["metrics"],
+                "observables": proxy["observables"],
                 "scheduling_periods": proxy["scheduling_periods"]
             }, headers={
                 "Authentication":
@@ -356,7 +357,7 @@ def export_to_proxy(declaration: dict):
 def export(proxy_id_list: list):
     t = time.time()
     declaration = generate_declaration(proxy_id_list)
-    #generate_scheduled_objects(declaration)
+    generate_scheduled_objects(declaration)
     try:
         status = export_to_proxy(declaration)
     except FileNotFoundError:
