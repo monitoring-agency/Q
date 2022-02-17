@@ -584,7 +584,6 @@ class GenericKVP(models.Model):
     """This class represents variables.
 
     To access, use .key and .value
-
     """
     key = ForeignKey(Label, on_delete=models.CASCADE, related_name="key")
     value = ForeignKey(Label, on_delete=models.CASCADE, related_name="value")
@@ -643,3 +642,14 @@ class AccountModel(models.Model):
     def get_lastname(self):
         return self.internal_user.last_name
 
+
+class ScheduledObject(models.Model):
+    """This object is the representation of a scheduled object like an observable or a host.
+
+    It links to its declaration origins as well as the measurement the data can be found.
+    """
+    measurement = CharField(default="", unique=True, max_length=255)
+
+    referent = GenericForeignKey('content_type', 'object_id')
+    content_type = ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = PositiveIntegerField()
