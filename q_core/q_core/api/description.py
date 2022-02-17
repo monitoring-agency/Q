@@ -5,6 +5,7 @@ from collections import ChainMap
 from typing import Union
 
 import httpx
+import rc_protocol
 from django.contrib.contenttypes.models import ContentType
 
 from api.models import Host, HostTemplate, ObservableTemplate, Observable, Proxy, Label, TimePeriod, \
@@ -339,15 +340,15 @@ def export_to_proxy(declaration: dict):
     status_list = []
     for x in declaration:
         proxy = declaration[x]
+        data = {
+            "hosts": proxy["hosts"],
+            "observables": proxy["observables"],
+            "scheduling_periods": proxy["scheduling_periods"]
+        }
         ret = client.post(
             f"https://{proxy['address']}:{proxy['port']}/api/v1/updateDeclaration",
-            json={
-                "hosts": proxy["hosts"],
-                "observables": proxy["observables"],
-                "scheduling_periods": proxy["scheduling_periods"]
-            }, headers={
-                "Authentication":
-                    base64.urlsafe_b64encode(proxy["proxy_secret"].encode("utf-8")).decode("utf-8")
+            json=data, headers={
+                "Authentication": f"RCP: {rc_protocol.get_checksum(data, proxy.secret, salt='updateDeclaration')}"
             }
         )
         status_list.append(ret)
