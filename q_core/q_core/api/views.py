@@ -1521,7 +1521,7 @@ class ProxyView(CheckOptionalMixinView):
     def __init__(self):
         super(ProxyView, self).__init__(
             api_class=Proxy,
-            required_post=["name", "address", "port", "web_address", "web_port"]
+            required_post=["name", "address", "port", "core_address", "core_port"]
         )
 
     def optional(self, proxy, params):
@@ -1544,9 +1544,9 @@ class ProxyView(CheckOptionalMixinView):
             address=params["address"],
             port=params["port"],
             secret="".join(secrets.choice(alphabet) for _ in range(255)),
-            web_address=params["web_address"],
-            web_port=params["web_port"],
-            web_secret="".join(secrets.choice(alphabet) for _ in range(255)),
+            core_address=params["core_address"],
+            core_port=params["core_port"],
+            core_secret="".join(secrets.choice(alphabet) for _ in range(255)),
         )
         ret = self.optional(proxy, params)
         if isinstance(ret, JsonResponse):
@@ -1570,10 +1570,10 @@ class ProxyView(CheckOptionalMixinView):
             proxy.address = params["address"]
         if "port" in params:
             proxy.port = params["port"]
-        if "web_address" in params:
-            proxy.web_address = params["web_address"]
-        if "web_port" in params:
-            proxy.web_port = params["web_port"]
+        if "core_address" in params:
+            proxy.core_address = params["core_address"]
+        if "core_port" in params:
+            proxy.core_port = params["core_port"]
 
         ret = self.optional(proxy, params)
         if isinstance(ret, JsonResponse):

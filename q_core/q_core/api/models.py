@@ -252,9 +252,9 @@ class Proxy(models.Model):
     address = CharField(default="", max_length=255)
     port = PositiveIntegerField(default=8443)
     secret = CharField(default="", max_length=255)
-    web_secret = CharField(default="", max_length=255)
-    web_address = CharField(default="", max_length=255)
-    web_port = PositiveIntegerField(default=4443)
+    core_secret = CharField(default="", max_length=255)
+    core_address = CharField(default="", max_length=255)
+    core_port = PositiveIntegerField(default=4443)
     disabled = BooleanField(default=False)
     comment = CharField(default="", max_length=1024, blank=True, null=True)
 
@@ -263,7 +263,7 @@ class Proxy(models.Model):
 
     def to_dict(self, values: List = None):
         values = values if values is not None else [
-            "name", "address", "port", "web_address", "web_port", "disabled", "comment"
+            "name", "address", "port", "core_address", "core_port", "disabled", "comment"
         ]
         ret = {
             "id": self.id
@@ -275,9 +275,9 @@ class Proxy(models.Model):
         if "port" in values:
             ret["port"] = self.port
         if "web_address" in values:
-            ret["web_address"] = self.web_address
+            ret["core_address"] = self.core_address
         if "web_port" in values:
-            ret["web_port"] = self.web_port
+            ret["core_port"] = self.core_port
         if "disabled" in values:
             ret["disabled"] = self.disabled
         if "comment" in values:
@@ -286,10 +286,10 @@ class Proxy(models.Model):
 
     def to_base64(self):
         return base64.b64encode(json.dumps({
-            "web_address": self.web_address,
-            "web_port": self.web_port,
+            "core_address": self.core_address,
+            "core_port": self.core_port,
             "secret": self.secret,
-            "web_secret": self.web_secret
+            "core_secret": self.core_secret
         }).encode("utf-8")).decode("utf-8")
 
 
