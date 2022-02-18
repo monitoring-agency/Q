@@ -27,9 +27,7 @@ export default class DeclarationProxiesIndexView extends React.Component {
         for (let proxy of this.state.proxies) {
             rows.push(
                 <tr className="clickable"
-                    onClick={
-                        this.context.setPath.bind(null, {"path": ["declaration", "proxies", proxy.id]})
-                    } >
+                    onClick={this.context.setPath.bind(null, {"path": ["declaration", "proxies", proxy.id]})} >
                     <td className="smallCell"><label><input type="checkbox" /></label></td>
                     <td className="smallCell">{proxy.id}</td>
                     <td className="normalCell">{proxy.name}</td>
@@ -40,7 +38,7 @@ export default class DeclarationProxiesIndexView extends React.Component {
                                 onClick={(v) => {
                                     this.context.sdk.deleteProxy(proxy.id).then((res) => {
                                         if(res.status === 200) {
-                                            toast.success("Proxy deleted", {autoClose: 1000})
+                                            toast.success("Proxy deleted", {autoClose: 1000});
                                             this.updateProxies();
                                         } else {
                                             toast.error(res.message);
