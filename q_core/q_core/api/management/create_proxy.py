@@ -13,7 +13,7 @@ def create_proxy():
         address="127.0.0.1",
         port=8443,
         secret="".join(secrets.choice(alphabet) for _ in range(255)),
-        web_address="127.0.0.1",
-        web_port=4443,
-        web_secret="".join(secrets.choice(alphabet) for _ in range(255)),
+        core_address="127.0.0.1",
+        core_port=4443,
+        core_secret="".join(secrets.choice(alphabet) for _ in range(255)),
     )

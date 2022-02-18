@@ -274,9 +274,9 @@ class Proxy(models.Model):
             ret["address"] = self.address
         if "port" in values:
             ret["port"] = self.port
-        if "web_address" in values:
+        if "core_address" in values:
             ret["core_address"] = self.core_address
-        if "web_port" in values:
+        if "core_port" in values:
             ret["core_port"] = self.core_port
         if "disabled" in values:
             ret["disabled"] = self.disabled
