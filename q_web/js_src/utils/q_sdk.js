@@ -74,23 +74,31 @@ class SDK {
     }
 
     async deleteProxy(proxyID) {
-        return await this._deleteObject("proxies/" + proxyID)
+        return await this._deleteObject("proxies/" + proxyID);
     }
 
-    async getMetrics(values) {
-        return await this._makeRESTGetRequest("metrics", values);
+    async createProxy(obj) {
+        return await this._createObject("proxies", obj);
     }
 
-    async getMetric(metricID, values) {
-        return await this._makeRESTGetRequest("metrics/" + metricID, values);
+    async getObservables(values) {
+        return await this._makeRESTGetRequest("observables", values);
     }
 
-    async updateMetric(metricID, changes) {
-        return await this._changeObject("metrics/" + metricID, changes);
+    async getObservable(observableID, values) {
+        return await this._makeRESTGetRequest("observables/" + observableID, values);
     }
 
-    async deleteMetric(metricID) {
-        return await this._deleteObject("metrics/" + metricID);
+    async updateObservable(observableID, changes) {
+        return await this._changeObject("observables/" + observableID, changes);
+    }
+
+    async deleteObservable(observableID) {
+        return await this._deleteObject("observables/" + observableID);
+    }
+
+    async createObservable(obj) {
+        return await this._createObject("observables", obj);
     }
 
     async getChecks(values) {
@@ -109,6 +117,10 @@ class SDK {
         return await this._deleteObject("checks/" + checkID);
     }
 
+    async createCheck(obj) {
+        return await this._createObject("checks", obj);
+    }
+
     async getHostTemplates(values) {
         return await this._makeRESTGetRequest("hosttemplates", values);
     }
@@ -125,20 +137,28 @@ class SDK {
         return await this._deleteObject("hosttemplates/" + hostTemplateID);
     }
 
-    async getMetricTemplates(values) {
-        return await this._makeRESTGetRequest("metrictemplates", values);
+    async createHostTemplate(obj) {
+        return await this._createObject("hosttemplates", obj);
     }
 
-    async getMetricTemplate(metricTemplateID, values) {
-        return await this._makeRESTGetRequest("metrictemplates/" + metricTemplateID, values);
+    async getObservableTemplates(values) {
+        return await this._makeRESTGetRequest("observabletemplates", values);
     }
 
-    async updateMetricTemplate(metricTemplateID, changes) {
-        return await this._changeObject("metrictemplates/" + metricTemplateID, changes);
+    async getObservableTemplate(observableTemplateID, values) {
+        return await this._makeRESTGetRequest("observabletemplates/" + observableTemplateID, values);
     }
 
-    async deleteMetricTemplate(metricTemplateID) {
-        return await this._deleteObject("metrictemplates/" + metricTemplateID);
+    async updateObservableTemplate(observableTemplateID, changes) {
+        return await this._changeObject("observabletemplates/" + observableTemplateID, changes);
+    }
+
+    async deleteObservableTemplate(observableTemplateID) {
+        return await this._deleteObject("observabletemplates/" + observableTemplateID);
+    }
+
+    async createObservableTemplate(obj) {
+        return await this._createObject("observabletemplates", obj);
     }
 
     async getTimePeriods(values) {
@@ -157,6 +177,10 @@ class SDK {
         return await this._deleteObject("timeperiods/" + timePeriodID);
     }
 
+    async createTimePeriod(obj) {
+        return await this._createObject("timeperiods", obj);
+    }
+
     async getContacts(values) {
         return await this._makeRESTGetRequest("contacts", values);
     }
@@ -171,6 +195,10 @@ class SDK {
 
     async deleteContact(contactID) {
         return await this._deleteObject("contacts/" + contactID);
+    }
+
+    async createContacts(obj) {
+        return await this._createObject("contacts", obj);
     }
 
     async getContactGroups(values) {
@@ -189,6 +217,10 @@ class SDK {
         return await this._deleteObject("contactgroups/" + contactGroupID);
     }
 
+    async createContactGroup(obj) {
+        return await this._createObject("contactgroups", obj);
+    }
+
     async getGlobalVariables(values) {
         return await this._makeRESTGetRequest("globalvariables", values);
     }
@@ -203,6 +235,10 @@ class SDK {
 
     async deleteGlobalVariable(globalVariableID) {
         return await this._deleteObject("globalvariables/" + globalVariableID);
+    }
+
+    async createGlobalVariable(obj) {
+        return await this._createObject("globalvariables", obj);
     }
 
     async _makeRESTGetRequest(path, values) {
