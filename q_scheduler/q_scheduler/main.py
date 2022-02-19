@@ -67,7 +67,7 @@ def main():
 
 if __name__ == '__main__':
     logging.basicConfig(
-        filename="/var/log/q/q-scheduler.log",
+        filename="/var/log/q-scheduler/scheduler.log",
         format='%(asctime)s :: %(levelname)s: %(message)s',
         datefmt='%d-%m-%Y %H:%M:%S',
         level=logging.DEBUG
