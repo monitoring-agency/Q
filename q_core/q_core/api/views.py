@@ -19,7 +19,10 @@ def get_variable_list(parameter):
     if len(parameter) > 1:
         return [x for x in parameter if isinstance(x, str) or isinstance(x, int)]
     else:
-        return [x for x in parameter[0].split(",") if x]
+        if "," in parameter:
+            return [x for x in parameter[0].split(",") if x]
+        else:
+            return parameter
 
 
 class CheckMixinView(View):
