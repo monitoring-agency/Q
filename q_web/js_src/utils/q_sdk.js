@@ -241,6 +241,52 @@ class SDK {
         return await this._createObject("globalvariables", obj);
     }
 
+    async updateDeclaration(proxies) {
+        let url = new URL(this.baseURL + "updateDeclaration");
+        let response = await fetch(url, {
+            method: "POST",
+            body: JSON.stringify({
+                "proxies": proxies
+            })
+        });
+        try {
+            let ret = await response.json();
+            if (response.status === 403)
+                this.loggedOutCallback(ret);
+
+            if (ret.success === true)
+                return {...ret, "status": response.status};
+            else
+                return({...ret, "status": response.status});
+
+        } catch (SyntaxError) {
+            return({"status": response.status, "text": response.text()});
+        }
+    }
+
+    async generateProxyConfiguration(proxy_id) {
+        let url = new URL(this.baseURL + "generateProxyConfiguration");
+        let response = await fetch(url, {
+            method: "POST",
+            body: JSON.stringify({
+                "proxy": proxy_id
+            })
+        });
+        try {
+            let ret = await response.json();
+            if (response.status === 403)
+                this.loggedOutCallback(ret);
+
+            if (ret.success === true)
+                return {...ret, "status": response.status};
+            else
+                return({...ret, "status": response.status});
+
+        } catch (SyntaxError) {
+            return({"status": response.status, "text": response.text()});
+        }
+    }
+
     async _makeRESTGetRequest(path, values) {
         let url = new URL(this.baseURL + path);
         if (values !== undefined) {
