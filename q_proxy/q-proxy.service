@@ -12,7 +12,7 @@ Group=q-proxy
 # DynamicUser=yes
 # see http://0pointer.net/blog/dynamic-users-with-systemd.html
 RuntimeDirectory=gunicorn
-WorkingDirectory=/usr/sbin/q-proxy/
+WorkingDirectory=/usr/sbin/q-proxy/q_proxy/
 ExecStart=/usr/sbin/q-proxy/venv/bin/gunicorn -c /etc/q-proxy/gunicorn.conf.py q_proxy.wsgi
 ExecReload=/bin/kill -s HUP $MAINPID
 KillMode=mixed

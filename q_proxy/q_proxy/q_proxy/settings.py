@@ -129,7 +129,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 DECLARATION_PATH = "/var/lib/q/declaration.json"
 
 logging.basicConfig(
-    filename="/var/log/q/q-proxy-django.log",
+    filename="/var/log/q-proxy/django.log",
     format='%(asctime)s :: %(levelname)s: %(message)s',
     datefmt='%d-%m-%Y %H:%M:%S',
     level=logging.DEBUG
