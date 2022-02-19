@@ -10,7 +10,7 @@ Group=q-scheduler
 # DynamicUser=yes
 # see http://0pointer.net/blog/dynamic-users-with-systemd.html
 WorkingDirectory=/usr/sbin/q-scheduler/
-ExecStart=/usr/sbin/q-scheduler/venv/bin/python3 /usr/sbin/q-scheduler/main.py
+ExecStart=/usr/sbin/q-scheduler/venv/bin/python3 /usr/sbin/q-scheduler/q_scheduler/main.py
 ExecStop=/bin/kill -s 2 $MAINPID
 KillMode=mixed
 TimeoutStopSec=5
