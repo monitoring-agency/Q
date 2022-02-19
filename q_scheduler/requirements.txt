@@ -1,2 +1,2 @@
 staticconfig~=0.0.6
-httpx~=0.18.2
+httpx~=0.22.0

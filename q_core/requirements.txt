@@ -8,4 +8,4 @@ rc-protocol~=0.1.0
 # apt install python3-dev default-libmysqlclient-dev build-essential
 mysqlclient~=2.1.0
 
-influxdb-client~=1.25.0
+influxdb-client~=1.26.0
