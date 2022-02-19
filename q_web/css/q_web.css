@@ -178,6 +178,7 @@ Modal Declaration
     display: flex;
     justify-content: center;
     align-items: center;
+    z-index: 999;
     background-color: rgba(0, 0, 0, 0.5);
 }
 
@@ -187,17 +188,28 @@ Modal Declaration
 
 .modalBox {
     background-color: var(--level-3);
-    padding: 4em;
-    z-index: 2;
+    z-index: 1000;
+    cursor: auto;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    cursor: auto;
+    align-items: end;
+    transition: all ease-in-out 100ms;
 }
 
-.modalRow {
-    display: flex;
-    justify-content: center;
+.modal {
+    font-size: initial;
+    display: revert;
+    padding: 0 2rem 2rem 2rem;
+}
+
+.modalClose {
+    width: 2rem;
+    padding: 0.5rem;
+}
+
+.modalTextArea {
+    width: 20rem;
+    height: 15rem;
 }
 
 .bigImg {
