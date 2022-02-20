@@ -2,6 +2,7 @@ import {React, toast} from "../../react.js";
 import ctx from "../../lib/q_ctx.js";
 import Modal from "../../lib/q_modal.js";
 import TextArea from "../../lib/q_textarea.js";
+import Paginator from "../../lib/q_declaration_paginator.js";
 
 export default class DeclarationProxyIndexView extends React.Component {
     static contextType = ctx;
@@ -15,19 +16,25 @@ export default class DeclarationProxyIndexView extends React.Component {
                 "configurationModal": false,
                 "configurationText": "",
                 "declarationModal": false,
-            }
+            },
+            "pagination": {
+                "current_page": 1,
+                "page_count": 1,
+                "object_count": 0,
+                "objects_per_page": 50
+            },
         }
     }
 
-    updateProxies() {
-        let proxiesPromise = this.context.sdk.getProxies();
+    updateProxies(page) {
+        let proxiesPromise = this.context.sdk.getProxies(page);
         proxiesPromise.then((ret) => {
-            this.setState({"proxies": ret.data});
+            this.setState({"proxies": ret.data, "pagination": ret.pagination});
         });
     }
 
     componentDidMount() {
-        this.updateProxies();
+        this.updateProxies(1);
     }
 
     render() {
@@ -79,7 +86,7 @@ export default class DeclarationProxyIndexView extends React.Component {
                                     this.context.sdk.deleteProxy(proxy.id).then((res) => {
                                         if(res.status === 200) {
                                             toast.success("Proxy deleted", {autoClose: 1000});
-                                            this.updateProxies();
+                                            this.updateProxies(this.state.pagination.current_page);
                                         } else {
                                             toast.error(res.message);
                                         }
@@ -167,13 +174,18 @@ export default class DeclarationProxyIndexView extends React.Component {
                    show={this.state.renderModal} />
             <div className="declarationContent">
                 <div className="declarationHeader">
-                    <div className="flexRow">
+                    <div className="declarationHeaderContent">
                         <button className="buttonLink"
                                 onClick={
                                     this.context.setPath.bind(null, {"path": ["declaration", "proxies", "create"]})
                                 } >
                             Add Proxy
                         </button>
+                        <Paginator currentPage={this.state.pagination.current_page}
+                                   lastPage={this.state.pagination.page_count}
+                                   onChange={(v) => {
+                                       this.updateProxies(v);
+                                   }} />
                     </div>
                 </div>
                 <div className="declarationList">
