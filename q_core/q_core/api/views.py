@@ -338,7 +338,7 @@ class CheckView(CheckOptionalMixinView):
         if "name" in params:
             if not params["name"]:
                 return JsonResponse({"success": False, "message": "Parameter name cannot be empty"}, status=400)
-            if Check.objects.filter(name=params["name"]).count() > 0:
+            if check.name != params["name"] and Check.objects.filter(name=params["name"]).count() > 0:
                 return JsonResponse({"success": False, "message": "Parameter name must be unique"}, status=409)
             check.name = params["name"]
 
