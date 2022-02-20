@@ -38,6 +38,7 @@ export default class DeclarationHostIndexView extends React.Component {
                     <td className="normalCell">
                         <button className="colorless button"
                                 onClick={(v) => {
+                                    v.stopPropagation();
                                     this.context.sdk.deleteHost(host.id).then((res) => {
                                         if(res.status === 200) {
                                             toast.success("Host deleted", {autoClose: 1000})
@@ -46,7 +47,6 @@ export default class DeclarationHostIndexView extends React.Component {
                                             toast.error(res.message);
                                         }
                                     });
-                                    v.stopPropagation();
                                 }} >
                             <img src={this.context.static + "img/delete.svg"} alt="Delete" />
                         </button>
