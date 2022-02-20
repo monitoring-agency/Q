@@ -1,6 +1,7 @@
 import {React, toast} from "../../react.js";
 import ctx from "../../lib/q_ctx.js";
 import Paginator from "../../lib/q_declaration_paginator.js";
+import TextInput from "../../lib/q_input.js";
 
 export default class DeclarationHostIndexView extends React.Component {
     static contextType = ctx;
@@ -14,12 +15,15 @@ export default class DeclarationHostIndexView extends React.Component {
                 "page_count": 1,
                 "object_count": 0,
                 "objects_per_page": 50
-            }
+            },
+            "search": ""
         }
     }
 
-    updateHosts(page) {
-        let hostsPromise = this.context.sdk.getHosts(page, ["name", "address", "comment"]);
+    updateHosts(page, newSearch) {
+        let search = this.state.search === "" ? undefined : this.state.search;
+        search = newSearch === undefined ? search : newSearch;
+        let hostsPromise = this.context.sdk.getHosts(page, ["name", "address", "comment"], search);
         hostsPromise.then((ret) => {
             this.setState({"hosts": ret.data, "pagination": ret.pagination});
         });
@@ -98,6 +102,15 @@ export default class DeclarationHostIndexView extends React.Component {
                                 } >
                             Add Host
                         </button>
+                        <div>
+                            <div style={{marginRight: 1 + "rem"}}>Search:</div>
+                            <TextInput className="darkInput"
+                                   value={this.state.search}
+                                   onChange={(v) => {
+                                       this.setState({"search": v});
+                                       this.updateHosts(this.state.pagination.current_page, v);
+                                   }} />
+                        </div>
                         <Paginator currentPage={this.state.pagination.current_page}
                                    lastPage={this.state.pagination.page_count}
                                    onChange={(v) => {
