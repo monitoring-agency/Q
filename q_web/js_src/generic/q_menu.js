@@ -71,15 +71,15 @@ export default class MenuView extends React.PureComponent {
                                 </div>
                             </li>
                             <li>
-                                <div className="sidebarRow" onClick={this.props.menu_metrics_action}>
-                                    <img src={this.context.static + "img/cpu.svg"} alt="Metrics" />
-                                    <p>Metrics</p>
+                                <div className="sidebarRow" onClick={this.context.setPath.bind(null, {"path": ["declaration", "observables", "index"]})}>
+                                    <img src={this.context.static + "img/cpu.svg"} alt="Observables" />
+                                    <p>Observables</p>
                                 </div>
                             </li>
                             <li>
-                                <div className="sidebarRow" onClick={this.props.menu_metric_templates_action}>
-                                    <img src={this.context.static + "img/metrictemplate.svg"} alt="Metric Templates" />
-                                    <p>Metric Templates</p>
+                                <div className="sidebarRow" onClick={this.context.setPath.bind(null, {"path": ["declaration", "observabletemplates", "index"]})}>
+                                    <img src={this.context.static + "img/observabletemplates.svg"} alt="Observable Templates" />
+                                    <p>Observable Templates</p>
                                 </div>
                             </li>
                             <li>
