@@ -1395,7 +1395,7 @@ class ContactView(CheckOptionalMixinView):
         if "mail" in params:
             contact.mail = params["mail"]
 
-        for notification in ["linked_host_notifications", "linked_metric_notifications"]:
+        for notification in ["linked_host_notifications", "linked_observable_notifications"]:
             if notification in params:
                 if params[notification]:
                     if overwrite:
@@ -1422,7 +1422,7 @@ class ContactView(CheckOptionalMixinView):
                             )
                 else:
                     contact.__getattribute__(notification).clear()
-        for period in ["linked_host_notification_period", "linked_metric_notification_period"]:
+        for period in ["linked_host_notification_period", "linked_observable_notification_period"]:
             if period in params:
                 if params[period]:
                     try:

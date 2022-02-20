@@ -233,7 +233,7 @@ class Contact(models.Model):
             ] if self.linked_observable_notifications else ""
         if "linked_observable_notification_period" in values:
             ret["linked_observable_notification_period"] = \
-                self.linked_observable_notification_period if self.linked_observable_notification_period else ""
+                self.linked_observable_notification_period_id if self.linked_observable_notification_period else ""
         if "comment" in values:
             ret["comment"] = self.comment if self.comment else ""
         if "variables" in values:
