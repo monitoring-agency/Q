@@ -1,6 +1,7 @@
 import secrets
 import string
 import json
+from collections import ChainMap
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -133,10 +134,11 @@ class CheckOptionalMixinView(CheckMixinView):
                 data = {}
                 if "values" in params:
                     values = get_variable_list(params.getlist("values"))
-                    if any([x not in self.api_class.allowed_values for x in values]):
+                    if any([x not in self.api_class.allowed_values.keys() for x in values]):
                         return JsonResponse({"success": False, "message": "Bad values parameter"}, status=400)
-                    item = item.only(*values)
-                    tmp = item.to_dict(values=values)
+                    values = dict(ChainMap(*[{x[0]: x[1]} for x in self.api_class.allowed_values.items() if x[0] in values]))
+                    item = item.only(*values.values())
+                    tmp = item.to_dict(values=values.keys())
                     data["id"] = item.id
                     for v in values:
                         data[v] = tmp.__getitem__(v)
@@ -153,12 +155,18 @@ class CheckOptionalMixinView(CheckMixinView):
                 values = get_variable_list(params.getlist("values"))
                 if any([x not in self.api_class.allowed_values for x in values]):
                     return JsonResponse({"success": False, "message": "Bad values parameter"}, status=400)
+                values = dict(
+                    ChainMap(*[
+                        {x[0]: x[1]}
+                        for x in self.api_class.allowed_values.items() if x[0] in values
+                    ])
+                )
             if "filter" in params:
                 if isinstance(params["filter"], list):
                     if "values" in params:
                         items = [
-                            x.to_dict(values=values)
-                            for x in self.api_class.objects.filter(id__in=params["filter"]).only(*values)
+                            x.to_dict(values=values.keys())
+                            for x in self.api_class.objects.filter(id__in=params["filter"]).only(*values.values())
                         ]
                     else:
                         items = [x.to_dict() for x in self.api_class.objects.filter(id__in=params["filter"])]
@@ -166,12 +174,15 @@ class CheckOptionalMixinView(CheckMixinView):
                     if "values" in params:
                         items = self.api_class.objects.get(
                             id=str(params["filter"])
-                        ).only(*values).to_dict(values=values)
+                        ).only(*values.values()).to_dict(values=values.keys())
                     else:
                         items = self.api_class.objects.get(id=str(params["filter"])).to_dict()
             else:
                 if "values" in params:
-                    items = [x.to_dict(values=values) for x in self.api_class.objects.all().only(*values)]
+                    items = [
+                        x.to_dict(values=values.keys())
+                        for x in self.api_class.objects.all().only(*values.values())
+                    ]
                 else:
                     items = [x.to_dict() for x in self.api_class.objects.all()]
         return JsonResponse({"success": True, "message": "Request was successful", "data": items})

@@ -17,10 +17,15 @@ class GlobalVariable(models.Model):
     variable = GenericRelation("GenericKVP")
     comment = CharField(default="", max_length=1024, null=True, blank=True)
 
-    allowed_values = ["id", "key", "value", "comment"]
+    allowed_values = {
+        "id": "id",
+        "key": "variable",
+        "value": "variable",
+        "comment": "comment"
+    }
 
     def to_dict(self, values: List = None):
-        values = values if values is not None else self.allowed_values
+        values = values if values is not None else self.allowed_values.keys()
         kvp = {
             "id": self.id,
         }
@@ -91,13 +96,18 @@ class TimePeriod(models.Model):
     time_periods = ManyToManyField(DayTimePeriod)
     comment = CharField(default="", max_length=1024, null=True, blank=True)
 
-    allowed_values = ["id", "name", "comment", "time_periods"]
+    allowed_values = {
+        "id": "id",
+        "name": "name",
+        "comment": "comment",
+        "time_periods": "time_periods"
+    }
 
     def __str__(self):
         return self.name
 
     def to_dict(self, values: List = None):
-        values = values if values is not None else self.allowed_values
+        values = values if values is not None else self.allowed_values.keys()
         ret = {
             "id": self.id
         }
@@ -127,13 +137,18 @@ class Check(models.Model):
     cmd = CharField(default="", max_length=1024, blank=True, null=True)
     comment = CharField(default="", max_length=1024, blank=True, null=True)
 
-    allowed_values = ["id", "name", "cmd", "comment"]
+    allowed_values = {
+        "id": "id",
+        "name": "name",
+        "cmd": "cmd",
+        "comment": "comment"
+    }
 
     def __str__(self):
         return self.name
 
     def to_dict(self, values: List = None):
-        values = values if values is not None else self.allowed_values
+        values = values if values is not None else self.allowed_values.keys()
         ret = {
             "id": self.id
         }
@@ -173,24 +188,31 @@ class Contact(models.Model):
         TimePeriod, on_delete=models.DO_NOTHING,
         blank=True, null=True,
         related_name="contact_host_nt")
-    linked_metric_notifications = ManyToManyField(Check, blank=True, related_name="contact_metric_check")
-    linked_metric_notification_period = ForeignKey(
+    linked_observable_notifications = ManyToManyField(Check, blank=True, related_name="contact_observable_check")
+    linked_observable_notification_period = ForeignKey(
         TimePeriod, on_delete=models.DO_NOTHING,
         blank=True, null=True,
-        related_name="contact_metric_nt")
+        related_name="contact_observable_nt")
     comment = CharField(default="", max_length=1024, blank=True, null=True)
     variables = GenericRelation("GenericKVP")
 
-    allowed_values = [
-        "name", "mail", "linked_host_notifications", "linked_host_notification_period", "linked_metric_notifications",
-        "linked_metric_notification_period", "comment", "variables", "id"
-    ]
+    allowed_values = {
+        "id": "id",
+        "name": "name",
+        "mail": "mail",
+        "linked_host_notifications": "linked_host_notifications",
+        "linked_host_notification_period": "linked_host_notification_period",
+        "linked_observable_notifications": "linked_observable_notifications",
+        "linked_observable_notification_period": "linked_observable_notification_period",
+        "comment": "comment",
+        "variables": "variables"
+    }
 
     def __str__(self):
         return self.name
 
     def to_dict(self, values: List = None):
-        values = values if values is not None else self.allowed_values
+        values = values if values is not None else self.allowed_values.keys()
         ret = {
             "id": self.id
         }
@@ -203,13 +225,15 @@ class Contact(models.Model):
                x.id for x in self.linked_host_notifications.all().only("id")
             ] if self.linked_host_notifications else ""
         if "linked_host_notification_period" in values:
-            ret["linked_host_notification_period"] = self.linked_host_notification_period_id if self.linked_host_notifications else ""
-        if "linked_metric_notifications" in values:
-            ret["linked_metric_notifications"] = [
-                x.id for x in self.linked_metric_notifications.all().only("id")
-            ] if self.linked_metric_notifications else ""
-        if "linked_metric_notification_period" in values:
-            ret["linked_metric_notification_period"] = self.linked_metric_notification_period_id if self.linked_metric_notification_period else ""
+            ret["linked_host_notification_period"] = \
+                self.linked_host_notification_period_id if self.linked_host_notifications else ""
+        if "linked_observable_notifications" in values:
+            ret["linked_observable_notifications"] = [
+                x.id for x in self.linked_observable_notifications.all().only("id")
+            ] if self.linked_observable_notifications else ""
+        if "linked_observable_notification_period" in values:
+            ret["linked_observable_notification_period"] = \
+                self.linked_observable_notification_period if self.linked_observable_notification_period else ""
         if "comment" in values:
             ret["comment"] = self.comment if self.comment else ""
         if "variables" in values:
@@ -230,13 +254,18 @@ class ContactGroup(models.Model):
     comment = CharField(default="", max_length=1024, blank=True, null=True)
     linked_contacts = ManyToManyField(Contact, blank=True)
 
-    allowed_values = ["id", "name", "comment", "linked_contacts"]
+    allowed_values = {
+        "id": "id",
+        "name": "name",
+        "comment": "comment",
+        "linked_contacts": "linked_contacts",
+    }
 
     def __str__(self):
         return self.name
 
     def to_dict(self, values: List = None):
-        values = values if values is not None else self.allowed_values
+        values = values if values is not None else self.allowed_values.keys()
         ret = {
             "id": self.id
         }
@@ -268,15 +297,22 @@ class Proxy(models.Model):
     disabled = BooleanField(default=False)
     comment = CharField(default="", max_length=1024, blank=True, null=True)
 
-    allowed_values = [
-        "id", "name", "address", "port", "core_address", "core_port", "disabled", "comment"
-    ]
+    allowed_values = {
+        "id": "id",
+        "name": "name",
+        "address": "address",
+        "port": "port",
+        "core_address": "core_address",
+        "core_port": "core_port",
+        "disabled": "disabled",
+        "comment": "comment"
+    }
 
     def __str__(self):
         return self.name
 
     def to_dict(self, values: List = None):
-        values = values if values is not None else self.allowed_values
+        values = values if values is not None else self.allowed_values.keys()
         ret = {
             "id": self.id
         }
@@ -335,16 +371,25 @@ class HostTemplate(models.Model):
     comment = CharField(default="", max_length=1024, blank=True, null=True)
     variables = GenericRelation("GenericKVP")
 
-    allowed_values = [
-        "id", "name", "address", "linked_check", "host_templates", "linked_contacts", "linked_contact_groups",
-        "scheduling_interval", "scheduling_period", "notification_period", "comment", "variables"
-    ]
+    allowed_values = {
+        "id": "id",
+        "name": "name",
+        "address": "address",
+        "linked_check": "linked_check",
+        "host_templates": "host_templates",
+        "linked_contacts": "linked_contacts",
+        "linked_contact_groups": "linked_contact_groups",
+        "scheduling_interval": "scheduling_interval",
+        "notification_period": "notification_period",
+        "comment": "comment",
+        "variables": "variables"
+    }
 
     def __str__(self):
         return self.name
 
     def to_dict(self, values: List = None):
-        values = values if values is not None else self.allowed_values
+        values = values if values is not None else self.allowed_values.keys()
         ret = {
             "id": self.id
         }
@@ -406,17 +451,27 @@ class Host(models.Model):
     comment = CharField(default="", max_length=1024, blank=True, null=True)
     variables = GenericRelation("GenericKVP")
 
-    allowed_values = [
-        "id", "name", "address", "linked_proxy", "linked_check", "disabled", "host_templates", "linked_contacts",
-        "linked_contact_groups", "scheduling_interval", "scheduling_period", "notification_period", "comment",
-        "variables"
-    ]
+    allowed_values = {
+        "id": "id",
+        "name": "name",
+        "address": "address",
+        "linked_proxy": "linked_proxy",
+        "linked_check": "linked_check",
+        "host_templates": "host_templates",
+        "linked_contacts": "linked_contacts",
+        "linked_contact_groups": "linked_contact_groups",
+        "scheduling_interval": "scheduling_interval",
+        "notification_period": "notification_period",
+        "comment": "comment",
+        "variables": "variables",
+        "disabled": "disabled"
+    }
 
     def __str__(self):
         return self.name
 
     def to_dict(self, values: List = None):
-        values = values if values is not None else self.allowed_values
+        values = values if values is not None else self.allowed_values.keys()
         ret = {
             "id": self.id
         }
@@ -479,16 +534,25 @@ class ObservableTemplate(models.Model):
     comment = CharField(default="", max_length=1024, blank=True, null=True)
     variables = GenericRelation("GenericKVP")
 
-    allowed_values = [
-        "id", "name", "linked_check", "observable_templates", "linked_contacts", "linked_contact_groups",
-        "scheduling_interval", "scheduling_period", "notification_period", "comment", "variables"
-    ]
+    allowed_values = {
+        "id": "id",
+        "name": "name",
+        "linked_check": "linked_check",
+        "observable_templates": "observable_templates",
+        "linked_contacts": "linked_contacts",
+        "linked_contact_groups": "linked_contact_groups",
+        "scheduling_interval": "scheduling_interval",
+        "scheduling_period": "scheduling_period",
+        "notification_period": "notification_period",
+        "comment": "comment",
+        "variables": "variables"
+    }
 
     def __str__(self):
         return self.name
 
     def to_dict(self, values: List = None):
-        values = values if values is not None else self.allowed_values
+        values = values if values is not None else self.allowed_values.keys()
         ret = {
             "id": self.id
         }
@@ -548,17 +612,28 @@ class Observable(models.Model):
     comment = CharField(default="", max_length=1024, blank=True, null=True)
     variables = GenericRelation("GenericKVP")
 
-    allowed_values = [
-        "id", "name", "linked_proxy", "linked_check", "linked_host", "disabled", "observable_templates",
-        "linked_contacts", "linked_contact_groups", "scheduling_interval", "scheduling_period", "notification_period",
-        "comment", "variables"
-    ]
+    allowed_values = {
+        "id": "id",
+        "name": "name",
+        "linked_proxy": "linked_proxy",
+        "linked_host": "linked_host",
+        "linked_check": "linked_check",
+        "observable_templates": "observable_templates",
+        "linked_contacts": "linked_contacts",
+        "linked_contact_groups": "linked_contact_groups",
+        "scheduling_interval": "scheduling_interval",
+        "scheduling_period": "scheduling_period",
+        "notification_period": "notification_period",
+        "comment": "comment",
+        "variables": "variables",
+        "disabled": "disabled"
+    }
 
     def __str__(self):
         return self.name
 
     def to_dict(self, values: List = None):
-        values = values if values is not None else self.allowed_values
+        values = values if values is not None else self.allowed_values.keys()
         ret = {
             "id": self.id
         }
