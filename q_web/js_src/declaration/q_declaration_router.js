@@ -6,12 +6,22 @@ import DeclarationGlobalVariableIndexView from "./globalVariables/q_globalvariab
 import DeclarationGlobalVariableView from "./globalVariables/q_globalvariable_view.js";
 import DeclarationProxyIndexView from "./proxies/q_proxies_index.js";
 import DeclarationProxyView from "./proxies/q_proxy_view.js"
+import DeclarationChecksIndex from "./checks/q_checks_index.js";
+import DeclarationCheckView from "./checks/q_check_view.js";
 
 
 export default class DeclarationRouter extends React.Component {
     render() {
         let path = this.props.path[0];
         let slice = this.props.path.slice(1);
+
+        // Check router
+        if (path === "checks") {
+            return <DeclarationObjectRouter path={slice}
+                                            indexView={<DeclarationChecksIndex />}
+                                            createView={<DeclarationCheckView />}
+                                            updateView={<DeclarationCheckView check_id={slice} />} />
+        }
 
         // GlobalVariables router
         if(path === "globalvariables") {
