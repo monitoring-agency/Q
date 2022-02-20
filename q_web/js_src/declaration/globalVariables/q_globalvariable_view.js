@@ -76,6 +76,7 @@ export default class DeclarationGlobalVariableView extends React.Component {
             {heading}
             <table className="declarationTable">
                 <tr>
+                    <td className="smallCell" />
                     <td>
                         <label>Key</label>
                     </td>
@@ -91,6 +92,7 @@ export default class DeclarationGlobalVariableView extends React.Component {
                     </td>
                 </tr>
                 <tr>
+                    <td className="smallCell" />
                     <td>
                         <label>Value</label>
                     </td>
@@ -105,6 +107,7 @@ export default class DeclarationGlobalVariableView extends React.Component {
                     </td>
                 </tr>
                 <tr>
+                    <td className="smallCell" />
                     <td>
                         <label>Comment</label>
                     </td>

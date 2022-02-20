@@ -77,6 +77,7 @@ export default class DeclarationCheckView extends React.Component {
             {heading}
             <table className="declarationTable">
                 <tr>
+                    <td className="smallCell" />
                     <td>
                         <label>Name</label>
                     </td>
@@ -95,6 +96,7 @@ export default class DeclarationCheckView extends React.Component {
                     </td>
                 </tr>
                 <tr>
+                    <td className="smallCell" />
                     <td>
                         <label>Commandline</label>
                     </td>
@@ -109,6 +111,7 @@ export default class DeclarationCheckView extends React.Component {
                     </td>
                 </tr>
                 <tr>
+                    <td className="smallCell" />
                     <td>
                         <label>Comment</label>
                     </td>
