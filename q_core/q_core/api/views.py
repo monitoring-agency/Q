@@ -133,16 +133,13 @@ class CheckOptionalMixinView(CheckMixinView):
                 data = {}
                 if "values" in params:
                     values = get_variable_list(params.getlist("values"))
-                    tmp = item.to_dict()
+                    if any([x not in self.api_class.allowed_values for x in values]):
+                        return JsonResponse({"success": False, "message": "Bad values parameter"}, status=400)
+                    item = item.only(*values)
+                    tmp = item.to_dict(values=values)
                     data["id"] = item.id
                     for v in values:
-                        try:
-                            data[v] = tmp.__getitem__(v)
-                        except AttributeError:
-                            return JsonResponse(
-                                {"success": False, "message": f"{self.api_class.__name__} has no attribute {v}"},
-                                status=400
-                            )
+                        data[v] = tmp.__getitem__(v)
                 else:
                     data = item.to_dict()
                 return JsonResponse({"success": True, "data": data})
@@ -151,32 +148,33 @@ class CheckOptionalMixinView(CheckMixinView):
                     {"success": False, "message": f"{self.api_class.__name__} with id {kwargs['sid']} does not exist"}
                 )
         else:
-            if "filter" in params:
-                if isinstance(params["filter"], list):
-                    items = [x.to_dict() for x in self.api_class.objects.filter(id__in=params["filter"])]
-                else:
-                    items = self.api_class.objects.get(id=str(params["filter"])).to_dict()
-            else:
-                items = [x.to_dict() for x in self.api_class.objects.all()]
-            data = []
+            values = None
             if "values" in params:
                 values = get_variable_list(params.getlist("values"))
-                for x in items:
-                    item = {
-                        "id": x["id"]
-                    }
-                    for v in values:
-                        try:
-                            item[v] = x.__getitem__(v)
-                        except AttributeError:
-                            return JsonResponse(
-                                {"success": False, "message": f"{self.api_class.__name__} has no attribute {v}"},
-                                status=400
-                            )
-                    data.append(item)
+                if any([x not in self.api_class.allowed_values for x in values]):
+                    return JsonResponse({"success": False, "message": "Bad values parameter"}, status=400)
+            if "filter" in params:
+                if isinstance(params["filter"], list):
+                    if "values" in params:
+                        items = [
+                            x.to_dict(values=values)
+                            for x in self.api_class.objects.filter(id__in=params["filter"]).only(*values)
+                        ]
+                    else:
+                        items = [x.to_dict() for x in self.api_class.objects.filter(id__in=params["filter"])]
+                else:
+                    if "values" in params:
+                        items = self.api_class.objects.get(
+                            id=str(params["filter"])
+                        ).only(*values).to_dict(values=values)
+                    else:
+                        items = self.api_class.objects.get(id=str(params["filter"])).to_dict()
             else:
-                data = items
-        return JsonResponse({"success": True, "message": "Request was successful", "data": data})
+                if "values" in params:
+                    items = [x.to_dict(values=values) for x in self.api_class.objects.all().only(*values)]
+                else:
+                    items = [x.to_dict() for x in self.api_class.objects.all()]
+        return JsonResponse({"success": True, "message": "Request was successful", "data": items})
 
     def cleaned_post(self, params, *args, **kwargs):
         if "sid" in kwargs:
