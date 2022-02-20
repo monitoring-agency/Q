@@ -1442,8 +1442,8 @@ class ContactView(CheckOptionalMixinView):
                 if overwrite:
                     contact.variables.clear()
                 for key, value in params["variables"].items():
-                    key_label = Label.objects.get_or_create(label=key)
-                    value_label = Label.objects.get_or_create(label=value)
+                    key_label, _ = Label.objects.get_or_create(label=key)
+                    value_label, _ = Label.objects.get_or_create(label=value)
                     GenericKVP.objects.get_or_create(
                         key=key_label, value=value_label, object_id=contact.id,
                         content_type=ContentType.objects.get_for_model(Contact)
