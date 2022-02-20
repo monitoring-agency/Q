@@ -326,7 +326,7 @@ class CheckView(CheckOptionalMixinView):
         self.optional(check, params)
 
         check.save()
-        return JsonResponse({"success": True, "message": "Object was created", "data": check.id}, status=201)
+        return JsonResponse({"success": True, "message": "Object was created", "data": check.id})
 
     def save_put(self, params, *args, **kwargs):
         try:
