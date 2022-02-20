@@ -1,5 +1,6 @@
 import {React, toast} from "../../react.js";
 import ctx from "../../lib/q_ctx.js";
+import Paginator from "../../lib/q_declaration_paginator.js";
 
 export default class DeclarationGlobalVariableIndexView extends React.Component {
     static contextType = ctx;
@@ -7,20 +8,26 @@ export default class DeclarationGlobalVariableIndexView extends React.Component 
     constructor(props) {
         super(props);
         this.state = {
-            "globalvariables": []
+            "globalvariables": [],
+            "pagination": {
+                "current_page": 1,
+                "page_count": 1,
+                "object_count": 0,
+                "objects_per_page": 50
+            }
         }
     }
 
-    updateGlobalVariables() {
-        this.context.sdk.getGlobalVariables().then((v) => {
+    updateGlobalVariables(page) {
+        this.context.sdk.getGlobalVariables(page).then((v) => {
             if(v.status === 200) {
-                this.setState({"globalvariables": v.data});
+                this.setState({"globalvariables": v.data, "pagination": v.pagination});
             }
         });
     }
 
     componentWillMount() {
-        this.updateGlobalVariables();
+        this.updateGlobalVariables(1);
     }
 
     render() {
@@ -42,7 +49,7 @@ export default class DeclarationGlobalVariableIndexView extends React.Component 
                                 this.context.sdk.deleteGlobalVariable(globalvariable.id).then((res) => {
                                     if(res.status === 200) {
                                         toast.success("Global variable deleted", {autoClose: 1000})
-                                        this.updateGlobalVariables();
+                                        this.updateGlobalVariables(this.state.pagination.current_page);
                                     } else {
                                         toast.error(res.message);
                                     }
@@ -75,13 +82,18 @@ export default class DeclarationGlobalVariableIndexView extends React.Component 
 
         return <div className="declarationContent">
                 <div className="declarationHeader">
-                    <div className="flexRow">
+                    <div className="declarationHeaderContent">
                         <button className="buttonLink"
                                 onClick={
                                     this.context.setPath.bind(null, {"path": ["declaration", "globalvariables", "create"]})
                                 } >
                             Add Global Variable
                         </button>
+                        <Paginator currentPage={this.state.pagination.current_page}
+                                   lastPage={this.state.pagination.page_count}
+                                   onChange={(v) => {
+                                       this.updateGlobalVariables(v);
+                                   }} />
                     </div>
                 </div>
                 <div className="declarationList">

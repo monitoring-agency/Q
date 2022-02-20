@@ -39,13 +39,13 @@ export default class DeclarationGlobalVariableView extends React.Component {
                     toast.success("Global variable has been updated", {autoClose: 1500});
                     this.context.setPath({"path": ["declaration", "globalvariables", "index"]});
                 } else {
-                    toast.error(v.text);
+                    toast.error(v.message);
                 }
             });
         } else {
             this.context.sdk.createGlobalVariable(this.state.globalvariable).then((res) => {
             if(res.status !== 200) {
-                toast.error(res.text, {autoClose: 1500});
+                toast.error(res.message, {autoClose: 1500});
             } else {
                 toast.success("Global variable was created!", {autoClose: 1500});
                 this.context.setPath({"path": ["declaration", "globalvariables", "index"]});
