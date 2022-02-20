@@ -17,7 +17,7 @@ class GlobalVariable(models.Model):
     variable = GenericRelation("GenericKVP")
     comment = CharField(default="", max_length=1024, null=True, blank=True)
 
-    allowed_values = ["comment"]
+    allowed_values = ["id", "key", "value", "comment"]
 
     def to_dict(self, values: List = None):
         values = values if values is not None else self.allowed_values
@@ -27,10 +27,10 @@ class GlobalVariable(models.Model):
         if "comment" in values:
             kvp["comment"] = self.comment if self.comment else ""
         for x, y in self.variable.first().to_dict().items():
-            kvp.update({
-                "key": x,
-                "value": y
-            })
+            if "key" in values:
+                kvp["key"] = x
+            if "value" in values:
+                kvp["value"] = y
         return kvp
 
 
@@ -91,7 +91,7 @@ class TimePeriod(models.Model):
     time_periods = ManyToManyField(DayTimePeriod)
     comment = CharField(default="", max_length=1024, null=True, blank=True)
 
-    allowed_values = ["name", "comment", "time_periods"]
+    allowed_values = ["id", "name", "comment", "time_periods"]
 
     def __str__(self):
         return self.name
@@ -127,7 +127,7 @@ class Check(models.Model):
     cmd = CharField(default="", max_length=1024, blank=True, null=True)
     comment = CharField(default="", max_length=1024, blank=True, null=True)
 
-    allowed_values = ["name", "cmd", "comment"]
+    allowed_values = ["id", "name", "cmd", "comment"]
 
     def __str__(self):
         return self.name
@@ -183,7 +183,7 @@ class Contact(models.Model):
 
     allowed_values = [
         "name", "mail", "linked_host_notifications", "linked_host_notification_period", "linked_metric_notifications",
-        "linked_metric_notification_period", "comment", "variables"
+        "linked_metric_notification_period", "comment", "variables", "id"
     ]
 
     def __str__(self):
@@ -230,7 +230,7 @@ class ContactGroup(models.Model):
     comment = CharField(default="", max_length=1024, blank=True, null=True)
     linked_contacts = ManyToManyField(Contact, blank=True)
 
-    allowed_values = ["name", "comment", "linked_contacts"]
+    allowed_values = ["id", "name", "comment", "linked_contacts"]
 
     def __str__(self):
         return self.name
@@ -269,7 +269,7 @@ class Proxy(models.Model):
     comment = CharField(default="", max_length=1024, blank=True, null=True)
 
     allowed_values = [
-        "name", "address", "port", "core_address", "core_port", "disabled", "comment"
+        "id", "name", "address", "port", "core_address", "core_port", "disabled", "comment"
     ]
 
     def __str__(self):
@@ -336,7 +336,7 @@ class HostTemplate(models.Model):
     variables = GenericRelation("GenericKVP")
 
     allowed_values = [
-        "name", "address", "linked_check", "host_templates", "linked_contacts", "linked_contact_groups",
+        "id", "name", "address", "linked_check", "host_templates", "linked_contacts", "linked_contact_groups",
         "scheduling_interval", "scheduling_period", "notification_period", "comment", "variables"
     ]
 
@@ -407,7 +407,7 @@ class Host(models.Model):
     variables = GenericRelation("GenericKVP")
 
     allowed_values = [
-        "name", "address", "linked_proxy", "linked_check", "disabled", "host_templates", "linked_contacts",
+        "id", "name", "address", "linked_proxy", "linked_check", "disabled", "host_templates", "linked_contacts",
         "linked_contact_groups", "scheduling_interval", "scheduling_period", "notification_period", "comment",
         "variables"
     ]
@@ -480,7 +480,7 @@ class ObservableTemplate(models.Model):
     variables = GenericRelation("GenericKVP")
 
     allowed_values = [
-        "name", "linked_check", "observable_templates", "linked_contacts", "linked_contact_groups",
+        "id", "name", "linked_check", "observable_templates", "linked_contacts", "linked_contact_groups",
         "scheduling_interval", "scheduling_period", "notification_period", "comment", "variables"
     ]
 
@@ -549,9 +549,9 @@ class Observable(models.Model):
     variables = GenericRelation("GenericKVP")
 
     allowed_values = [
-        "name", "linked_proxy", "linked_check", "linked_host", "disabled", "observable_templates", "linked_contacts",
-        "linked_contact_groups", "scheduling_interval", "scheduling_period", "notification_period", "comment",
-        "variables"
+        "id", "name", "linked_proxy", "linked_check", "linked_host", "disabled", "observable_templates",
+        "linked_contacts", "linked_contact_groups", "scheduling_interval", "scheduling_period", "notification_period",
+        "comment", "variables"
     ]
 
     def __str__(self):
