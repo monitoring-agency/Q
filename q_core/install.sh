@@ -7,7 +7,7 @@ cp requirements.txt /usr/sbin/q-core/
 chown -R q-core: /usr/sbin/q-core/
 su - q-core -c 'python3 -m venv venv'
 su - q-core -c 'venv/bin/python3 -m pip install -r requirements.txt'
-su - q-core -c 'venv/bin/python3 manage.py migrate'
+su - q-core -c 'venv/bin/python3 q_core/manage.py migrate'
 mkdir /var/log/q-core/
 chown q-core: /var/log/q-core/
 mkdir /etc/q-core/
