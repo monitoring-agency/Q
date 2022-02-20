@@ -101,7 +101,7 @@ export default class MenuView extends React.PureComponent {
                                 </div>
                             </li>
                             <li>
-                                <div className="sidebarRow" onClick={this.props.menu_contact_groups_action}>
+                                <div className="sidebarRow" onClick={this.context.setPath.bind(null, {"path": ["declaration", "contactgroups", "index"]})}>
                                     <img src={this.context.static + "img/users.svg"} alt="Contact Groups" />
                                     <p>Contact Groups</p>
                                 </div>

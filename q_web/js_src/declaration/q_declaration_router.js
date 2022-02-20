@@ -10,6 +10,8 @@ import DeclarationChecksIndex from "./checks/q_checks_index.js";
 import DeclarationCheckView from "./checks/q_check_view.js";
 import DeclarationContactsIndex from "./contacts/q_contacts_index.js";
 import DeclarationContactView from "./contacts/q_contact_view.js";
+import DeclarationContactGroupsIndex from "./contactgroups/q_contactgroups_index.js";
+import DeclarationContactGroupView from "./contactgroups/q_contactgroup_view.js";
 
 
 export default class DeclarationRouter extends React.Component {
@@ -23,6 +25,14 @@ export default class DeclarationRouter extends React.Component {
                                             indexView={<DeclarationChecksIndex />}
                                             createView={<DeclarationCheckView />}
                                             updateView={<DeclarationCheckView check_id={slice} />} />
+        }
+
+        // Contactgroups router
+        if(path === "contactgroups") {
+            return <DeclarationObjectRouter path={slice}
+                                            indexView={<DeclarationContactGroupsIndex />}
+                                            createView={<DeclarationContactGroupView />}
+                                            updateView={<DeclarationContactGroupView contact_group_id={slice} />} />
         }
 
         // Contact router
