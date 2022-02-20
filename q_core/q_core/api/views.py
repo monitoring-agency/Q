@@ -131,20 +131,19 @@ class CheckOptionalMixinView(CheckMixinView):
             if not isinstance(kwargs["sid"], int) and not isinstance(kwargs["sid"], str):
                 return JsonResponse({"success": False, "message": "ID has to be str or int"})
             try:
-                item = self.api_class.objects.get(id=kwargs["sid"])
                 data = {}
                 if "values" in params:
                     values = get_variable_list(params.getlist("values"))
                     if any([x not in self.api_class.allowed_values.keys() for x in values]):
                         return JsonResponse({"success": False, "message": "Bad values parameter"}, status=400)
                     values = dict(ChainMap(*[{x[0]: x[1]} for x in self.api_class.allowed_values.items() if x[0] in values]))
-                    item = item.only(*values.values())
+                    item = self.api_class.objects.get(id=kwargs["sid"])
                     tmp = item.to_dict(values=values.keys())
                     data["id"] = item.id
                     for v in values:
                         data[v] = tmp.__getitem__(v)
                 else:
-                    data = item.to_dict()
+                    data = self.api_class.objects.get(id=kwargs["sid"]).to_dict()
                 return JsonResponse({"success": True, "data": data})
             except self.api_class.DoesNotExist:
                 return JsonResponse(
