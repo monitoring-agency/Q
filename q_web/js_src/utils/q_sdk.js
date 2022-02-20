@@ -197,7 +197,7 @@ class SDK {
         return await this._deleteObject("contacts/" + contactID);
     }
 
-    async createContacts(obj) {
+    async createContact(obj) {
         return await this._createObject("contacts", obj);
     }
 
