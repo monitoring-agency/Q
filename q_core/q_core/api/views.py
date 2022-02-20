@@ -177,10 +177,19 @@ class CheckOptionalMixinView(CheckMixinView):
                     else:
                         items = self.api_class.objects.get(id=str(params["filter"]))
             else:
-                if "values" in params:
-                    items = self.api_class.objects.all().only(*values.values())
+                if "query" in params and params["query"]:
+                    if "name" not in self.api_class.allowed_values.keys():
+                        return JsonResponse({"success": False, "message": "Object does not support query"}, status=400)
+                    query = str(params.get("query"))
+                    if "values" in params:
+                        items = self.api_class.objects.filter(name__icontains=query).only(*values.values())
+                    else:
+                        items = self.api_class.objects.filter(name__icontains=query)
                 else:
-                    items = self.api_class.objects.all()
+                    if "values" in params:
+                        items = self.api_class.objects.all().only(*values.values())
+                    else:
+                        items = self.api_class.objects.all()
 
             paginator = Paginator(items, 50)
 
