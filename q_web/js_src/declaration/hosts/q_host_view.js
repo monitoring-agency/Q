@@ -148,7 +148,7 @@ export default class DeclarationHostView extends React.Component {
             });
         }
 
-        this.context.sdk.getProxies(["name"]).then((v) => {
+        this.context.sdk.getProxies(1, ["name"]).then((v) => {
             let proxiesData = v.data;
             let proxies = [];
             let selected = this.state.selected;
@@ -158,7 +158,7 @@ export default class DeclarationHostView extends React.Component {
             selected.proxies = proxies;
             this.setState({"selected": selected, "proxies": proxiesData});
         });
-        this.context.sdk.getChecks(["name"]).then((v) => {
+        this.context.sdk.getChecks(1, ["name"]).then((v) => {
             let checksData = v.data;
             let checks = [];
             let selected = this.state.selected;
@@ -168,7 +168,7 @@ export default class DeclarationHostView extends React.Component {
             selected.checks = checks;
             this.setState({"selected": selected, "checks": checksData});
         });
-        this.context.sdk.getHostTemplates(["name"]).then((v) => {
+        this.context.sdk.getHostTemplates(1, ["name"]).then((v) => {
             let hostTemplatesData = v.data;
             let hostTemplates = [];
             let selected = this.state.selected;
@@ -178,7 +178,7 @@ export default class DeclarationHostView extends React.Component {
             selected.hostTemplates = hostTemplates;
             this.setState({"selected": selected, "hostTemplates": hostTemplatesData});
         });
-        this.context.sdk.getContacts(["name"]).then((v) => {
+        this.context.sdk.getContacts(1, ["name"]).then((v) => {
             let contactsData = v.data;
             let contacts = [];
             let selected = this.state.selected;
@@ -188,7 +188,7 @@ export default class DeclarationHostView extends React.Component {
             selected.contacts = contacts;
             this.setState({"selected": selected, "contacts": contactsData});
         });
-        this.context.sdk.getContactGroups(["name"]).then((v) => {
+        this.context.sdk.getContactGroups(1, ["name"]).then((v) => {
             let contactGroupsData = v.data;
             let contactGroups = [];
             let selected = this.state.selected;
@@ -198,7 +198,7 @@ export default class DeclarationHostView extends React.Component {
             selected.contactGroups = contactGroups;
             this.setState({"selected": selected, "contactGroups": contactGroupsData});
         });
-        this.context.sdk.getTimePeriods(["name"]).then((v) => {
+        this.context.sdk.getTimePeriods(1, ["name"]).then((v) => {
             let timePeriodsData = v.data;
             let timePeriods = [];
             let selected = this.state.selected;
