@@ -12,7 +12,7 @@ export default class DeclarationHostIndexView extends React.Component {
     }
 
     updateHosts() {
-        let hostsPromise = this.context.sdk.getHosts();
+        let hostsPromise = this.context.sdk.getHosts(["name", "address", "comment"]);
         hostsPromise.then((ret) => {
             this.setState({"hosts": ret.data});
         });
