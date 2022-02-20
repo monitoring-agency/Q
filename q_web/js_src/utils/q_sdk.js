@@ -42,11 +42,11 @@ class SDK {
     }
 
     async getHost(hostID, values) {
-        return await this._makeRESTGetRequest("hosts/" + hostID, values);
+        return await this._makeRESTGetRequest("hosts/" + hostID, undefined, values);
     }
 
-    async getHosts(values) {
-        return await this._makeRESTGetRequest("hosts", values);
+    async getHosts(page, values, query) {
+        return await this._makeRESTGetRequest("hosts", page, values, query);
     }
 
     async updateHost(hostID, changes) {
@@ -61,12 +61,12 @@ class SDK {
         return await this._createObject("hosts", obj);
     }
 
-    async getProxies(values) {
-        return await this._makeRESTGetRequest("proxies", values);
+    async getProxies(page, values, query) {
+        return await this._makeRESTGetRequest("proxies", page, values, query);
     }
 
     async getProxy(proxyID, values) {
-        return await this._makeRESTGetRequest("proxies/" + proxyID, values);
+        return await this._makeRESTGetRequest("proxies/" + proxyID, undefined, values);
     }
 
     async updateProxy(proxyID, changes) {
@@ -81,12 +81,12 @@ class SDK {
         return await this._createObject("proxies", obj);
     }
 
-    async getObservables(values) {
-        return await this._makeRESTGetRequest("observables", values);
+    async getObservables(page, values, query) {
+        return await this._makeRESTGetRequest("observables", page, values, query);
     }
 
     async getObservable(observableID, values) {
-        return await this._makeRESTGetRequest("observables/" + observableID, values);
+        return await this._makeRESTGetRequest("observables/" + observableID, undefined, values);
     }
 
     async updateObservable(observableID, changes) {
@@ -101,12 +101,12 @@ class SDK {
         return await this._createObject("observables", obj);
     }
 
-    async getChecks(values) {
-        return await this._makeRESTGetRequest("checks", values);
+    async getChecks(page, values, query) {
+        return await this._makeRESTGetRequest("checks", page, values, query);
     }
 
     async getCheck(checkID, values) {
-        return await this._makeRESTGetRequest("checks/" + checkID, values);
+        return await this._makeRESTGetRequest("checks/" + checkID, undefined, values);
     }
 
     async updateCheck(checkID, changes) {
@@ -121,12 +121,12 @@ class SDK {
         return await this._createObject("checks", obj);
     }
 
-    async getHostTemplates(values) {
-        return await this._makeRESTGetRequest("hosttemplates", values);
+    async getHostTemplates(page, values, query) {
+        return await this._makeRESTGetRequest("hosttemplates", page, values, query);
     }
 
     async getHostTemplate(hostTemplateID, values) {
-        return await this._makeRESTGetRequest("hosttemplates/" + hostTemplateID, values);
+        return await this._makeRESTGetRequest("hosttemplates/" + hostTemplateID, undefined, values);
     }
 
     async updateHostTemplate(hostTemplateID, changes) {
@@ -141,12 +141,12 @@ class SDK {
         return await this._createObject("hosttemplates", obj);
     }
 
-    async getObservableTemplates(values) {
-        return await this._makeRESTGetRequest("observabletemplates", values);
+    async getObservableTemplates(page, values, query) {
+        return await this._makeRESTGetRequest("observabletemplates", page, values, query);
     }
 
     async getObservableTemplate(observableTemplateID, values) {
-        return await this._makeRESTGetRequest("observabletemplates/" + observableTemplateID, values);
+        return await this._makeRESTGetRequest("observabletemplates/" + observableTemplateID, undefined, values);
     }
 
     async updateObservableTemplate(observableTemplateID, changes) {
@@ -161,12 +161,12 @@ class SDK {
         return await this._createObject("observabletemplates", obj);
     }
 
-    async getTimePeriods(values) {
-        return await this._makeRESTGetRequest("timeperiods", values);
+    async getTimePeriods(page, values, query) {
+        return await this._makeRESTGetRequest("timeperiods", page, values, query);
     }
 
     async getTimePeriod(timePeriodID, values) {
-        return await this._makeRESTGetRequest("timeperiods/" + timePeriodID, values);
+        return await this._makeRESTGetRequest("timeperiods/" + timePeriodID, undefined, values);
     }
 
     async updateTimePeriod(timePeriodID, changes) {
@@ -181,12 +181,12 @@ class SDK {
         return await this._createObject("timeperiods", obj);
     }
 
-    async getContacts(values) {
-        return await this._makeRESTGetRequest("contacts", values);
+    async getContacts(page, values, query) {
+        return await this._makeRESTGetRequest("contacts", page, values, query);
     }
 
     async getContact(contactID, values) {
-        return await this._makeRESTGetRequest("contacts/" + contactID, values);
+        return await this._makeRESTGetRequest("contacts/" + contactID, undefined, values);
     }
 
     async updateContact(contactID, changes) {
@@ -201,12 +201,12 @@ class SDK {
         return await this._createObject("contacts", obj);
     }
 
-    async getContactGroups(values) {
-        return await this._makeRESTGetRequest("contactgroups", values);
+    async getContactGroups(page, values, query) {
+        return await this._makeRESTGetRequest("contactgroups", page, values, query);
     }
 
     async getContactGroup(contactGroupID, values) {
-        return await this._makeRESTGetRequest("contactgroups/" + contactGroupID, values);
+        return await this._makeRESTGetRequest("contactgroups/" + contactGroupID, undefined, values);
     }
 
     async updateContactGroup(contactGroupID, changes) {
@@ -221,12 +221,12 @@ class SDK {
         return await this._createObject("contactgroups", obj);
     }
 
-    async getGlobalVariables(values) {
-        return await this._makeRESTGetRequest("globalvariables", values);
+    async getGlobalVariables(page, values, query) {
+        return await this._makeRESTGetRequest("globalvariables", page, values, query);
     }
 
     async getGlobalVariable(globalVariableID, values) {
-        return await this._makeRESTGetRequest("globalvariables/" + globalVariableID, values);
+        return await this._makeRESTGetRequest("globalvariables/" + globalVariableID, undefined, values);
     }
 
     async updateGlobalVariable(globalVariableID, changes) {
@@ -287,12 +287,19 @@ class SDK {
         }
     }
 
-    async _makeRESTGetRequest(path, values) {
+    async _makeRESTGetRequest(path, page, values, query) {
         let url = new URL(this.baseURL + path);
         if (values !== undefined) {
             for (let v of values) {
                 url.searchParams.append("values", v);
             }
+        }
+        if (page !== undefined) {
+            url.searchParams.append("p", page);
+        }
+
+        if(query !== undefined) {
+            url.searchParams.append("query", query);
         }
 
         let response = await fetch(url, {
