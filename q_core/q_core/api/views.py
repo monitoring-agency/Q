@@ -6,6 +6,7 @@ from collections import ChainMap
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
+from django.core.paginator import Paginator
 from django.db.models import Max
 from django.http import JsonResponse, HttpResponse, QueryDict
 from django.views import View
@@ -150,6 +151,9 @@ class CheckOptionalMixinView(CheckMixinView):
                     {"success": False, "message": f"{self.api_class.__name__} with id {kwargs['sid']} does not exist"}
                 )
         else:
+            if "p" not in params:
+                return JsonResponse({"success": False, "message": "Parameter p is required but missing"}, status=400)
+            current_page = params["p"]
             values = None
             if "values" in params:
                 values = get_variable_list(params.getlist("values"))
@@ -164,28 +168,44 @@ class CheckOptionalMixinView(CheckMixinView):
             if "filter" in params:
                 if isinstance(params["filter"], list):
                     if "values" in params:
-                        items = [
-                            x.to_dict(values=values.keys())
-                            for x in self.api_class.objects.filter(id__in=params["filter"]).only(*values.values())
-                        ]
+                        items = self.api_class.objects.filter(id__in=params["filter"]).only(*values.values())
                     else:
-                        items = [x.to_dict() for x in self.api_class.objects.filter(id__in=params["filter"])]
+                        items = self.api_class.objects.filter(id__in=params["filter"])
                 else:
                     if "values" in params:
-                        items = self.api_class.objects.get(
-                            id=str(params["filter"])
-                        ).only(*values.values()).to_dict(values=values.keys())
+                        items = self.api_class.objects.get(id=str(params["filter"])).only(*values.values())
                     else:
-                        items = self.api_class.objects.get(id=str(params["filter"])).to_dict()
+                        items = self.api_class.objects.get(id=str(params["filter"]))
             else:
                 if "values" in params:
-                    items = [
-                        x.to_dict(values=values.keys())
-                        for x in self.api_class.objects.all().only(*values.values())
-                    ]
+                    items = self.api_class.objects.all().only(*values.values())
                 else:
-                    items = [x.to_dict() for x in self.api_class.objects.all()]
-        return JsonResponse({"success": True, "message": "Request was successful", "data": items})
+                    items = self.api_class.objects.all()
+
+            paginator = Paginator(items, 50)
+
+            page = paginator.get_page(current_page)
+            page_items = page.object_list
+
+            if "values" in params:
+                data = [x.to_dict(values=values.keys()) for x in page_items]
+            else:
+                data = [x.to_dict() for x in page_items]
+
+            if "filter" in params and isinstance(params["filter"], list):
+                data = data[0]
+
+        return JsonResponse({
+            "success": True,
+            "message": "Request was successful",
+            "data": data,
+            "pagination": {
+                "page_count": paginator.num_pages,
+                "object_count": paginator.count,
+                "objects_per_page": paginator.per_page,
+                "current_page": page.number
+            }
+        })
 
     def cleaned_post(self, params, *args, **kwargs):
         if "sid" in kwargs:
