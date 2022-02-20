@@ -87,9 +87,7 @@ export default class DeclarationCheckView extends React.Component {
                                    onChange={(v) => {
                                        let check = this.state.check;
                                        let faulty = this.state.faulty;
-                                       if (this.checkFaultyName(v)) {
-                                           faulty.name = true;
-                                       }
+                                       faulty.name = this.checkFaultyName(v);
                                        check.name = v;
                                        this.setState({"check": check, "faulty": faulty});
                                    }} />
