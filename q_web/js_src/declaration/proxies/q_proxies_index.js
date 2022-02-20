@@ -3,7 +3,7 @@ import ctx from "../../lib/q_ctx.js";
 import Modal from "../../lib/q_modal.js";
 import TextArea from "../../lib/q_textarea.js";
 
-export default class DeclarationProxiesIndexView extends React.Component {
+export default class DeclarationProxyIndexView extends React.Component {
     static contextType = ctx;
 
     constructor(props) {

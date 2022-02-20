@@ -5,7 +5,7 @@ import TextInput from "../../lib/q_input.js";
 import TextArea from "../../lib/q_textarea.js";
 import SliderInput from "../../lib/q_slider_input.js";
 
-export default class DeclarationProxyCreateOrUpdateView extends React.Component {
+export default class DeclarationProxyView extends React.Component {
     static contextType = ctx;
 
     constructor(props) {
