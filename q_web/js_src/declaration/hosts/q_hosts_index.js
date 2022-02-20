@@ -1,5 +1,6 @@
 import {React, toast} from "../../react.js";
 import ctx from "../../lib/q_ctx.js";
+import Paginator from "../../lib/q_declaration_paginator.js";
 
 export default class DeclarationHostIndexView extends React.Component {
     static contextType = ctx;
@@ -7,19 +8,25 @@ export default class DeclarationHostIndexView extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            "hosts": []
+            "hosts": [],
+            "pagination": {
+                "current_page": 1,
+                "page_count": 1,
+                "object_count": 0,
+                "objects_per_page": 50
+            }
         }
     }
 
-    updateHosts() {
-        let hostsPromise = this.context.sdk.getHosts(["name", "address", "comment"]);
+    updateHosts(page) {
+        let hostsPromise = this.context.sdk.getHosts(page, ["name", "address", "comment"]);
         hostsPromise.then((ret) => {
-            this.setState({"hosts": ret.data});
+            this.setState({"hosts": ret.data, "pagination": ret.pagination});
         });
     }
 
     componentDidMount() {
-        this.updateHosts();
+        this.updateHosts(1);
     }
 
     render() {
@@ -42,7 +49,7 @@ export default class DeclarationHostIndexView extends React.Component {
                                     this.context.sdk.deleteHost(host.id).then((res) => {
                                         if(res.status === 200) {
                                             toast.success("Host deleted", {autoClose: 1000})
-                                            this.updateHosts();
+                                            this.updateHosts(this.state.pagination.current_page);
                                         } else {
                                             toast.error(res.message);
                                         }
@@ -84,13 +91,18 @@ export default class DeclarationHostIndexView extends React.Component {
         return (<div>
             <div className="declarationContent">
                 <div className="declarationHeader">
-                    <div className="flexRow">
+                    <div className="declarationHeaderContent">
                         <button className="buttonLink"
                                 onClick={
                                     this.context.setPath.bind(null, {"path": ["declaration", "hosts", "create"]})
                                 } >
                             Add Host
                         </button>
+                        <Paginator currentPage={this.state.pagination.current_page}
+                                   lastPage={this.state.pagination.page_count}
+                                   onChange={(v) => {
+                                       this.updateHosts(v);
+                                   }} />
                     </div>
                 </div>
                 <div className="declarationList">

@@ -576,6 +576,42 @@ Dashboard Declaration
 Declaration Declaration
  */
 
+.paginator {
+    display: flex;
+    margin: 0.5rem 0 0.5rem 0;
+    align-items: baseline;
+}
+
+.paginatorItem {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0.15rem;
+    padding: 0.2rem;
+    min-width: calc(1em + 2 * 0.2rem);
+    border-radius: 2px;
+    cursor: pointer;
+    color: var(--level-0);
+    background-color: var(--prim);
+    transition: all ease-in-out 100ms;
+}
+
+.paginatorDotDotDotItem {
+    margin: 0 0.1rem 0 0.1rem;
+}
+
+.paginatorItem:hover,
+.currentPaginatorItem {
+    background-color: var(--prim-light);
+}
+
+.declarationHeaderContent {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-between;
+}
+
 .declarationContent {
     background-color: var(--level-1);
     margin: 1rem;
