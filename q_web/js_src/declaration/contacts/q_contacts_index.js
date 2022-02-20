@@ -87,7 +87,7 @@ export default class DeclarationContactsIndex extends React.Component {
                                 onClick={
                                     this.context.setPath.bind(null, {"path": ["declaration", "contacts", "create"]})
                                 } >
-                            Add Check
+                            Add Contact
                         </button>
                         <Paginator currentPage={this.state.pagination.current_page}
                                    lastPage={this.state.pagination.page_count}
