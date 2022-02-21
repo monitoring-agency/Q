@@ -46,7 +46,7 @@ export default class DeclarationContactsIndex extends React.Component {
                     <button className="colorless button"
                             onClick={(v) => {
                                 v.stopPropagation();
-                                this.context.sdk.deleteContact(check.id).then((res) => {
+                                this.context.sdk.deleteContact(contact.id).then((res) => {
                                     if(res.status === 200) {
                                         toast.success("Contact deleted", {autoClose: 1000})
                                         this.updateContacts(this.state.pagination.current_page);
