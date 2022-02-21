@@ -71,10 +71,10 @@ export default class DeclarationGlobalVariableIndexView extends React.Component 
                 <tr>
                     <th className="smallCell"><input type="checkbox" /></th>
                     <th className="smallCell">ID</th>
-                    <th>Key</th>
-                    <th>Value</th>
+                    <th className="normalCell">Key</th>
+                    <th className="normalCell">Value</th>
                     <th>Comment</th>
-                    <th className="normalCell">Delete</th>
+                    <th className="mediumCell">Delete</th>
                 </tr>
                 {rows}
             </table>;

@@ -71,10 +71,10 @@ export default class DeclarationChecksIndex extends React.Component {
                 <tr>
                     <th className="smallCell"><input type="checkbox" /></th>
                     <th className="smallCell">ID</th>
-                    <th>Name</th>
+                    <th className="normalCell">Name</th>
                     <th>Commandline</th>
                     <th>Comment</th>
-                    <th className="normalCell">Delete</th>
+                    <th className="mediumCell">Delete</th>
                 </tr>
                 {rows}
             </table>;

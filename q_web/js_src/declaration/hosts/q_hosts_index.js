@@ -46,7 +46,7 @@ export default class DeclarationHostIndexView extends React.Component {
                     <td className="normalCell">{host.name}</td>
                     <td className="normalCell">{host.address}</td>
                     <td>{host.comment}</td>
-                    <td className="normalCell">
+                    <td className="mediumCell">
                         <button className="colorless button"
                                 onClick={(v) => {
                                     v.stopPropagation();

@@ -641,6 +641,7 @@ Declaration Declaration
 }
 
 .declarationList table tr td {
+    overflow-wrap: anywhere;
     text-align: center;
     padding: 0.25em 1em 0.25em 1em;
 }
@@ -716,6 +717,10 @@ Declaration Declaration
 
 .smallCell {
     width: 3rem;
+}
+
+.mediumCell {
+    width: 8rem;
 }
 
 .normalCell {
