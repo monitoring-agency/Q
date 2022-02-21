@@ -53,7 +53,7 @@ export default class DeclarationContactGroupView extends React.Component {
                 }
             });
         } else {
-            this.context.sdk.createContactGroup(contact).then((res) => {
+            this.context.sdk.createContactGroup(contactGroup).then((res) => {
                 if(res.status !== 200) {
                     toast.error(res.message, {autoClose: 1500});
                 } else {
