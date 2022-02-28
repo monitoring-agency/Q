@@ -6,7 +6,6 @@ import TextInput from "../../lib/q_input.js";
 import TextArea from "../../lib/q_textarea.js";
 import TableSectionHeading from "../../lib/q_table_section_heading.js";
 import Variables from "../../lib/q_variables.js";
-import MultiSelectSort from "../../lib/q_multiselect.js";
 
 
 export default class DeclarationContactView extends React.Component {
@@ -30,11 +29,17 @@ export default class DeclarationContactView extends React.Component {
                 "mail": false,
                 "variables": false,
             },
-            "timePeriods": [],
-            "checks": [],
-            "selected": {
-                "timePeriods": [],
-                "checks": [],
+            "selectOptions": {
+                "hostNotificationPeriods": [],
+                "observableNotificationPeriods": [],
+                "hostNotifications": [],
+                "observableNotifications": []
+            },
+            "selectQueries": {
+                "hostNotificationPeriod": "",
+                "observableNotificationPeriod": "",
+                "hostNotifications": "",
+                "observableNotifications": "",
             }
         }
     }
@@ -102,31 +107,100 @@ export default class DeclarationContactView extends React.Component {
                         };
                         counter++;
                     }
-                    contact["variables"] = variables;
+                    contact.variables = variables;
+
+                    this.context.sdk.getTimePeriods(1, ["name"]).then((res) => {
+                        if(res.status === 200) {
+                            let selectOptions = this.state.selectOptions;
+                            for(let timePeriod of res.data) {
+                                selectOptions.hostNotificationPeriods.push({"label": timePeriod.name, "value": timePeriod.id});
+                                selectOptions.observableNotificationPeriods.push({"label": timePeriod.name, "value": timePeriod.id});
+                            }
+                            this.setState({"selectOptions": selectOptions});
+                            if(contact.linked_host_notification_period !== "" &&
+                                !res.data.some((x) => x.id === parseInt(contact.linked_host_notification_period)) ) {
+                                this.context.sdk.getTimePeriod(contact.linked_host_notification_period, ["name"]).then((res) => {
+                                    if(res.status === 200) {
+                                        let selectOptions = this.state.selectOptions;
+                                        selectOptions.hostNotificationPeriods.push({"label": res.data.name, "value": res.data.id});
+                                        this.setState({"selectOptions": selectOptions});
+                                    }
+                                });
+                            }
+                            if(contact.linked_observable_notification_period !== "" &&
+                                !res.data.some((x) => x.id === parseInt(contact.linked_observable_notification_period)) ) {
+                                this.context.sdk.getTimePeriod(contact.linked_observable_notification_period, ["name"]).then((res) => {
+                                    if(res.status === 200) {
+                                        let selectOptions = this.state.selectOptions;
+                                        selectOptions.observableNotificationPeriods.push({"label": res.data.name, "value": res.data.id});
+                                        this.setState({"selectOptions": selectOptions});
+                                    }
+                                });
+                            }
+                        }
+                    });
+                    this.context.sdk.getChecks(1, ["name"]).then((res) => {
+                        if(res.status === 200) {
+                            let selectOptions = this.state.selectOptions;
+                            for(let check of res.data) {
+                                selectOptions.hostNotifications.push({"label": check.name, "value": check.id});
+                                selectOptions.observableNotifications.push({"label": check.name, "value": check.id});
+                            }
+                            this.setState({"selectOptions": selectOptions});
+                            if(contact.linked_host_notifications.length !== 0) {
+                                for (let linkedHostNotification of contact.linked_host_notifications) {
+                                    if (!res.data.some(x => x.id === parseInt(linkedHostNotification))) {
+                                        this.context.sdk.getCheck(linkedHostNotification, ["name"]).then((res) => {
+                                            if (res.status === 200) {
+                                                let selectOptions = this.state.selectOptions;
+                                                selectOptions.hostNotifications.push({"label": res.data.name, "value": res.data.id});
+                                                this.setState({"selectOptions": selectOptions});
+                                            }
+                                        })
+                                    }
+                                }
+                            }
+                            if(contact.linked_observable_notifications.length !== 0) {
+                                for (let linkedObservableNotification of contact.linked_observable_notifications) {
+                                    if (!res.data.some(x => x.id === parseInt(linkedObservableNotification))) {
+                                        this.context.sdk.getCheck(linkedObservableNotification, ["name"]).then((res) => {
+                                            if (res.status === 200) {
+                                                let selectOptions = this.state.selectOptions;
+                                                selectOptions.observableNotifications.push({"label": res.data.name, "value": res.data.id});
+                                                this.setState({"selectOptions": selectOptions});
+                                            }
+                                        })
+                                    }
+                                }
+                            }
+                        }
+                    });
+
                     this.setState({"contact": contact});
                 }
             })
+        } else {
+            this.context.sdk.getTimePeriods(1, ["name"]).then((res) => {
+                if(res.status === 200) {
+                    let selectOptions = this.state.selectOptions;
+                    for(let timePeriod of res.data) {
+                        selectOptions.hostNotificationPeriods.push({"label": timePeriod.name, "value": timePeriod.id});
+                        selectOptions.observableNotificationPeriods.push({"label": timePeriod.name, "value": timePeriod.id});
+                    }
+                    this.setState({"selectOptions": selectOptions});
+                }
+            });
+            this.context.sdk.getChecks(1, ["name"]).then((res) => {
+                if(res.status === 200) {
+                    let selectOptions = this.state.selectOptions;
+                    for(let check of res.data) {
+                        selectOptions.hostNotifications.push({"label": check.name, "value": check.id});
+                        selectOptions.observableNotifications.push({"label": check.name, "value": check.id});
+                    }
+                    this.setState({"selectOptions": selectOptions});
+                }
+            });
         }
-        this.context.sdk.getTimePeriods(1, ["name"]).then((v) => {
-            let timePeriodsData = v.data;
-            let timePeriods = [];
-            let selected = this.state.selected;
-            for(let timePeriod of timePeriodsData) {
-                timePeriods.push({value: timePeriod.id, label: timePeriod.name});
-            }
-            selected.timePeriods = timePeriods;
-            this.setState({"selected": selected, "timePeriods": timePeriodsData});
-        });
-        this.context.sdk.getChecks(1, ["name"]).then((v) => {
-            let checksData = v.data;
-            let checks = [];
-            let selected = this.state.selected;
-            for(let check of checksData) {
-                checks.push({value: check.id, label: check.name});
-            }
-            selected.checks = checks;
-            this.setState({"selected": selected, "checks": checksData});
-        });
     }
 
     render() {
@@ -135,16 +209,6 @@ export default class DeclarationContactView extends React.Component {
             heading = <h2 className="declarationHeading">Update Contact</h2>;
         } else {
             heading = <h2 className="declarationHeading">Create new Contact</h2>;
-        }
-
-        let sortedHostNotifications = [];
-        for (let check_id of this.state.contact.linked_host_notifications) {
-            sortedHostNotifications.push(this.state.selected.checks.find(x => x.value === check_id));
-        }
-
-        let sortedObservableNotifications = [];
-        for (let check_id of this.state.contact.linked_observable_notifications) {
-            sortedObservableNotifications.push(this.state.selected.checks.find(x => x.value === check_id));
         }
 
         return <div className="declarationContent">
@@ -212,13 +276,46 @@ export default class DeclarationContactView extends React.Component {
                         <Select className="react-select-container"
                                 classNamePrefix="react-select"
                                 isClearable={true}
-                                options={this.state.selected.timePeriods}
+                                options={this.state.selectOptions.hostNotificationPeriods}
+                                onInputChange={(v) => {
+                                    if(v === this.state.selectQueries.hostNotificationPeriod) return;
+
+                                    this.context.sdk.getTimePeriods(1, ["name"], v).then((res) => {
+                                        if(res.status === 200) {
+                                            let timePeriodsData = res.data;
+                                            let selectOptions = this.state.selectOptions;
+                                            let selectQueries = this.state.selectQueries;
+
+                                            selectQueries.hostNotificationPeriod = v;
+
+                                            selectOptions.hostNotificationPeriods = [];
+                                            for (let timePeriod of timePeriodsData) {
+                                                selectOptions.hostNotificationPeriods.push({"value": timePeriod.id, "label": timePeriod.name});
+                                            }
+
+                                            if(this.state.contact.linked_host_notification_period !== null && !timePeriodsData.filter(
+                                                (x) => x.id === this.state.contact.linked_host_notification_period)
+                                            ) {
+                                                for(let existing of this.state.selectOptions.hostNotificationPeriods.filter(
+                                                    (x) => x.value === this.state.contact.linked_host_notification_period)
+                                                ) {
+                                                    selectOptions.hostNotificationPeriods.push(existing);
+                                                }
+                                            }
+
+                                            this.setState({
+                                                "selectOptions": selectOptions,
+                                                "selectQueries": selectQueries
+                                            });
+                                        }
+                                    });
+                                }}
                                 onChange={(v) => {
                                     let a = this.state.contact;
                                     a["linked_host_notification_period"] = v === null ? null : v.value;
                                     this.setState({"contact": a});
                                 }}
-                                value={this.state.selected.timePeriods.filter((x) => x.value === this.state.contact.linked_host_notification_period)} />
+                                value={this.state.selectOptions.hostNotificationPeriods.filter((x) => x.value === this.state.contact.linked_host_notification_period)} />
                     </td>
                 </tr>
                 <tr>
@@ -227,15 +324,51 @@ export default class DeclarationContactView extends React.Component {
                         <label>Host notifications</label>
                     </td>
                     <td>
-                        <MultiSelectSort options={this.state.selected.checks}
-                                         onChange={(v) => {
-                                             let a = this.state.contact;
-                                             let hostNotifications = [];
-                                             v.forEach(x => hostNotifications.push(x.value));
-                                             a["linked_host_notifications"] = hostNotifications;
-                                             this.setState({"contact": a});
-                                         }}
-                                         value={sortedHostNotifications} />
+                        <Select className="react-select-container"
+                                classNamePrefix="react-select"
+                                isMulti={true}
+                                isClearable={true}
+                                options={this.state.selectOptions.hostNotifications}
+                                onInputChange={(v) => {
+                                    if(v === this.state.selectQueries.hostNotifications) return;
+
+                                    this.context.sdk.getChecks(1, ["name"], v).then((res) => {
+                                        if (res.status === 200) {
+                                            let selectOptions = this.state.selectOptions;
+                                            let selectQueries = this.state.selectQueries;
+
+                                            selectQueries.hostNotifications = v;
+
+                                            let hostNotifications = [];
+                                            for (let check of res.data) {
+                                                hostNotifications.push({
+                                                    "value": check.id,
+                                                    "label": check.name
+                                                });
+                                            }
+
+                                            if (this.state.contact.linked_host_notifications.length !== 0) {
+                                                for (let hostNotification of this.state.contact.linked_host_notifications) {
+                                                    if (!hostNotifications.some(x => x.value === hostNotification)) {
+                                                        this.state.selectOptions.hostNotifications.forEach(y => {
+                                                            if (y.value === hostNotification) {
+                                                                hostNotifications.push(y);
+                                                            }
+                                                        })
+                                                    }
+                                                }
+                                            }
+
+                                            selectOptions.hostNotifications = hostNotifications;
+
+                                            this.setState({
+                                                "selectOptions": selectOptions,
+                                                "selectQueries": selectQueries
+                                            });
+                                        }
+                                    });
+                                }}
+                                value={this.state.selectOptions.hostNotifications.filter(x => this.state.contact.linked_host_notifications.some(y => y === x.value))} />
                     </td>
                 </tr>
                 <tr>
@@ -247,13 +380,46 @@ export default class DeclarationContactView extends React.Component {
                         <Select className="react-select-container"
                                 classNamePrefix="react-select"
                                 isClearable={true}
-                                options={this.state.selected.timePeriods}
+                                options={this.state.selectOptions.observableNotificationPeriods}
+                                onInputChange={(v) => {
+                                    if(v === this.state.selectQueries.observableNotificationPeriod) return;
+
+                                    this.context.sdk.getTimePeriods(1, ["name"], v).then((res) => {
+                                        if(res.status === 200) {
+                                            let timePeriodsData = res.data;
+                                            let selectOptions = this.state.selectOptions;
+                                            let selectQueries = this.state.selectQueries;
+
+                                            selectQueries.observableNotificationPeriod = v;
+
+                                            selectOptions.observableNotificationPeriods = [];
+                                            for (let timePeriod of timePeriodsData) {
+                                                selectOptions.observableNotificationPeriods.push({"value": timePeriod.id, "label": timePeriod.name});
+                                            }
+
+                                            if(this.state.contact.linked_observable_notification_period !== null && !timePeriodsData.filter(
+                                                (x) => x.id === this.state.contact.linked_observable_notification_period)
+                                            ) {
+                                                for(let existing of this.state.selectOptions.observableNotificationPeriods.filter(
+                                                    (x) => x.value === this.state.contact.linked_observable_notification_period)
+                                                ) {
+                                                    selectOptions.observableNotificationPeriods.push(existing);
+                                                }
+                                            }
+
+                                            this.setState({
+                                                "selectOptions": selectOptions,
+                                                "selectQueries": selectQueries
+                                            });
+                                        }
+                                    });
+                                }}
                                 onChange={(v) => {
                                     let a = this.state.contact;
                                     a["linked_observable_notification_period"] = v === null ? null : v.value;
                                     this.setState({"contact": a});
                                 }}
-                                value={this.state.selected.timePeriods.filter((x) => x.value === this.state.contact.linked_observable_notification_period)} />
+                                value={this.state.selectOptions.observableNotificationPeriods.filter((x) => x.value === this.state.contact.linked_observable_notification_period)} />
                     </td>
                 </tr>
                 <tr>
@@ -262,15 +428,58 @@ export default class DeclarationContactView extends React.Component {
                         <label>Observable notifications</label>
                     </td>
                     <td>
-                        <MultiSelectSort options={this.state.selected.checks}
-                                         onChange={(v) => {
-                                             let a = this.state.contact;
-                                             let observableNotifications = [];
-                                             v.forEach(x => observableNotifications.push(x.value));
-                                             a["linked_observable_notifications"] = observableNotifications;
-                                             this.setState({"contact": a});
-                                         }}
-                                         value={sortedObservableNotifications} />
+                        <Select className="react-select-container"
+                                classNamePrefix="react-select"
+                                options={this.state.selectOptions.observableNotifications}
+                                isClearable={true}
+                                isMulti={true}
+                                onInputChange={(v) => {
+                                    if(v === this.state.selectQueries.observableNotifications) return;
+
+                                    this.context.sdk.getChecks(1, ["name"], v).then((res) => {
+                                        if (res.status === 200) {
+                                            let selectOptions = this.state.selectOptions;
+                                            let selectQueries = this.state.selectQueries;
+
+                                            selectQueries.observableNotifications = v;
+
+                                            let observableNotifications = [];
+                                            for (let check of res.data) {
+                                                observableNotifications.push({
+                                                    "value": check.id,
+                                                    "label": check.name
+                                                });
+                                            }
+
+                                            if (this.state.contact.linked_observable_notifications.length !== 0) {
+                                                for (let observableNotification of this.state.contact.linked_observable_notifications) {
+                                                    if (!observableNotifications.some(x => x.value === observableNotification)) {
+                                                        this.state.selectOptions.observableNotifications.forEach(y => {
+                                                            if (y.value === observableNotification) {
+                                                                observableNotifications.push(y);
+                                                            }
+                                                        })
+                                                    }
+                                                }
+                                            }
+
+                                            selectOptions.observableNotifications = observableNotifications;
+
+                                            this.setState({
+                                                "selectOptions": selectOptions,
+                                                "selectQueries": selectQueries
+                                            });
+                                        }
+                                    });
+                                }}
+                                onChange={(v) => {
+                                    let a = this.state.contact;
+                                    let observableNotifications = [];
+                                    v.forEach(x => observableNotifications.push(x.value));
+                                    a["linked_observable_notifications"] = observableNotifications;
+                                    this.setState({"contact": a});
+                                }}
+                                value={this.state.selectOptions.observableNotifications.filter(x => this.state.contact.linked_observable_notifications.some(y => y === x.value))} />
                     </td>
                 </tr>
                 <TableSectionHeading text="Additional settings" />
